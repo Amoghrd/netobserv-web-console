@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Config } from '../../../model/config';
 import {
+  createFilterValue,
   FilterCompare,
   FilterDefinition,
   FilterOption,
@@ -12,11 +13,10 @@ import {
   findFromFilters,
   getCompareText
 } from '../../../model/filters';
-import { getHTTPErrorDetails } from '../../../utils/errors';
-import { matcher } from '../../../utils/filter-definitions';
+import { getGenericHTTPError } from '../../../utils/errors';
+import { matcher, undefinedValue } from '../../../utils/filter-definitions';
 import { Indicator, setEndpointFilterDefinition } from '../../../utils/filters-helper';
 import { useOutsideClickEvent } from '../../../utils/outside-hook';
-import { usePrevious } from '../../../utils/previous-hook';
 import { Direction } from '../filters-toolbar';
 import './filter-search-input.css';
 import { FilterSearchPanel } from './filter-search-panel';
@@ -48,7 +48,7 @@ export interface FilterSearchInputProps {
   value: string;
   setValue: (v: string) => void;
   setCompare: (v: FilterCompare) => void;
-  setFilter: (v: FilterDefinition) => void;
+  setFilter: (v: FilterDefinition | null | undefined) => void;
   setDirection: (v: Direction) => void;
   setIndicator: (v: Indicator) => void;
   setSearchInputValue: (v: string) => void;
@@ -96,7 +96,6 @@ export const FilterSearchInput: React.FC<FilterSearchInputProps> = ({
     }, 100);
   });
   const [suggestions, setSuggestions] = React.useState<Suggestion[]>([]);
-  const prevSuggestions = usePrevious(suggestions);
   const [isPopperOpen, setPopperOpen] = React.useState(false);
   const [submitPending, setSubmitPending] = React.useState(false);
 
@@ -138,20 +137,15 @@ export const FilterSearchInput: React.FC<FilterSearchInputProps> = ({
   );
 
   const addFilterFromSuggestions = React.useCallback(
-    (sug: Suggestion[] | undefined = prevSuggestions) => {
-      if (!value.length) {
-        addFilter({ display: t('n/a'), v: `""` });
-      }
-      // check if a previous suggestion match value, else just add it as filter
-      const found = filter.component === 'autocomplete' && sug?.find(s => s.value === value || s.display === value);
-      if (found) {
-        addFilter({ display: found.display, v: found.value });
-      } else {
-        addFilter({ v: value });
-      }
+    () => {
+      // Use createFilterValue to get proper display text via findOption
+      // Convert empty strings to undefinedValue for proper "n/a" display
+      const valueToUse = value === '' ? undefinedValue : value;
+      const filterValue = createFilterValue(filter, valueToUse);
+      addFilter(filterValue);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [addFilter, filter.component, prevSuggestions, value]
+    [addFilter, filter, value]
   );
 
   const updateForm = React.useCallback(
@@ -310,7 +304,7 @@ export const FilterSearchInput: React.FC<FilterSearchInputProps> = ({
                 setSuggestions(v.map(optionToSuggestion));
               })
               .catch(err => {
-                const errorMessage = getHTTPErrorDetails(err);
+                const errorMessage = getGenericHTTPError(err);
                 setMessage(errorMessage);
                 setSuggestions([]);
               });
@@ -351,7 +345,7 @@ export const FilterSearchInput: React.FC<FilterSearchInputProps> = ({
               setSuggestions(suggestions.concat(v.map(optionToSuggestion)));
             })
             .catch(err => {
-              const errorMessage = getHTTPErrorDetails(err);
+              const errorMessage = getGenericHTTPError(err);
               setMessage(errorMessage);
               setSuggestions(suggestions);
             });
@@ -446,7 +440,6 @@ export const FilterSearchInput: React.FC<FilterSearchInputProps> = ({
             value={value}
             setValue={setValue}
             reset={reset}
-            prevSuggestions={prevSuggestions}
           />
         )}
       </div>

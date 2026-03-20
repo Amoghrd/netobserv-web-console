@@ -1,5 +1,5 @@
 import { ColumnConfigSampleDefs } from '../../components/__tests-data__/columns';
-import { FilterDefinitionSample } from '../../components/__tests-data__/filters';
+import { FilterConfigSampleDefs, FilterDefinitionSample } from '../../components/__tests-data__/filters';
 import { Config, Feature } from '../../model/config';
 import { checkFilterAvailable, findFilter } from '../filter-definitions';
 
@@ -142,7 +142,12 @@ describe('Check availability for prometheus only', () => {
 
 describe('Check availability against features', () => {
   const getConfig = (feats: Feature[]): Config => {
-    return { features: feats, dataSources: ['loki'], columns: ColumnConfigSampleDefs } as Config;
+    return {
+      features: feats,
+      dataSources: ['loki'],
+      columns: ColumnConfigSampleDefs,
+      filters: FilterConfigSampleDefs
+    } as Config;
   };
 
   it('with standard filters', () => {
@@ -163,15 +168,25 @@ describe('Check availability against features', () => {
   });
 
   it('with AZ filters', () => {
-    const azFilter = findFilter(FilterDefinitionSample, 'src_zone')!;
+    const srcZoneFilter = findFilter(FilterDefinitionSample, 'src_zone')!;
+    const zoneFilter = findFilter(FilterDefinitionSample, 'zone')!;
 
-    let available = checkFilterAvailable(azFilter, getConfig([]), 'auto');
+    // Test that zone filters are unavailable without zones feature
+    let available = checkFilterAvailable(srcZoneFilter, getConfig([]), 'auto');
+    expect(available).toBe(false);
+    available = checkFilterAvailable(zoneFilter, getConfig([]), 'auto');
     expect(available).toBe(false);
 
-    available = checkFilterAvailable(azFilter, getConfig(['dnsTracking']), 'auto');
+    // Test that zone filters are unavailable with other features
+    available = checkFilterAvailable(srcZoneFilter, getConfig(['dnsTracking']), 'auto');
+    expect(available).toBe(false);
+    available = checkFilterAvailable(zoneFilter, getConfig(['dnsTracking']), 'auto');
     expect(available).toBe(false);
 
-    available = checkFilterAvailable(azFilter, getConfig(['zones']), 'auto');
+    // Test that zone filters are available with zones feature
+    available = checkFilterAvailable(srcZoneFilter, getConfig(['zones']), 'auto');
+    expect(available).toBe(true);
+    available = checkFilterAvailable(zoneFilter, getConfig(['zones']), 'auto');
     expect(available).toBe(true);
   });
 
@@ -187,6 +202,51 @@ describe('Check availability against features', () => {
     available = checkFilterAvailable(dnsIdFilter, getConfig(['dnsTracking']), 'auto');
     expect(available).toBe(true);
     available = checkFilterAvailable(dnsLatilter, getConfig(['dnsTracking']), 'auto');
+    expect(available).toBe(true);
+  });
+});
+
+describe('Check endpoint filters availability with Prometheus only', () => {
+  const getConfig = (promLabels: string[], dataSources: string[] = ['prom']): Config => {
+    return { promLabels, dataSources, columns: ColumnConfigSampleDefs, filters: FilterConfigSampleDefs } as Config;
+  };
+
+  it('should be available when both src_ and dst_ variants are available', () => {
+    const namespaceFilter = findFilter(FilterDefinitionSample, 'namespace')!;
+    const nameFilter = findFilter(FilterDefinitionSample, 'name')!;
+
+    // Both src and dst variants have their labels available
+    const available = checkFilterAvailable(
+      namespaceFilter,
+      getConfig(['SrcK8S_Namespace', 'DstK8S_Namespace']),
+      'prom',
+      FilterDefinitionSample
+    );
+    expect(available).toBe(true);
+
+    const nameAvailable = checkFilterAvailable(
+      nameFilter,
+      getConfig(['SrcK8S_Name', 'DstK8S_Name']),
+      'prom',
+      FilterDefinitionSample
+    );
+    expect(nameAvailable).toBe(true);
+  });
+
+  it('should not be available when variants are missing', () => {
+    const namespaceFilter = findFilter(FilterDefinitionSample, 'namespace')!;
+
+    // Neither src_ nor dst_ variant available
+    const available = checkFilterAvailable(namespaceFilter, getConfig([]), 'prom', FilterDefinitionSample);
+    expect(available).toBe(false);
+  });
+
+  it('should be available with Loki enabled', () => {
+    const namespaceFilter = findFilter(FilterDefinitionSample, 'namespace')!;
+
+    // With Loki, endpoint filters follow the default behavior
+    const available = checkFilterAvailable(namespaceFilter, getConfig([], ['loki']), 'auto', FilterDefinitionSample);
+    // Should fall through to default "allow by default" behavior
     expect(available).toBe(true);
   });
 });

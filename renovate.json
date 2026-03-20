@@ -23,7 +23,8 @@
     "packageRules": [
       {
         "matchManagers": ["npm"],
-        "groupName": "NPM packages"
+        "groupName": "NPM packages",
+        "enabled": false
       }
     ]
   },

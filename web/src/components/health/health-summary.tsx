@@ -1,7 +1,9 @@
 import { Rule } from '@openshift-console/dynamic-plugin-sdk';
 import { Alert, Card, CardBody, Flex, FlexItem, Grid, GridItem, Text, TextVariants } from '@patternfly/react-core';
+import { AngleDownIcon, AngleRightIcon } from '@patternfly/react-icons';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
+import { localStorageHealthSummaryExpandedKey, useLocalStorage } from '../../utils/local-storage-hook';
 import { HealthStats } from './health-helper';
 import { HealthMetricCard } from './health-metric-card';
 
@@ -9,11 +11,16 @@ type StatusClass = 'success' | 'critical' | 'warning' | 'info';
 
 export interface HealthSummaryProps {
   rules: Rule[];
-  stats?: HealthStats;
+  stats: HealthStats;
+  forceCollapsed?: boolean;
 }
 
-export const HealthSummary: React.FC<HealthSummaryProps> = ({ rules, stats }) => {
+export const HealthSummary: React.FC<HealthSummaryProps> = ({ rules, stats, forceCollapsed }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
+  const [isExpanded, setIsExpanded] = useLocalStorage<boolean>(localStorageHealthSummaryExpandedKey, false);
+
+  // Determine the actual display state: forced collapsed or user's preference
+  const displayExpanded = forceCollapsed ? false : isExpanded;
 
   // Helper function to format metric details
   const formatMetricDetail = (firingAlerts: number, recordingRules: number): string => {
@@ -32,33 +39,31 @@ export const HealthSummary: React.FC<HealthSummaryProps> = ({ rules, stats }) =>
   let recordingRulesWarning = 0;
   let recordingRulesInfo = 0;
 
-  if (stats) {
-    // Count from global
-    recordingRulesCritical += stats.recordingRules.global.critical.length;
-    recordingRulesWarning += stats.recordingRules.global.warning.length;
-    recordingRulesInfo += stats.recordingRules.global.other.length;
+  // Count from global
+  recordingRulesCritical += stats.global.critical.recording.length;
+  recordingRulesWarning += stats.global.warning.recording.length;
+  recordingRulesInfo += stats.global.other.recording.length;
 
-    // Count from all namespaces
-    stats.recordingRules.byNamespace.forEach(ns => {
-      recordingRulesCritical += ns.critical.length;
-      recordingRulesWarning += ns.warning.length;
-      recordingRulesInfo += ns.other.length;
-    });
+  // Count from all namespaces
+  stats.byNamespace.forEach(ns => {
+    recordingRulesCritical += ns.critical.recording.length;
+    recordingRulesWarning += ns.warning.recording.length;
+    recordingRulesInfo += ns.other.recording.length;
+  });
 
-    // Count from all nodes
-    stats.recordingRules.byNode.forEach(node => {
-      recordingRulesCritical += node.critical.length;
-      recordingRulesWarning += node.warning.length;
-      recordingRulesInfo += node.other.length;
-    });
+  // Count from all nodes
+  stats.byNode.forEach(node => {
+    recordingRulesCritical += node.critical.recording.length;
+    recordingRulesWarning += node.warning.recording.length;
+    recordingRulesInfo += node.other.recording.length;
+  });
 
-    // Count from all owners (workloads)
-    stats.recordingRules.byOwner.forEach(owner => {
-      recordingRulesCritical += owner.critical.length;
-      recordingRulesWarning += owner.warning.length;
-      recordingRulesInfo += owner.other.length;
-    });
-  }
+  // Count from all owners (workloads)
+  stats.byOwner.forEach(owner => {
+    recordingRulesCritical += owner.critical.recording.length;
+    recordingRulesWarning += owner.warning.recording.length;
+    recordingRulesInfo += owner.other.recording.length;
+  });
 
   // Check if there are no rules at all (neither alerts nor recording rules)
   const totalRecordingRules = recordingRulesCritical + recordingRulesWarning + recordingRulesInfo;
@@ -185,80 +190,160 @@ export const HealthSummary: React.FC<HealthSummaryProps> = ({ rules, stats }) =>
     details.push(t('No minor issues out of {{total}} rules', summaryStats.info));
   }
 
+  const handleToggle = () => {
+    // Skip toggle when forced collapsed
+    if (forceCollapsed) {
+      return;
+    }
+    setIsExpanded(!isExpanded);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleToggle();
+    }
+  };
+
   return (
-    <div className="health-summary-dashboard">
-      <Grid hasGutter>
-        {/* Status card */}
-        <GridItem lg={6} md={6} sm={12}>
-          <Card className={`health-metric-card status ${statusClass}`}>
-            <CardBody>
-              <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsNone' }}>
+    <Flex
+      gap={{ default: 'gapMd' }}
+      alignItems={{ default: 'alignItemsCenter' }}
+      className={`health-summary-dashboard ${forceCollapsed ? 'force-collapsed' : ''}`}
+      onClick={handleToggle}
+      onKeyDown={handleKeyDown}
+      tabIndex={forceCollapsed ? -1 : 0}
+      role="button"
+      aria-label={displayExpanded ? t('Collapse health summary') : t('Expand health summary')}
+      aria-expanded={displayExpanded}
+      aria-disabled={forceCollapsed}
+      style={{ cursor: forceCollapsed ? 'default' : 'pointer' }}
+    >
+      {!forceCollapsed && (
+        <FlexItem className="health-summary-toggle-icon">
+          {displayExpanded ? <AngleDownIcon /> : <AngleRightIcon />}
+        </FlexItem>
+      )}
+      <FlexItem flex={{ default: 'flex_1' }}>
+        {displayExpanded ? (
+          <Grid hasGutter>
+            {/* Status card */}
+            <GridItem lg={6} md={6} sm={12}>
+              <Card className={`health-metric-card status ${statusClass}`}>
+                <CardBody>
+                  <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsNone' }}>
+                    <FlexItem>
+                      <Text component={TextVariants.small} className="metric-label">
+                        {t('Status')}
+                      </Text>
+                    </FlexItem>
+                    <FlexItem>
+                      <Text component={TextVariants.p} className="metric-status">
+                        {title}
+                      </Text>
+                    </FlexItem>
+                    {details.length > 0 && (
+                      <FlexItem className="status-details">
+                        <ul>
+                          {details.map((text, i) => (
+                            <li key={'li_' + i}>{text}</li>
+                          ))}
+                        </ul>
+                      </FlexItem>
+                    )}
+                  </Flex>
+                </CardBody>
+              </Card>
+            </GridItem>
+
+            {/* Critical card */}
+            <GridItem lg={2} md={6} sm={12}>
+              <HealthMetricCard
+                severity="critical"
+                label={t('Critical')}
+                total={criticalTotal}
+                detail={
+                  criticalTotal > 0
+                    ? formatMetricDetail(summaryStats.critical.firingAlerts, summaryStats.critical.recordingRules)
+                    : undefined
+                }
+              />
+            </GridItem>
+
+            {/* Warning card */}
+            <GridItem lg={2} md={6} sm={12}>
+              <HealthMetricCard
+                severity="warning"
+                label={t('Warning')}
+                total={warningTotal}
+                detail={
+                  warningTotal > 0
+                    ? formatMetricDetail(summaryStats.warning.firingAlerts, summaryStats.warning.recordingRules)
+                    : undefined
+                }
+              />
+            </GridItem>
+
+            {/* Info card */}
+            <GridItem lg={2} md={6} sm={12}>
+              <HealthMetricCard
+                severity="info"
+                label={t('Info')}
+                total={infoTotal}
+                detail={
+                  infoTotal > 0
+                    ? formatMetricDetail(summaryStats.info.firingAlerts, summaryStats.info.recordingRules)
+                    : undefined
+                }
+              />
+            </GridItem>
+          </Grid>
+        ) : (
+          <Flex gap={{ default: 'gapSm' }} alignItems={{ default: 'alignItemsCenter' }}>
+            {/* Collapsed view - just counters with icons */}
+            <FlexItem className={`health-summary-compact-item ${statusClass}`}>
+              <Flex gap={{ default: 'gapXs' }} alignItems={{ default: 'alignItemsCenter' }}>
+                <FlexItem className="health-summary-compact-icon status" />
                 <FlexItem>
-                  <Text component={TextVariants.small} className="metric-label">
-                    {t('Status')}
-                  </Text>
-                </FlexItem>
-                <FlexItem>
-                  <Text component={TextVariants.p} className="metric-status">
+                  <Text component={TextVariants.p} className="health-summary-compact-text">
                     {title}
                   </Text>
                 </FlexItem>
-                {details.length > 0 && (
-                  <FlexItem className="status-details">
-                    <ul>
-                      {details.map((text, i) => (
-                        <li key={'li_' + i}>{text}</li>
-                      ))}
-                    </ul>
-                  </FlexItem>
-                )}
               </Flex>
-            </CardBody>
-          </Card>
-        </GridItem>
-
-        {/* Critical card */}
-        <GridItem lg={2} md={6} sm={12}>
-          <HealthMetricCard
-            severity="critical"
-            label={t('Critical')}
-            total={criticalTotal}
-            detail={
-              criticalTotal > 0
-                ? formatMetricDetail(summaryStats.critical.firingAlerts, summaryStats.critical.recordingRules)
-                : undefined
-            }
-          />
-        </GridItem>
-
-        {/* Warning card */}
-        <GridItem lg={2} md={6} sm={12}>
-          <HealthMetricCard
-            severity="warning"
-            label={t('Warning')}
-            total={warningTotal}
-            detail={
-              warningTotal > 0
-                ? formatMetricDetail(summaryStats.warning.firingAlerts, summaryStats.warning.recordingRules)
-                : undefined
-            }
-          />
-        </GridItem>
-
-        {/* Info card */}
-        <GridItem lg={2} md={6} sm={12}>
-          <HealthMetricCard
-            severity="info"
-            label={t('Info')}
-            total={infoTotal}
-            detail={
-              infoTotal > 0
-                ? formatMetricDetail(summaryStats.info.firingAlerts, summaryStats.info.recordingRules)
-                : undefined
-            }
-          />
-        </GridItem>
-      </Grid>
-    </div>
+            </FlexItem>
+            <FlexItem className="health-summary-compact-item critical">
+              <Flex gap={{ default: 'gapXs' }} alignItems={{ default: 'alignItemsCenter' }}>
+                <FlexItem className="health-summary-compact-icon critical" />
+                <FlexItem>
+                  <Text component={TextVariants.p} className="health-summary-compact-text">
+                    {criticalTotal}
+                  </Text>
+                </FlexItem>
+              </Flex>
+            </FlexItem>
+            <FlexItem className="health-summary-compact-item warning">
+              <Flex gap={{ default: 'gapXs' }} alignItems={{ default: 'alignItemsCenter' }}>
+                <FlexItem className="health-summary-compact-icon warning" />
+                <FlexItem>
+                  <Text component={TextVariants.p} className="health-summary-compact-text">
+                    {warningTotal}
+                  </Text>
+                </FlexItem>
+              </Flex>
+            </FlexItem>
+            <FlexItem className="health-summary-compact-item info">
+              <Flex gap={{ default: 'gapXs' }} alignItems={{ default: 'alignItemsCenter' }}>
+                <FlexItem className="health-summary-compact-icon info" />
+                <FlexItem>
+                  <Text component={TextVariants.p} className="health-summary-compact-text">
+                    {infoTotal}
+                  </Text>
+                </FlexItem>
+              </Flex>
+            </FlexItem>
+          </Flex>
+        )}
+      </FlexItem>
+    </Flex>
   );
 };

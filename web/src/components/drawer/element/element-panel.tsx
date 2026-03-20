@@ -23,6 +23,7 @@ import { GraphElementPeer, NodeData } from '../../../model/topology';
 import { defaultSize, maxSize, minSize } from '../../../utils/panel';
 import { TruncateLength } from '../../dropdowns/truncate-dropdown';
 import { HealthCard } from '../../health/health-card';
+import { HealthSuperKind } from '../../health/health-helper';
 import { PeerResourceLink } from '../../tabs/netflow-topology/peer-resource-link';
 import { ElementPanelContent } from './element-panel-content';
 import { ElementPanelMetrics } from './element-panel-metrics';
@@ -57,7 +58,6 @@ export const ElementPanel: React.FC<ElementPanelProps> = ({
 }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
   const [activeTab, setActiveTab] = React.useState<string>('details');
-  const [selectedAlertName, setSelectedAlertName] = React.useState<string>();
 
   const data = element.getData();
   const noMetrics = data && data.noMetrics === true;
@@ -70,18 +70,37 @@ export const ElementPanel: React.FC<ElementPanelProps> = ({
     aData = data!;
   }
 
+  // Get the element panel display name to compare with card names
+  const elementName = React.useMemo(() => {
+    if (element instanceof BaseEdge) {
+      return undefined;
+    } else {
+      return data?.peer.getDisplayName(false, false);
+    }
+  }, [element, data]);
+
+  const healthKind: HealthSuperKind | undefined = React.useMemo(() => {
+    const nodeType = data?.nodeType;
+    if (nodeType === 'host') {
+      return 'Node';
+    } else if (nodeType === 'namespace') {
+      return 'Namespace';
+    } else if (nodeType === 'owner') {
+      return 'Owner';
+    }
+    return undefined;
+  }, [data]);
+
   const titleContent = React.useCallback(() => {
     if (element instanceof BaseEdge) {
       return <Text component={TextVariants.h2}>{t('Edge')}</Text>;
     } else {
-      const data = element.getData();
-      const name = data?.peer.getDisplayName(false, false);
-      if (data && name) {
+      if (data && elementName) {
         return <PeerResourceLink peer={data.peer} />;
       }
       return <Text component={TextVariants.h2}>{t('Unknown')}</Text>;
     }
-  }, [element, t]);
+  }, [element, elementName, data, t]);
 
   React.useEffect(() => {
     if ((activeTab === 'metrics' && _.isEmpty(metrics)) || (activeTab === 'dropped' && _.isEmpty(droppedMetrics))) {
@@ -90,8 +109,10 @@ export const ElementPanel: React.FC<ElementPanelProps> = ({
   }, [metrics, droppedMetrics, activeTab]);
 
   React.useEffect(() => {
-    setSelectedAlertName(undefined);
-  }, [element]);
+    if (activeTab === 'health' && _.isEmpty(data?.health)) {
+      setActiveTab('details');
+    }
+  }, [activeTab, data?.health]);
 
   return (
     <DrawerPanelContent
@@ -152,25 +173,22 @@ export const ElementPanel: React.FC<ElementPanelProps> = ({
               />
             </Tab>
           )}
-          {!_.isEmpty(data?.alerts) && (
+          {data?.health !== undefined && healthKind !== undefined && (
             <Tab className="drawer-tab" eventKey={'health'} title={<TabTitleText>{t('Health')}</TabTitleText>}>
-              {data!.alerts?.map(alert => (
-                <>
-                  <HealthCard
-                    key={`card-${alert.name}`}
-                    alertInfo={alert}
-                    kind={data!.peer.resourceKind || '?'}
-                    isDark={isDark || false}
-                    isSelected={selectedAlertName === alert.name}
-                    onClick={() => setSelectedAlertName(alert.name !== selectedAlertName ? alert.name : undefined)}
-                  />
-                  {alert.name === selectedAlertName && (
-                    <div className="health-details">
-                      <RuleDetails kind={data!.peer.resourceKind || '?'} alertInfo={alert} />
-                    </div>
-                  )}
-                </>
-              ))}
+              <>
+                <HealthCard
+                  key={`card-${alert.name}`}
+                  resourceHealth={data.health}
+                  name={data.health.name}
+                  k8sKind={data.health.k8sKind}
+                  isDark={isDark || false}
+                  isSelected={true}
+                  hideTitle={true}
+                />
+                <div className="health-details">
+                  <RuleDetails kind={healthKind} resourceHealth={data.health} />
+                </div>
+              </>
             </Tab>
           )}
         </Tabs>

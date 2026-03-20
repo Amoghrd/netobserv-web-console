@@ -39,6 +39,11 @@ OCI_BIN_PATH = $(shell which docker 2>/dev/null || which podman)
 OCI_BIN ?= $(shell basename ${OCI_BIN_PATH})
 OCI_BUILD_OPTS ?=
 
+ifeq ("$(OCI_BIN)","docker")
+# https://stackoverflow.com/questions/75521775/buildx-docker-image-claims-to-be-a-manifest-list
+EXTRA_BUILD_FLAGS ?= --provenance=false
+endif
+
 ifneq ($(CLEAN_BUILD),)
 	BUILD_DATE := $(shell date +%Y-%m-%d\ %H:%M)
 	BUILD_SHA := $(shell git rev-parse --short HEAD)
@@ -54,7 +59,7 @@ CMDLINE_ARGS ?= --loglevel trace --config config/config.yaml
 # build a single arch target provided as argument
 define build_target
 	echo 'building image for arch $(1)'; \
-	DOCKER_BUILDKIT=1 $(OCI_BIN) buildx build --load --build-arg LDFLAGS="${LDFLAGS}" --build-arg TARGETARCH=$(1) ${OCI_BUILD_OPTS} -t ${IMAGE}-$(1) -f Dockerfile .;
+	DOCKER_BUILDKIT=1 $(OCI_BIN) buildx build --load --build-arg LDFLAGS="${LDFLAGS}" --build-arg TARGETARCH=$(1) ${OCI_BUILD_OPTS} ${EXTRA_BUILD_FLAGS} -t ${IMAGE}-$(1) -f Dockerfile .;
 endef
 
 # push a single arch target image
@@ -183,6 +188,37 @@ test-backend: ## Test backend using go test
 	@echo "### Testing backend"
 	go test ./... -coverpkg=./... -coverprofile cover.out
 
+##@ Performance Testing
+
+.PHONY: benchmark-server
+benchmark-server: ## Run server performance benchmarks
+	@echo "### Running server performance benchmarks..."
+	go test -bench=. -benchmem -benchtime=300ms ./pkg/server/ -run=^$$ | tee pkg/server/benchmark-results.txt
+	@echo "Results saved to pkg/server/benchmark-results.txt"
+
+.PHONY: benchmark-server-compare
+benchmark-server-compare: ## Compare benchmark results with baseline using benchstat
+	@echo "### Running benchmarks and comparing with baseline..."
+	@GOPATH=$$(go env GOPATH); \
+	BENCHSTAT="$$GOPATH/bin/benchstat"; \
+	if [ ! -x "$$BENCHSTAT" ]; then \
+		echo "Installing benchstat..."; \
+		go install golang.org/x/perf/cmd/benchstat@latest; \
+	fi; \
+	if [ ! -f pkg/server/benchmark-baseline.txt ]; then \
+		echo "No baseline found. Creating baseline..."; \
+		go test -bench=. -benchmem -benchtime=300ms ./pkg/server/ -run=^$$ | tee pkg/server/benchmark-baseline.txt; \
+		echo "Baseline created. Run 'make benchmark-server-compare' again to compare."; \
+	else \
+		echo "Running benchmarks..."; \
+		go test -bench=. -benchmem -benchtime=300ms ./pkg/server/ -run=^$$ | tee pkg/server/benchmark-current.txt; \
+		echo ""; \
+		echo "=== Performance Comparison (baseline vs current) ==="; \
+		$$BENCHSTAT -alpha 0.05 pkg/server/benchmark-baseline.txt pkg/server/benchmark-current.txt || true; \
+		echo ""; \
+		echo "Benchmark comparison completed. Review results above for any performance changes."; \
+	fi
+
 .PHONY: serve
 serve: YQ ## Run backend
 	$(YQ) '.server.port |= 9001 | .server.metricsPort |= 9002 | .loki.useMocks |= false' ./config/sample-config.yaml > ./config/config.yaml
@@ -221,6 +257,14 @@ ifeq (${OCI_BIN}, docker)
 else
 	DOCKER_BUILDKIT=1 $(OCI_BIN) manifest push ${IMAGE} docker://${IMAGE};
 endif
+
+.PHONY: tar-image
+tar-image: MULTIARCH_TARGETS=amd64
+tar-image: image-build ## Build single arch (amd64) and save as a tar
+	$(OCI_BIN) tag $(IMAGE)-amd64 $(IMAGE)
+	mkdir -p ./out
+	$(OCI_BIN) save -o out/image.tar $(IMAGE)
+	echo $(IMAGE) > ./out/name
 
 include .mk/cypress.mk
 include .mk/shortcuts.mk
