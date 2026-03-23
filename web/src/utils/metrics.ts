@@ -16,7 +16,7 @@ import { getCustomScopes } from '../model/scope';
 import { NodeData } from '../model/topology';
 import { roundTwoDigits } from './count';
 import { computeStepInterval, rangeToSeconds, TimeRange } from './datetime';
-import { formatLatency } from './duration';
+import { formatDurationAboveMillisecond } from './duration';
 import { valueFormat } from './format';
 import { getPeerId, idUnknown } from './ids';
 
@@ -361,7 +361,7 @@ export const computeStats = (ts: [number, number][]): MetricStats => {
 
 export const getFormattedValue = (v: number, mt: MetricType, mf: MetricFunction, t: TFunction): string => {
   if (mt === 'DnsLatencyMs' || mt === 'TimeFlowRttNs') {
-    return formatLatency(v);
+    return formatDurationAboveMillisecond(v);
   } else {
     switch (mt) {
       case 'PktDropBytes':

@@ -50,22 +50,11 @@ export const formatDurationAboveMillisecond = (ms: number): string => {
     return '< 1ms';
   }
   if (ms < 1000) {
-    return `${ms}ms`;
-  }
-  return formatDuration(ms);
-};
-
-// Formats latency with precision (keeps decimals for seconds)
-export const formatLatency = (ms: number): string => {
-  if (ms < 1) {
-    return '< 1ms';
-  }
-  if (ms < 1000) {
     // Round to whole number for milliseconds
     return `${Math.round(ms)}ms`;
   }
   if (ms < 60000) {
-    // Less than 60 seconds: show as decimal seconds
+    // Less than 60 seconds: show as decimal seconds for precision
     const seconds = roundDuration(ms / 1000, 2);
     return `${seconds}s`;
   }
