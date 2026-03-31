@@ -39,7 +39,7 @@ describe('(OCP-72610 Network_Observability) Export automation', { tags: ['Networ
         cy.byTestID("table-composable").should('exist')
         cy.showAdvancedOptions();
         cy.get('#export-button').should('exist').click()
-        cy.get('.footer > [data-test="export-button"]').should('exist').then((exportbtn) => {
+        cy.get('[data-test="export-modal-footer"] > [data-test="export-button"]').should('exist').then((exportbtn) => {
             cy.wrap(exportbtn).click()
             // wait for download to complete
             cy.wait(3000)

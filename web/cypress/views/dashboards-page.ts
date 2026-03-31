@@ -56,8 +56,25 @@ export const appsInfra = [
 
 Cypress.Commands.add('checkDashboards', (names) => {
     for (let i = 0; i < names.length; i++) {
-        cy.byTestID(names[i], { timeout: 120000 }).should('exist')
-            .find(graphSelector.graphBody, { timeout: 120000 }).should('not.have.class', 'pf-v6-c-empty-state')
+        // Wait for panel to exist
+        cy.byTestID(names[i], { timeout: 120000 }).should('exist').first().then($panel => {
+            // Scroll panel into view to ensure it loads
+            cy.wrap($panel).scrollIntoView()
+        })
+
+        // Add wait to allow metrics to populate
+        cy.wait(2000)
+
+        // Check that graph body doesn't have empty state - use a custom retry mechanism
+        cy.byTestID(names[i], { timeout: 120000 }).first().within(() => {
+            cy.get(graphSelector.graphBody, { timeout: 120000 }).should($body => {
+                const hasEmptyState = $body.hasClass('pf-v6-c-empty-state')
+                if (hasEmptyState) {
+                    // Force a retry by throwing an error
+                    throw new Error('Dashboard panel still showing empty state, retrying...')
+                }
+            })
+        })
     }
 })
 

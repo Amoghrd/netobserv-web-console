@@ -142,7 +142,7 @@ export const Operator = {
             }
         })
         // don't create flowcollector if already exists
-        cy.get('div.loading-box:nth-child(1)').should('be.visible').then(() => {
+        cy.get('div.loading-box__loaded:nth-child(2)', { timeout: 60000 }).should('be.visible').then(() => {
             if (Cypress.$('td[role="gridcell"]').length == 0) {
                 cy.log("Deploying flowcollector")
                 switch (parameters) {

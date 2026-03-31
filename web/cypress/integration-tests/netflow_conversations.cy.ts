@@ -26,10 +26,7 @@ describe('(OCP-71787 Network_Observability) Conversation tracking test', { tags:
     })
 
     it("(OCP-71787, aramesha, Network_Observability) should verify Query Summary panel", function () {
-        cy.get('#filter-toolbar-search-filters').contains('Query options').click();
-        cy.get('#query-options-dropdown').click();
-        cy.get('#recordType-allConnections').click()
-        cy.get('#filter-toolbar-search-filters').contains('Query options').click();
+        cy.changeQueryOption('Conversation')
 
         // validate Query Summary panel
         let warningExists = false

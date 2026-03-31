@@ -51,9 +51,11 @@ export const netflowPage = {
     stopAutoRefresh: () => {
         cy.byTestID(genSelectors.refreshDrop).should('exist').then($btn => {
             // only stop refresh if it's not already OFF
-            if ($btn.text() != "Refresh off") {
-                cy.wrap($btn).click({ force: true })
-                cy.get('[data-test="OFF_KEY"]').should('exist').click({ force: true })
+            if (!$btn.text().includes("Refresh off")) {
+                cy.byTestID(genSelectors.refreshDrop).click()
+                // Wait for dropdown menu to be rendered and visible
+                cy.get('.pf-v5-c-menu').should('be.visible')
+                cy.get('body').find('[data-test="OFF_KEY"]').click()
             }
         })
     },
@@ -347,9 +349,9 @@ Cypress.Commands.add('checkQuerySummary', (metric) => {
 });
 
 Cypress.Commands.add('changeQueryOption', (name: string) => {
-    cy.get('#filter-toolbar-search-filters').contains('Query options').click();
-    cy.get('#query-options-dropdown').contains(name).click();
-    cy.get('#filter-toolbar-search-filters').contains('Query options').click();
+    cy.byTestID('query-options-dropdown').click();
+    cy.get('#query-options-popper').contains(name).click();
+    cy.byTestID('query-options-dropdown').click();
 });
 
 Cypress.Commands.add('visitNetflowTrafficTab', (page) => {

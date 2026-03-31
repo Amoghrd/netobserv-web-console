@@ -105,7 +105,15 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408 Network_Observability) Net
         cy.contains('Date').should('exist')
     })
 
-    it("(OCP-68125, aramesha, Network_Observability)should verify DSCP column is enbaled by default", function () {
+    it("(OCP-68125, aramesha, Network_Observability) should verify DSCP column", function () {
+        netflowPage.stopAutoRefresh()
+        cy.openColumnsModal().then(col => {
+            cy.get(colSelectors.columnsModal).should('be.visible')
+            cy.get('#Dscp').check()
+            cy.byTestID(colSelectors.save).click()
+        })
+        cy.reload()
+
         cy.byTestID('table-composable').should('exist').within(() => {
             cy.get(colSelectors.dscp).should('exist')
         })
@@ -113,8 +121,6 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408 Network_Observability) Net
         // filter on DSCP values
         cy.get(filterSelectors.filterInput).type("dscp=0" + '{enter}').click()
         cy.get('#dscp-0-toggle > span.pf-v5-c-menu-toggle__text').should('contain.text', 'Standard')
-
-        netflowPage.stopAutoRefresh()
 
         // Verify DSCP value is Standard for all rows
         cy.get('[data-test-td-column-id=Dscp]').each((td) => {

@@ -90,7 +90,7 @@ describe('(OCP-54839 Network_Observability) Netflow Overview page tests', { tags
             // verify single focus graph toggle
             cy.get('#focus-switch').check()
             // verify 'Top 5 average bytes rates' panel is in focus
-            cy.get('#overview-absolute-graph').contains('Top 5 average bytes rates');
+            cy.get('#overview-sticky-graph').contains('Top 5 average bytes rates');
             cy.get('[data-test-metrics]').its('length').should('gt', 0);
 
             // verify other panels are scrollable on the right
