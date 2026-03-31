@@ -65,4 +65,30 @@ describe('<ColumnsModal />', () => {
     await actOn(() => wrapper.find('.pf-v5-c-button.pf-m-primary').at(0).simulate('click'), wrapper);
     expect(props.setRange).toHaveBeenNthCalledWith(3, nowRange);
   });
+
+  it('should allow same day with different times (NETOBSERV-2665)', async () => {
+    const wrapper = mount(<TimeRangeModal {...props} />);
+    const datePickers = wrapper.find(DatePicker);
+    const timePickers = wrapper.find(TimePicker);
+
+    // Set both dates to the same day but different times
+    // From: 2026-03-12 10:00:00
+    // To: 2026-03-12 10:30:00
+    act(() => {
+      datePickers.at(0).props().onChange!(fakeEvent, '2026-03-12', new Date('2026-03-12'));
+      timePickers.at(0).props().onChange!(fakeEvent, '10:00:00');
+      datePickers.at(1).props().onChange!(fakeEvent, '2026-03-12', new Date('2026-03-12'));
+      timePickers.at(1).props().onChange!(fakeEvent, '10:30:00');
+    });
+
+    wrapper.update();
+
+    // The save button should be enabled (no error)
+    const saveButton = wrapper.find('[data-test="time-range-save"]').first();
+    expect(saveButton.prop('isDisabled')).toBe(false);
+
+    // Verify no validation error is shown
+    const tooltip = wrapper.find('.time-range-tooltip-empty');
+    expect(tooltip.length).toBeGreaterThan(0);
+  });
 });

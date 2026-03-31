@@ -48,7 +48,11 @@ export const TimeRangeModal: React.FC<TimeRangeModalProps> = ({
       if (isFrom && date > new Date()) {
         return t('From date cannot be in the future');
       }
-      return !isValidDate(d) || (!isFrom && date >= d) || (isFrom && date <= d)
+      // Compare only date portions (ignore time) since DatePicker only provides date
+      const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const dDateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+      return !isValidDate(d) || (!isFrom && dateOnly >= dDateOnly) || (isFrom && dateOnly <= dDateOnly)
         ? ''
         : t('To date must be after From date');
     },
