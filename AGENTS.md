@@ -6,7 +6,7 @@ Best practices for AI coding agents on NetObserv Web Console.
 
 ## Project Context
 
-**NetObserv Web Console** - OpenShift Console dynamic plugin for network observability visualization and configuration
+**NetObserv Web Console** - OpenShift Console dynamic plugin for network observability visualization
 
 **Components:**
 - **Frontend**: TypeScript/React with PatternFly components (OpenShift Console dynamic plugin SDK)
@@ -25,7 +25,8 @@ Best practices for AI coding agents on NetObserv Web Console.
 - `pkg/loki/`: Loki client and query builders
 - `pkg/kubernetes/`: Kubernetes API client
 - `pkg/prometheus/`: Prometheus client
-- `web/cypress/e2e/`: Cypress integration tests
+- `web/cypress/e2e/`: Cypress E2E tests (developer tests)
+- `web/cypress/integration-tests/`: QE integration tests
 
 ## Critical Constraints
 
@@ -38,6 +39,13 @@ Best practices for AI coding agents on NetObserv Web Console.
 - Use Node.js version specified in `Dockerfile.front`
 - npm versions matter - use expected versions to avoid build breaks
 - Consider using [nvm](https://github.com/nvm-sh/nvm) for version management
+
+### 🚨 Dockerfiles
+- `Dockerfile`: Production multi-stage build (frontend + backend)
+- `Dockerfile.front`: Frontend build (Node.js version source of truth)
+- `Dockerfile.downstream`: Downstream/productized builds
+- `Dockerfile.ci`: CI environment builds
+- `Dockerfile.e2e`, `Dockerfile.cypress`: Test runner images
 
 ### 🚨 Backward Compatibility
 Frontend configuration schemas must remain compatible:
@@ -52,31 +60,18 @@ Frontend configuration schemas must remain compatible:
 
 ## Effective Prompting
 
-**Good Example:**
-```
-Add new table column for DNS latency. Add dnslatency to ColumnsId enum in
-web/src/utils/columns.ts. Define column in config/sample-config.yaml with
-name, field (DnsLatencyMs), filter, tooltip. Add custom rendering case in
-web/src/components/drawer/record/record-field.tsx if needed. Update Loki
-query in pkg/loki/flow_query.go to fetch DnsLatencyMs field. Test in both
-plugin and standalone modes.
-```
+Be specific about file paths, existing patterns, and testing requirements.
 
-**Bad Example:**
-```
-Add DNS latency column
-```
+**Good**: "Add dnslatency to ColumnsId enum in web/src/utils/columns.ts. Define in config/sample-config.yaml. Update Loki query in pkg/loki/flow_query.go. Test both modes."
+
+**Bad**: "Add DNS latency column"
 
 **Key Principles:**
-1. Specify exact file paths (`web/src/components/`, not "frontend")
+1. Exact file paths (`web/src/components/`, not "frontend")
 2. Reference existing patterns (columns, filters, Loki queries)
-3. Mention i18n requirements for UI strings
-4. Mention both plugin and standalone mode testing
-5. Check package.json dependencies before adding new packages
-6. Column workflow: enum in columns.ts → definition in config/sample-config.yaml → optional RecordField rendering
-   - Enum syntax: `dropcause = 'PktDropLatestDropCause',` (key used in code, value matches config id)
-   - Column names come from config, not i18n
-   - Generic rendering works for most columns (RecordField changes only for special formatting)
+3. i18n for UI strings, dual-mode testing
+4. Check package.json before adding dependencies
+5. Column workflow: columns.ts enum → sample-config.yaml → optional RecordField rendering
 
 ## Common Task Templates
 
@@ -110,47 +105,33 @@ FlowCollector CRD field changed in operator:
 ## Repository-Specific Context
 
 ### Plugin vs Standalone Modes
-Two deployment configurations:
-- **Plugin** (default) - OpenShift Console integration
-  - Provides multiple views integrated across console pages
-  - Requires local OpenShift Console clone for development
-  - Console bridge runs on `http://localhost:9000/` (plugin serves on localhost:9001)
-- **Standalone** - Independent application
-  - FLAVOR can be set to `enduser` for production build (shows only Network Traffic and Network Health tabs)
-  - Navigation with multiple pages (all forms/views available in dev builds)
-  - Runs directly: `make start-standalone` or `make start-standalone-mock`
-  - Build with: `STANDALONE=true make images`
+- **Plugin** (default): Console integration (localhost:9001), requires Console clone for dev
+- **Standalone**: Independent app (`make start-standalone` or `make start-standalone-mock`), build with `STANDALONE=true make images`
+- FLAVOR=`enduser` limits production standalone to Network Traffic/Health tabs
 
 ### Loki Query Optimization
-- **Time ranges**: Limit query time ranges to avoid timeouts
-- **Label matchers**: Use `=` instead of `=~` where possible
-- **Aggregations**: Push aggregations to LogQL (count_over_time, sum, etc.)
-- **Limits**: Check `/api/loki/config/limits` for max query length, max entries
-- **Mock mode**: Use `make start-standalone-mock` or `make serve-mock` (backend only) for development without Loki
+- Limit time ranges, prefer `=` over `=~` matchers, push aggregations to LogQL
+- Check `/api/loki/config/limits` for query constraints
+- Mock mode: `make start-standalone-mock` or `make serve-mock`
 
 ### Frontend Configuration
 Two types:
 - **Dynamic (Operator-Generated)**: Runtime configuration from FlowCollector CR
   - Operator generates ConfigMap with columns, filters, scopes, features, port naming, quick filters
-  - Generated from static defaults + FlowCollector spec (e.g., `spec.consolePlugin.portNaming`, `spec.consolePlugin.quickFilters`)
+  - Generated from [static-frontend-config.yaml](https://github.com/netobserv/netobserv-operator/blob/main/internal/controller/consoleplugin/config/static-frontend-config.yaml) (operator repo) + FlowCollector spec
+  - **Important**: Changes to `config/sample-config.yaml` frontend section must be synced to operator's `static-frontend-config.yaml`
   - Fetched via `/api/frontend-config`
-  - Note: Console plugin backend config (log level, replicas) is NOT in frontend config
 - **Static (Development)**: Local configuration for development
   - `config/sample-config.yaml` for local development
-  - Includes all config in one file (server, loki, prometheus, frontend sections)
-  - Not used in production deployments (operator generates config instead)
+  - Not used in production (operator generates config instead)
 
 ### PatternFly Components
-- Version specified in `web/package.json` (currently v5.x)
-- Use existing components: Table, Form, Topology, Charts, etc.
-- Follow PatternFly design patterns and accessibility guidelines
-- Test both light and dark themes (uses `pf-v5-theme-dark` class)
-- Check [PatternFly documentation](https://www.patternfly.org/) for component APIs
+- Version: v5.x (see `web/package.json`)
+- Follow PatternFly patterns, test light/dark themes (`pf-v5-theme-dark`)
+- Docs: [patternfly.org](https://www.patternfly.org/)
 
 ### Multi-Architecture
-- Support: amd64, arm64, ppc64le, s390x
-- Frontend built once, backend built per arch
-- Build multi-arch: `MULTIARCH_TARGETS="amd64 arm64" make images`
+Support: amd64, arm64, ppc64le, s390x. Frontend built once, backend per arch. Build: `MULTIARCH_TARGETS="amd64 arm64" make images`
 
 ## Code Review Checklist
 
@@ -166,38 +147,14 @@ Review for:
 8. Both plugin and standalone mode testing
 9. Accessibility (ARIA labels, keyboard navigation)
 10. Performance (avoid unnecessary re-renders, optimize queries)
+11. Usability and user experience (intuitive workflows, clear feedback)
 ```
 
 ## Testing
 
-### Unit Tests
-```
-Generate tests for Loki query builder in pkg/loki/*_test.go:
-- Query construction with different parameters (see topology_query_test.go)
-- Time range validation
-- Label matcher formatting
-- Edge cases (empty filters, nil values)
-Use standard Go testing patterns (see existing test files for examples).
-```
+**Unit Tests**: Go tests in `pkg/loki/*_test.go` (query construction, validation, edge cases), Jest/Enzyme in `web/src/components/tabs/netflow-table/__tests__/`
 
-### Frontend Tests
-```
-Generate tests for table component in web/src/components/tabs/netflow-table/__tests__/:
-- Column rendering (see netflow-table-header.spec.tsx)
-- Row rendering (see netflow-table-row.spec.tsx)
-- Sort functionality
-Use Jest and Enzyme patterns.
-```
-
-### Cypress Tests
-```
-Test topology view in web/cypress/e2e/:
-1. Open Cypress UI: make cypress (or cd web && npm run cypress:open)
-2. Add test for new feature in e2e/ directory (overview/, table/, topology/)
-3. Use existing custom commands
-4. Test both plugin and standalone modes
-5. Run headless: cd web && npm run cypress:run
-```
+**E2E Tests**: Cypress in `web/cypress/e2e/` (dev) and `web/cypress/integration-tests/` (QE). Run: `make cypress` or `cd web && npm run cypress:open`
 
 ## Quick Reference
 
