@@ -22,8 +22,8 @@ const (
 	emptyMatch      = `""`
 )
 
-// can contains only alphanumeric / '-' / '_' / '.' / ',' / '"' / '*' / ':' / '/' characteres
-var filterRegexpValidation = regexp.MustCompile(`^[\w-_.,\"*:/]*$`)
+// can contains only alphanumeric / ' ' / '-' / '_' / '.' / ',' / '"' / '*' / ':' / '/' characteres
+var filterRegexpValidation = regexp.MustCompile(`^[\w -_.,\"*:/]*$`)
 
 // FlowQueryBuilder stores a state to build a LogQL query
 type FlowQueryBuilder struct {
@@ -104,7 +104,8 @@ func (q *FlowQueryBuilder) addFilter(filter filters.Match) error {
 		return fmt.Errorf("unauthorized sign in flows request: %s", filter.Values)
 	}
 
-	values := strings.Split(filter.Values, ",")
+	// Space must be url-encoded
+	values := strings.Split(strings.ReplaceAll(filter.Values, " ", "%20"), ",")
 
 	// Stream selector labels
 	if q.config.IsLabel(filter.Key) {

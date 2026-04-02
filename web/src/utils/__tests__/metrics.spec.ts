@@ -431,4 +431,30 @@ describe('getFormattedValue', () => {
     expect(getFormattedValue(500, 'Packets', 'sum', t)).toBe('500 P');
     expect(getFormattedValue(10500, 'Packets', 'sum', t)).toBe('10.5 kP');
   });
+
+  it('should format DNS latency in milliseconds', () => {
+    expect(getFormattedValue(50, 'DnsLatencyMs', 'avg', t)).toBe('50ms');
+    expect(getFormattedValue(500, 'DnsLatencyMs', 'avg', t)).toBe('500ms');
+    expect(getFormattedValue(900, 'DnsLatencyMs', 'avg', t)).toBe('900ms');
+  });
+
+  it('should format DNS latency 1-60s with decimal precision', () => {
+    expect(getFormattedValue(1000, 'DnsLatencyMs', 'avg', t)).toBe('1s');
+    expect(getFormattedValue(1500, 'DnsLatencyMs', 'max', t)).toBe('1.5s');
+    expect(getFormattedValue(2000, 'DnsLatencyMs', 'p90', t)).toBe('2s');
+    expect(getFormattedValue(2345, 'DnsLatencyMs', 'p90', t)).toBe('2.35s');
+    expect(getFormattedValue(45230, 'DnsLatencyMs', 'avg', t)).toBe('45.23s');
+  });
+
+  it('should format DNS latency above 60s without decimal precision', () => {
+    expect(getFormattedValue(180000, 'DnsLatencyMs', 'avg', t)).toBe('3m');
+    expect(getFormattedValue(200000, 'DnsLatencyMs', 'max', t)).toBe('3m 20s');
+  });
+
+  it('should format RTT latency correctly', () => {
+    expect(getFormattedValue(50, 'TimeFlowRttNs', 'avg', t)).toBe('50ms');
+    expect(getFormattedValue(1000, 'TimeFlowRttNs', 'avg', t)).toBe('1s');
+    expect(getFormattedValue(1500, 'TimeFlowRttNs', 'max', t)).toBe('1.5s');
+    expect(getFormattedValue(2500, 'TimeFlowRttNs', 'max', t)).toBe('2.5s');
+  });
 });

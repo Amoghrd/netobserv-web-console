@@ -1,4 +1,4 @@
-// Auto-generated on Wed Jan 14 11:03:05 AM CET 2026 by scripts/generate-schemas.sh ; DO NOT EDIT (edit the script instead).
+// Auto-generated on Fri Mar 27 10:07:32 EDT 2026 by scripts/generate-schemas.sh ; DO NOT EDIT (edit the script instead).
 // File only used in tests or dev console
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -836,7 +836,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
                                 "type": "string"
                               },
                               "operator": {
-                                "description": "Operator represents a key's relationship to the value.\nValid operators are Exists and Equal. Defaults to Equal.\nExists is equivalent to wildcard for value, so that a pod can\ntolerate all taints of a particular category.",
+                                "description": "Operator represents a key's relationship to the value.\nValid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.\nExists is equivalent to wildcard for value, so that a pod can\ntolerate all taints of a particular category.\nLt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).",
                                 "type": "string"
                               },
                               "tolerationSeconds": {
@@ -860,14 +860,14 @@ export const flowCollectorSchema: RJSFSchema | any = {
                   "type": "object"
                 },
                 "cacheActiveTimeout": {
-                  "default": "5s",
-                  "description": "`cacheActiveTimeout` is the max period during which the reporter aggregates flows before sending.\nIncreasing `cacheMaxFlows` and `cacheActiveTimeout` can decrease the network traffic overhead and the CPU load,\nhowever you can expect higher memory consumption and an increased latency in the flow collection.",
+                  "default": "15s",
+                  "description": "`cacheActiveTimeout` is the period during which the agent aggregates flows before sending.\nIncreasing `cacheMaxFlows` and `cacheActiveTimeout` can decrease the network traffic overhead and the CPU load,\nhowever you can expect higher memory consumption and an increased latency in the flow collection.",
                   "pattern": "^\\d+(ns|ms|s|m)?$",
                   "type": "string"
                 },
                 "cacheMaxFlows": {
-                  "default": 100000,
-                  "description": "`cacheMaxFlows` is the max number of flows in an aggregate; when reached, the reporter sends the flows.\nIncreasing `cacheMaxFlows` and `cacheActiveTimeout` can decrease the network traffic overhead and the CPU load,\nhowever you can expect higher memory consumption and an increased latency in the flow collection.",
+                  "default": 120000,
+                  "description": "`cacheMaxFlows` is the maximum number of flows in an aggregate; when reached, the reporter sends the flows.\nIncreasing `cacheMaxFlows` and `cacheActiveTimeout` can decrease the network traffic overhead and the CPU load,\nhowever you can expect higher memory consumption and an increased latency in the flow collection.",
                   "format": "int32",
                   "minimum": 1,
                   "type": "integer"
@@ -2268,7 +2268,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
                             "type": "string"
                           },
                           "operator": {
-                            "description": "Operator represents a key's relationship to the value.\nValid operators are Exists and Equal. Defaults to Equal.\nExists is equivalent to wildcard for value, so that a pod can\ntolerate all taints of a particular category.",
+                            "description": "Operator represents a key's relationship to the value.\nValid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.\nExists is equivalent to wildcard for value, so that a pod can\ntolerate all taints of a particular category.\nLt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).",
                             "type": "string"
                           },
                           "tolerationSeconds": {
@@ -2755,7 +2755,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
             },
             "imagePullPolicy": {
               "default": "IfNotPresent",
-              "description": "`imagePullPolicy` is the Kubernetes pull policy for the image defined above",
+              "description": "`imagePullPolicy` is the Kubernetes pull policy for the image defined above.",
               "enum": [
                 "IfNotPresent",
                 "Always",
@@ -2765,7 +2765,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
             },
             "logLevel": {
               "default": "info",
-              "description": "`logLevel` for the console plugin backend",
+              "description": "`logLevel` for the console plugin backend.",
               "enum": [
                 "trace",
                 "debug",
@@ -2781,7 +2781,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
               "default": {
                 "enable": true
               },
-              "description": "`portNaming` defines the configuration of the port-to-service name translation",
+              "description": "`portNaming` defines the configuration of the port-to-service name translation.",
               "properties": {
                 "enable": {
                   "default": true,
@@ -2826,9 +2826,21 @@ export const flowCollectorSchema: RJSFSchema | any = {
                     "dst_kind": "\"Service\""
                   },
                   "name": "Services network"
+                },
+                {
+                  "filter": {
+                    "src_subnet_label": "\"\",EXT:"
+                  },
+                  "name": "External ingress"
+                },
+                {
+                  "filter": {
+                    "dst_subnet_label": "\"\",EXT:"
+                  },
+                  "name": "External egress"
                 }
               ],
-              "description": "`quickFilters` configures quick filter presets for the Console plugin",
+              "description": "`quickFilters` configures quick filter presets for the Console plugin.\nFilters for external traffic assume the subnet labels are configured to distinguish internal and external traffic (see `spec.processor.subnetLabels`).",
               "items": {
                 "description": "`QuickFilter` defines preset configuration for Console's quick filters",
                 "properties": {
@@ -2873,7 +2885,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
                   "memory": "50Mi"
                 }
               },
-              "description": "`resources`, in terms of compute resources, required by this container.\nFor more information, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+              "description": "`resources`, in terms of compute resources, required by this container.\nFor more information, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/.",
               "properties": {
                 "claims": {
                   "description": "Claims lists the names of resources, defined in spec.resourceClaims,\nthat are used by this container.\n\nThis field depends on the\nDynamicResourceAllocation feature gate.\n\nThis field is immutable. It can only be set for containers.",
@@ -2956,6 +2968,22 @@ export const flowCollectorSchema: RJSFSchema | any = {
           ],
           "type": "string"
         },
+        "execution": {
+          "description": "`execution` defines configuration related to the execution of the flow collection process.",
+          "properties": {
+            "mode": {
+              "default": "Running",
+              "description": "`mode` is the flow collection process execution desired mode: `Running` or `OnHold`.\nWhen `OnHold`, the operator deletes all managed services and workloads, with the exception\nof the static console plugin, and the operator itself.\nIt allows to use minimal cluster resources without losing configuration.",
+              "enum": [
+                "",
+                "Running",
+                "OnHold"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "exporters": {
           "description": "`exporters` defines additional optional exporters for custom consumption or storage.",
           "items": {
@@ -2964,6 +2992,11 @@ export const flowCollectorSchema: RJSFSchema | any = {
               "ipfix": {
                 "description": "IPFIX configuration, such as the IP address and port to send enriched IPFIX flows to.",
                 "properties": {
+                  "enterpriseID": {
+                    "default": 2,
+                    "description": "EnterpriseID, or Private Enterprise Number (PEN). To date, NetObserv does not own an assigned number,\nso it is left open for configuration. The PEN is needed to collect non standard data, such as Kubernetes names,\nRTT, etc.",
+                    "type": "integer"
+                  },
                   "targetHost": {
                     "default": "",
                     "description": "Address of the IPFIX external receiver.",
@@ -2984,6 +3017,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
                   }
                 },
                 "required": [
+                  "enterpriseID",
                   "targetHost",
                   "targetPort"
                 ],
@@ -3068,7 +3102,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
                     "type": "object"
                   },
                   "tls": {
-                    "description": "TLS client configuration. When using TLS, verify that the address matches the Kafka port used for TLS, generally 9093.",
+                    "description": "TLS and mTLS client configuration. When using TLS, verify that the address matches the Kafka port used for TLS, generally 9093.\nWe recommend the use of mTLS for higher security standards.",
                     "properties": {
                       "caCert": {
                         "description": "`caCert` defines the reference of the certificate for the Certificate Authority.",
@@ -3411,7 +3445,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
               "type": "object"
             },
             "tls": {
-              "description": "TLS client configuration. When using TLS, verify that the address matches the Kafka port used for TLS, generally 9093.",
+              "description": "TLS and mTLS client configuration. When using TLS, verify that the address matches the Kafka port used for TLS, generally 9093.\nWe recommend the use of mTLS for higher security standards.",
               "properties": {
                 "caCert": {
                   "description": "`caCert` defines the reference of the certificate for the Certificate Authority.",
@@ -3870,6 +3904,11 @@ export const flowCollectorSchema: RJSFSchema | any = {
             "monolithic": {
               "description": "Loki configuration for `Monolithic` mode.\nUse this option when Loki is installed using the monolithic deployment mode (https://grafana.com/docs/loki/latest/fundamentals/architecture/deployment-modes/#monolithic-mode).\nIt is ignored for other modes.",
               "properties": {
+                "installDemoLoki": {
+                  "default": false,
+                  "description": "Set `installDemoLoki` to `true` to automatically create Loki deployment, service and storage.\nThis is useful for development and demo purposes. Do not use it in production.\n[Unsupported (*)].",
+                  "type": "boolean"
+                },
                 "tenantID": {
                   "default": "netobserv",
                   "description": "`tenantID` is the Loki `X-Scope-OrgID` header that identifies the tenant for each request.",
@@ -4011,7 +4050,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
               "type": "array"
             },
             "enable": {
-              "description": "Deploys network policies on the namespaces used by NetObserv (main and privileged).\nThese network policies better isolate the NetObserv components to prevent undesired connections from and to them.\nThis option is enabled by default when using with OVNKubernetes, and disabled otherwise (it has not been tested with other CNIs).\nWhen disabled, you can manually create the network policies for the NetObserv components.",
+              "description": "Deploys network policies on the namespaces used by NetObserv (main and privileged).\nThese network policies better isolate the NetObserv components to prevent undesired connections from and to them.\nBecause it cannot be tested with all CNIs, this option is only enabled by default when NetObserv runs in a known\nsupported environment, and it is disabled by default otherwise.\nWhen disabled, it is highly recommended to create network policies manually, to prevent undesired accesses.\nMore information: https://github.com/netobserv/netobserv-operator/blob/main/docs/NetworkPolicy.md.",
               "type": "boolean"
             }
           },
@@ -4021,7 +4060,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
           "description": "`processor` defines the settings of the component that receives the flows from the agent,\nenriches them, generates metrics, and forwards them to the Loki persistence layer and/or any available exporter.",
           "properties": {
             "addZone": {
-              "description": "`addZone` allows availability zone awareness by labelling flows with their source and destination zones.\nThis feature requires the \"topology.kubernetes.io/zone\" label to be set on nodes.",
+              "description": "`addZone` allows availability zone awareness by labeling flows with their source and destination zones.\nThis feature requires the \"topology.kubernetes.io/zone\" label to be set on nodes.",
               "type": "boolean"
             },
             "advanced": {
@@ -4866,7 +4905,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
                             "type": "string"
                           },
                           "operator": {
-                            "description": "Operator represents a key's relationship to the value.\nValid operators are Exists and Equal. Defaults to Equal.\nExists is equivalent to wildcard for value, so that a pod can\ntolerate all taints of a particular category.",
+                            "description": "Operator represents a key's relationship to the value.\nValid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.\nExists is equivalent to wildcard for value, so that a pod can\ntolerate all taints of a particular category.\nLt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).",
                             "type": "string"
                           },
                           "tolerationSeconds": {
@@ -4887,7 +4926,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
                   "type": "object"
                 },
                 "secondaryNetworks": {
-                  "description": "Defines secondary networks to be checked for resources identification.\nTo guarantee a correct identification, indexed values must form an unique identifier across the cluster.\nIf the same index is used by several resources, those resources might be incorrectly labeled.",
+                  "description": "Defines secondary networks to be checked for resources identification.\nTo guarantee a correct identification, indexed values must form an unique identifier across the cluster.\nIf the same index is used by several resources, those resources might be incorrectly labeled.\nIf not provided and `spec.agent.ebpf.privileged` is `true`, secondary networks are detected automatically.",
                   "items": {
                     "properties": {
                       "index": {
@@ -4904,13 +4943,12 @@ export const flowCollectorSchema: RJSFSchema | any = {
                         "type": "array"
                       },
                       "name": {
-                        "description": "`name` should match the network name as visible in the pods annotation 'k8s.v1.cni.cncf.io/network-status'.",
+                        "description": "Deprecated: `name` is unused.",
                         "type": "string"
                       }
                     },
                     "required": [
-                      "index",
-                      "name"
+                      "index"
                     ],
                     "type": "object"
                   },
@@ -5495,12 +5533,28 @@ export const flowCollectorSchema: RJSFSchema | any = {
             "metrics": {
               "description": "`Metrics` define the processor configuration regarding metrics",
               "properties": {
-                "alerts": {
-                  "description": "`alerts` is a list of alerts to be created for Prometheus AlertManager, organized by templates and variants.\nMore information on alerts: https://github.com/netobserv/network-observability-operator/blob/main/docs/Alerts.md",
+                "disableAlerts": {
+                  "description": "`disableAlerts` is a list of alert groups that should be disabled from the default set of alerts.\nPossible values are: `NetObservNoFlows`, `NetObservLokiError`, `PacketDropsByKernel`, `PacketDropsByDevice`, `IPsecErrors`, `NetpolDenied`,\n`LatencyHighTrend`, `DNSErrors`, `DNSNxDomain`, `ExternalEgressHighTrend`, `ExternalIngressHighTrend`, `Ingress5xxErrors`, `IngressHTTPLatencyTrend`.\nMore information on alerts: https://github.com/netobserv/netobserv-operator/blob/main/docs/HealthRules.md",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "healthRules": {
+                  "description": "`healthRules` is a list of health rules to be created for Prometheus, organized by templates and variants.\nEach health rule can be configured to generate either alerts or recording rules based on the mode field.\nMore information on health rules: https://github.com/netobserv/netobserv-operator/blob/main/docs/HealthRules.md",
                   "items": {
                     "properties": {
+                      "mode": {
+                        "default": "Alert",
+                        "description": "Mode defines whether this health rule should be generated as an alert or a recording rule.\nPossible values are: `Alert` (default), `Recording`.\nRecording rules violations are visible in the Network Health dashboard without generating any Prometheus alert.\nThis provides an alternative way of getting Health information for SRE and cluster admins who may find\nmany new alerts burdensome.",
+                        "enum": [
+                          "Alert",
+                          "Recording"
+                        ],
+                        "type": "string"
+                      },
                       "template": {
-                        "description": "Alert template name.\nPossible values are: `PacketDropsByKernel`, `PacketDropsByDevice`, `IPsecErrors`, `NetpolDenied`,\n`LatencyHighTrend`, `DNSErrors`, `DNSNxDomain`, `ExternalEgressHighTrend`, `ExternalIngressHighTrend`.\nMore information on alerts: https://github.com/netobserv/network-observability-operator/blob/main/docs/Alerts.md",
+                        "description": "Health rule template name.\nPossible values are: `PacketDropsByKernel`, `PacketDropsByDevice`, `IPsecErrors`, `NetpolDenied`,\n`LatencyHighTrend`, `DNSErrors`, `DNSNxDomain`, `ExternalEgressHighTrend`, `ExternalIngressHighTrend`, `Ingress5xxErrors`, `IngressHTTPLatencyTrend`.\nNote: `NetObservNoFlows` and `NetObservLokiError` are alert-only and cannot be used as health rules.\nMore information on health rules: https://github.com/netobserv/netobserv-operator/blob/main/docs/HealthRules.md",
                         "enum": [
                           "PacketDropsByKernel",
                           "PacketDropsByDevice",
@@ -5510,7 +5564,9 @@ export const flowCollectorSchema: RJSFSchema | any = {
                           "DNSErrors",
                           "DNSNxDomain",
                           "ExternalEgressHighTrend",
-                          "ExternalIngressHighTrend"
+                          "ExternalIngressHighTrend",
+                          "Ingress5xxErrors",
+                          "IngressHTTPLatencyTrend"
                         ],
                         "type": "string"
                       },
@@ -5532,8 +5588,16 @@ export const flowCollectorSchema: RJSFSchema | any = {
                               "description": "The low volume threshold allows to ignore metrics with a too low volume of traffic, in order to improve signal-to-noise.\nIt is provided as an absolute rate (bytes per second or packets per second, depending on the context).\nWhen provided, it must be parsable as a float.",
                               "type": "string"
                             },
+                            "mode": {
+                              "description": "Mode overrides the health rule mode for this specific variant.\nIf not specified, inherits from the parent health rule's mode.\nPossible values are: `Alert`, `Recording`.",
+                              "enum": [
+                                "Alert",
+                                "Recording"
+                              ],
+                              "type": "string"
+                            },
                             "thresholds": {
-                              "description": "Thresholds of the alert per severity.\nThey are expressed as a percentage of errors above which the alert is triggered. They must be parsable as floats.",
+                              "description": "Thresholds of the health rule per severity.\nThey are expressed as a percentage of errors above which the alert is triggered. They must be parsable as floats.\nRequired for both alert and recording modes",
                               "properties": {
                                 "critical": {
                                   "description": "Threshold for severity `critical`. Leave empty to not generate a Critical alert.",
@@ -5551,11 +5615,11 @@ export const flowCollectorSchema: RJSFSchema | any = {
                               "type": "object"
                             },
                             "trendDuration": {
-                              "description": "For trending alerts, the duration interval for baseline comparison. For example, \"2h\" means comparing against a 2-hours average. Defaults to 2h.",
+                              "description": "For trending health rules, the duration interval for baseline comparison. For example, \"2h\" means comparing against a 2-hours average. Defaults to 2h.",
                               "type": "string"
                             },
                             "trendOffset": {
-                              "description": "For trending alerts, the time offset for baseline comparison. For example, \"1d\" means comparing against yesterday. Defaults to 1d.",
+                              "description": "For trending health rules, the time offset for baseline comparison. For example, \"1d\" means comparing against yesterday. Defaults to 1d.",
                               "type": "string"
                             }
                           },
@@ -5575,17 +5639,10 @@ export const flowCollectorSchema: RJSFSchema | any = {
                   },
                   "type": "array"
                 },
-                "disableAlerts": {
-                  "description": "`disableAlerts` is a list of alert groups that should be disabled from the default set of alerts.\nPossible values are: `NetObservNoFlows`, `NetObservLokiError`, `PacketDropsByKernel`, `PacketDropsByDevice`, `IPsecErrors`, `NetpolDenied`,\n`LatencyHighTrend`, `DNSErrors`, `DNSNxDomain`, `ExternalEgressHighTrend`, `ExternalIngressHighTrend`.\nMore information on alerts: https://github.com/netobserv/network-observability-operator/blob/main/docs/Alerts.md",
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
                 "includeList": {
-                  "description": "`includeList` is a list of metric names to specify which ones to generate.\nThe names correspond to the names in Prometheus without the prefix. For example,\n`namespace_egress_packets_total` shows up as `netobserv_namespace_egress_packets_total` in Prometheus.\nNote that the more metrics you add, the bigger is the impact on Prometheus workload resources.\nMetrics enabled by default are:\n`namespace_flows_total`, `node_ingress_bytes_total`, `node_egress_bytes_total`, `workload_ingress_bytes_total`,\n`workload_egress_bytes_total`, `namespace_drop_packets_total` (when `PacketDrop` feature is enabled),\n`namespace_rtt_seconds` (when `FlowRTT` feature is enabled), `namespace_dns_latency_seconds` (when `DNSTracking` feature is enabled),\n`namespace_network_policy_events_total` (when `NetworkEvents` feature is enabled).\nMore information, with full list of available metrics: https://github.com/netobserv/network-observability-operator/blob/main/docs/Metrics.md",
+                  "description": "`includeList` is a list of metric names to specify which ones to generate.\nThe names correspond to the names in Prometheus without the prefix. For example,\n`namespace_egress_packets_total` shows up as `netobserv_namespace_egress_packets_total` in Prometheus.\nNote that the more metrics you add, the bigger is the impact on Prometheus workload resources.\nMetrics enabled by default are:\n`namespace_flows_total`, `node_ingress_bytes_total`, `node_egress_bytes_total`, `workload_ingress_bytes_total`,\n`workload_egress_bytes_total`, `namespace_drop_packets_total` (when `PacketDrop` feature is enabled),\n`namespace_rtt_seconds` (when `FlowRTT` feature is enabled), `namespace_dns_latency_seconds` (when `DNSTracking` feature is enabled),\n`namespace_network_policy_events_total` (when `NetworkEvents` feature is enabled).\nMore information, with full list of available metrics: https://github.com/netobserv/netobserv-operator/blob/main/docs/Metrics.md",
                   "items": {
-                    "description": "Metric name. More information in https://github.com/netobserv/network-observability-operator/blob/main/docs/Metrics.md.",
+                    "description": "Metric name. More information in https://github.com/netobserv/netobserv-operator/blob/main/docs/Metrics.md.",
                     "enum": [
                       "namespace_egress_bytes_total",
                       "namespace_egress_packets_total",
@@ -5618,6 +5675,8 @@ export const flowCollectorSchema: RJSFSchema | any = {
                       "namespace_network_policy_events_total",
                       "workload_network_policy_events_total",
                       "node_ipsec_flows_total",
+                      "namespace_ipsec_flows_total",
+                      "workload_ipsec_flows_total",
                       "node_to_node_ingress_flows_total"
                     ],
                     "type": "string"
@@ -5799,6 +5858,121 @@ export const flowCollectorSchema: RJSFSchema | any = {
               },
               "type": "object"
             },
+            "service": {
+              "description": "Service configuration, only used when `spec.deploymentModel` is `Service`.",
+              "properties": {
+                "providedCertificates": {
+                  "description": "TLS or mTLS configuration when `type` is set to `Provided`.",
+                  "properties": {
+                    "caFile": {
+                      "description": "Reference to the CA file.",
+                      "properties": {
+                        "file": {
+                          "description": "File name within the config map or secret.",
+                          "type": "string"
+                        },
+                        "name": {
+                          "description": "Name of the config map or secret containing the file.",
+                          "type": "string"
+                        },
+                        "namespace": {
+                          "default": "",
+                          "description": "Namespace of the config map or secret containing the file. If omitted, the default is to use the same namespace as where NetObserv is deployed.\nIf the namespace is different, the config map or the secret is copied so that it can be mounted as required.",
+                          "type": "string"
+                        },
+                        "type": {
+                          "description": "Type for the file reference: `configmap` or `secret`.",
+                          "enum": [
+                            "configmap",
+                            "secret"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "clientCert": {
+                      "description": "TLS client certificate reference, used for mTLS. Leave unset for simple TLS.",
+                      "properties": {
+                        "certFile": {
+                          "description": "`certFile` defines the path to the certificate file name within the config map or secret.",
+                          "type": "string"
+                        },
+                        "certKey": {
+                          "description": "`certKey` defines the path to the certificate private key file name within the config map or secret. Omit when the key is not necessary.",
+                          "type": "string"
+                        },
+                        "name": {
+                          "description": "Name of the config map or secret containing certificates.",
+                          "type": "string"
+                        },
+                        "namespace": {
+                          "default": "",
+                          "description": "Namespace of the config map or secret containing certificates. If omitted, the default is to use the same namespace as where NetObserv is deployed.\nIf the namespace is different, the config map or the secret is copied so that it can be mounted as required.",
+                          "type": "string"
+                        },
+                        "type": {
+                          "description": "Type for the certificate reference: `configmap` or `secret`.",
+                          "enum": [
+                            "configmap",
+                            "secret"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "serverCert": {
+                      "description": "TLS server certificate reference.",
+                      "properties": {
+                        "certFile": {
+                          "description": "`certFile` defines the path to the certificate file name within the config map or secret.",
+                          "type": "string"
+                        },
+                        "certKey": {
+                          "description": "`certKey` defines the path to the certificate private key file name within the config map or secret. Omit when the key is not necessary.",
+                          "type": "string"
+                        },
+                        "name": {
+                          "description": "Name of the config map or secret containing certificates.",
+                          "type": "string"
+                        },
+                        "namespace": {
+                          "default": "",
+                          "description": "Namespace of the config map or secret containing certificates. If omitted, the default is to use the same namespace as where NetObserv is deployed.\nIf the namespace is different, the config map or the secret is copied so that it can be mounted as required.",
+                          "type": "string"
+                        },
+                        "type": {
+                          "description": "Type for the certificate reference: `configmap` or `secret`.",
+                          "enum": [
+                            "configmap",
+                            "secret"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "tlsType": {
+                  "default": "Auto",
+                  "description": "Select the type of TLS configuration:<br>\n- `Disabled` to not configure TLS for the endpoint. Disabling TLS results in a less secure deployment model.<br>\n- `Provided` to manually provide the key and certificate references.<br>\n- `Auto` (default) to enable automatically based on the running environment.<br>\n- `Auto-mTLS` to preconfigure mTLS. [Unsupported (*)].<br>\nSee also: https://github.com/netobserv/netobserv-operator/blob/main/docs/TLS.md.",
+                  "enum": [
+                    "Disabled",
+                    "Provided",
+                    "Auto",
+                    "Auto-mTLS"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "tlsType"
+              ],
+              "type": "object"
+            },
             "slicesConfig": {
               "description": "Global configuration managing FlowCollectorSlices custom resources.",
               "properties": {
@@ -5830,10 +6004,10 @@ export const flowCollectorSchema: RJSFSchema | any = {
               "type": "object"
             },
             "subnetLabels": {
-              "description": "`subnetLabels` allows to define custom labels on subnets and IPs or to enable automatic labelling of recognized subnets in OpenShift, which is used to identify cluster external traffic.\nWhen a subnet matches the source or destination IP of a flow, a corresponding field is added: `SrcSubnetLabel` or `DstSubnetLabel`.",
+              "description": "`subnetLabels` allows to define custom labels on subnets and IPs or to enable automatic labeling of recognized subnets in OpenShift, which is used to identify cluster external traffic.\nWhen a subnet matches the source or destination IP of a flow, a corresponding field is added: `SrcSubnetLabel` or `DstSubnetLabel`.",
               "properties": {
                 "customLabels": {
-                  "description": "`customLabels` allows to customize subnets and IPs labelling, such as to identify cluster-external workloads or web services.\nIf you enable `openShiftAutoDetect`, `customLabels` can override the detected subnets in case they overlap.",
+                  "description": "`customLabels` allows you to customize subnets and IPs labeling, such as to identify cluster external workloads or web services.\nExternal subnets must be labeled with the prefix `EXT:`, or not labeled at all, in order to work with default quick filters and some metrics examples provided.<br/>\nIf `openShiftAutoDetect` is disabled or you are not using OpenShift, it is recommended to manually configure labels for the cluster subnets, to distinguish internal traffic from external traffic.<br/>\nIf `openShiftAutoDetect` is enabled, `customLabels` overrides the detected subnets when they overlap.<br/>",
                   "items": {
                     "description": "SubnetLabel allows to label subnets and IPs, such as to identify cluster-external workloads or web services.",
                     "properties": {
@@ -5845,7 +6019,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
                         "type": "array"
                       },
                       "name": {
-                        "description": "Label name, used to flag matching flows.",
+                        "description": "Label name, used to flag matching flows.\nExternal subnets must be labeled with the prefix `EXT:`, or not labeled at all, in order to work with default quick filters and some metrics examples provided.<br/>",
                         "pattern": "^[a-zA-Z_:-][a-zA-Z0-9_:-]*$",
                         "type": "string"
                       }
@@ -5879,7 +6053,8 @@ export const flowCollectorSchema: RJSFSchema | any = {
               "description": "Prometheus querying configuration, such as client settings, used in the Console plugin.",
               "properties": {
                 "enable": {
-                  "description": "When `enable` is `true`, the Console plugin queries flow metrics from Prometheus instead of Loki whenever possible.\nIt is enbaled by default: set it to `false` to disable this feature.\nThe Console plugin can use either Loki or Prometheus as a data source for metrics (see also `spec.loki`), or both.\nNot all queries are transposable from Loki to Prometheus. Hence, if Loki is disabled, some features of the plugin are disabled as well,\nsuch as getting per-pod information or viewing raw flows.\nIf both Prometheus and Loki are enabled, Prometheus takes precedence and Loki is used as a fallback for queries that Prometheus cannot handle.\nIf they are both disabled, the Console plugin is not deployed.",
+                  "default": true,
+                  "description": "When `enable` is `true`, the Console plugin queries flow metrics from Prometheus instead of Loki whenever possible.\nIt is enabled by default: set it to `false` to disable this feature.\nThe Console plugin can use either Loki or Prometheus as a data source for metrics (see also `spec.loki`), or both.\nNot all queries are transposable from Loki to Prometheus. Hence, if Loki is disabled, some features of the plugin are disabled as well,\nsuch as getting per-pod information or viewing raw flows.\nIf both Prometheus and Loki are enabled, Prometheus takes precedence and Loki is used as a fallback for queries that Prometheus cannot handle.\nIf they are both disabled, the Console plugin is not deployed.",
                   "type": "boolean"
                 },
                 "manual": {
@@ -5971,9 +6146,6 @@ export const flowCollectorSchema: RJSFSchema | any = {
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "url"
-                      ],
                       "type": "object"
                     },
                     "forwardUserToken": {
@@ -6068,7 +6240,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
                 },
                 "mode": {
                   "default": "Auto",
-                  "description": "`mode` must be set according to the type of Prometheus installation that stores NetObserv metrics:<br>\n- Use `Auto` to try configuring automatically. In OpenShift, it uses the Thanos querier from OpenShift Cluster Monitoring<br>\n- Use `Manual` for a manual setup<br>",
+                  "description": "`mode` must be set according to the type of Prometheus installation that stores NetObserv metrics:<br>\n- Use `Auto` to try configuring automatically. In OpenShift, it uses the Thanos querier from OpenShift Cluster Monitoring.<br>\n- Use `Manual` for a manual setup.<br>",
                   "enum": [
                     "Manual",
                     "Auto"
@@ -6151,7 +6323,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
           "type": "array"
         },
         "namespace": {
-          "description": "Namespace where console plugin and flowlogs-pipeline have been deployed.\nDeprecated: annotations are used instead",
+          "description": "Namespace where console plugin and flowlogs-pipeline have been deployed.\n\nDeprecated: annotations are used instead",
           "type": "string"
         }
       },
@@ -6166,7 +6338,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
 
 // flowCollectorSliceSchema is only used in tests or dev console
 export const flowCollectorSliceSchema: RJSFSchema | any = {
-  "description": "FlowMetric is the API allowing to create custom metrics from the collected flow logs.",
+  "description": "FlowCollectorSlice is the API allowing to decentralize some of the FlowCollector configuration per namespace tenant.",
   "properties": {
     "apiVersion": {
       "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
@@ -6189,7 +6361,7 @@ export const flowCollectorSliceSchema: RJSFSchema | any = {
           "type": "integer"
         },
         "subnetLabels": {
-          "description": "`subnetLabels` allows to customize subnets and IPs labelling, such as to identify cluster-external workloads or web services.\nBeware that the subnet labels configured in FlowCollectorSlice are not limited to the flows of the related namespace: any flow\nin the whole cluster can be labelled using this configuration. However, subnet labels defined in the cluster-scoped FlowCollector take\nprecedence in case of conflicting rules.",
+          "description": "`subnetLabels` allows you to customize subnets and IPs labeling, such as to identify cluster external workloads or web services.\nExternal subnets must be labeled with the prefix `EXT:`, or not labeled at all, in order to work with default quick filters and some metrics examples provided.<br/>\nBeware that the subnet labels configured in FlowCollectorSlice are not limited to the flows of the related namespace: any flow\nin the whole cluster can be labeled using this configuration. However, subnet labels defined in the cluster-scoped FlowCollector take\nprecedence in case of conflicting rules.",
           "items": {
             "description": "SubnetLabel allows to label subnets and IPs, such as to identify cluster-external workloads or web services.",
             "properties": {
@@ -6201,7 +6373,7 @@ export const flowCollectorSliceSchema: RJSFSchema | any = {
                 "type": "array"
               },
               "name": {
-                "description": "Label name, used to flag matching flows.",
+                "description": "Label name, used to flag matching flows.\nExternal subnets must be labeled with the prefix `EXT:`, or not labeled at all, in order to work with default quick filters and some metrics examples provided.<br/>",
                 "type": "string"
               }
             },
