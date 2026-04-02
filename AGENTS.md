@@ -76,7 +76,7 @@ Be specific about file paths, existing patterns, and testing requirements.
 ## Common Task Templates
 
 ### Modify Backend Handler
-```
+```text
 Add new API endpoint for zone filtering:
 1. Add route in pkg/server/routes.go:
    - Register route with api.HandleFunc()
@@ -91,7 +91,7 @@ Add new API endpoint for zone filtering:
 ```
 
 ### Update Schema Synchronization
-```
+```text
 FlowCollector CRD field changed in operator:
 1. Follow instructions in README.md#updating-schemas
 2. Update web/src/components/forms/config/uiSchema.ts with new field display rules
@@ -135,7 +135,7 @@ Support: amd64, arm64, ppc64le, s390x. Frontend built once, backend per arch. Bu
 
 ## Code Review Checklist
 
-```
+```text
 Review for:
 1. TypeScript type safety (no 'any' types without justification)
 2. PatternFly component usage consistency
@@ -182,7 +182,7 @@ make image-build image-push     # Build and push image
 
 ## AI Workflow Example
 
-```
+```text
 1. Research: "Explain how topology view fetches and renders network flows"
 2. Plan: "Add edge highlighting for high-latency flows - suggest component changes"
 3. Implement: "Implement with proper data filtering and PatternFly styling"
