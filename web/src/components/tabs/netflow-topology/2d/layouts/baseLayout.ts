@@ -3,16 +3,16 @@ import {
   ADD_CHILD_EVENT as addChildEvent,
   BaseEdge,
   DragEvent,
-  DragNodeEventListener,
-  DragOperationWithType,
   DRAG_MOVE_OPERATION as dragMoveOperation,
   DRAG_NODE_END_EVENT as dragNodeEndEvent,
+  DragNodeEventListener,
   DRAG_NODE_START_EVENT as dragNodeStartEvent,
+  DragOperationWithType,
   Edge,
   ElementChildEventListener,
   ElementVisibilityChangeEvent,
-  ElementVisibilityChangeEventListener,
   ELEMENT_VISIBILITY_CHANGE_EVENT as elementVisibilityChangeEvent,
+  ElementVisibilityChangeEventListener,
   getClosestVisibleParent,
   Graph,
   GRAPH_LAYOUT_END_EVENT as graphLayoutEndEvent,
@@ -25,8 +25,8 @@ import {
   LayoutOptions,
   leafNodeElements,
   Node,
-  NodeCollapseChangeEventListener,
   NODE_COLLAPSE_CHANGE_EVENT as nodeCollapseChangeEvent,
+  NodeCollapseChangeEventListener,
   REMOVE_CHILD_EVENT as removeChildEvent
 } from '@patternfly/react-topology';
 import { ForceSimulation } from '@patternfly/react-topology/dist/esm/layouts/ForceSimulation';
@@ -247,8 +247,9 @@ export class BaseLayout implements Layout {
         try {
           this.runLayout(false, this.scheduleRestart);
           this.scheduleRestart = false;
-          // eslint-disable-next-line no-empty
-        } catch (e) {}
+        } catch {
+          // intentionally ignored
+        }
       });
     }
   };

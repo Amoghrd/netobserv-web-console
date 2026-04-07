@@ -4,13 +4,14 @@ import {
   Button,
   EmptyState,
   EmptyStateBody,
+  EmptyStateHeader,
   EmptyStateVariant,
   Flex,
   FlexItem,
   PopoverPosition,
   Spinner,
   Text,
-  Title,
+  TextVariants,
   Tooltip
 } from '@patternfly/react-core';
 import {
@@ -84,7 +85,7 @@ export const Histogram: React.FC<HistogramProps> = ({
   }, [range]);
 
   const [tooltipsTrigger, setTooltipsTrigger] = React.useState<'manual' | 'mouseenter'>('mouseenter');
-  const containerRef = React.createRef<HTMLDivElement>();
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const zoomRef = React.createRef<HTMLInputElement>();
   const pageRef = React.createRef<HTMLInputElement>();
   const arrowRef = React.createRef<HTMLInputElement>();
@@ -95,10 +96,10 @@ export const Histogram: React.FC<HistogramProps> = ({
     animationWhitelist: ['data', 'domain']
   };
 
-  const [dimensions, setDimensions] = React.useState<Dimensions>({ width: 3000, height: 150 });
+  const [dimensions, setDimensions] = React.useState<Dimensions>({ width: 3000, height: 250 });
   React.useEffect(() => {
-    observeDimensions(containerRef, dimensions, setDimensions);
-  }, [containerRef, dimensions]);
+    return observeDimensions(containerRef, dimensions, setDimensions);
+  }, [containerRef, dimensions, setDimensions]);
 
   const moveHistogramRange = React.useCallback(
     (next: boolean) => {
@@ -248,14 +249,14 @@ export const Histogram: React.FC<HistogramProps> = ({
   return (
     <div
       id={`chart-${id}`}
-      className={`metrics-content-div ${loading ? 'loading' : ''} ${isDark ? 'dark' : 'light'}`}
+      className={`metrics-content-div ${loading ? 'loading' : ''}`}
       ref={containerRef}
       tabIndex={0}
       onKeyDown={e => onKeyDown(e.key)}
     >
       <Flex className="histogram-range-container" direction={{ default: 'row' }}>
         <FlexItem flex={{ default: 'flex_1' }}>
-          <Text>{t('Number of logs over time')}</Text>
+          <Text component={TextVariants.p}>{t('Number of logs over time')}</Text>
         </FlexItem>
         <FlexItem>
           <Tooltip
@@ -264,13 +265,12 @@ export const Histogram: React.FC<HistogramProps> = ({
             isVisible={tooltipsTrigger === 'manual' ? false : undefined}
           >
             <Button
+              icon={<AngleDoubleLeftIcon />}
               variant="plain"
               className={`metrics-content-button ${loading ? 'loading' : ''}`}
               onClick={() => moveRange(false)}
               ref={arrowRef}
-            >
-              <AngleDoubleLeftIcon />
-            </Button>
+            />
           </Tooltip>
           <Tooltip
             content={pageButtonTips()}
@@ -278,17 +278,16 @@ export const Histogram: React.FC<HistogramProps> = ({
             isVisible={tooltipsTrigger === 'manual' ? false : undefined}
           >
             <Button
+              icon={<AngleLeftIcon />}
               variant="plain"
               className={`metrics-content-button ${loading ? 'loading' : ''}`}
               onClick={() => moveHistogramRange(false)}
               ref={pageRef}
-            >
-              <AngleLeftIcon />
-            </Button>
+            />
           </Tooltip>
         </FlexItem>
         <FlexItem>
-          <Text>{getDomainDisplayText(displayedRange || range || defaultRange)}</Text>
+          <Text component={TextVariants.p}>{getDomainDisplayText(displayedRange || range || defaultRange)}</Text>
         </FlexItem>
         <FlexItem>
           <Tooltip
@@ -297,12 +296,11 @@ export const Histogram: React.FC<HistogramProps> = ({
             isVisible={tooltipsTrigger === 'manual' ? false : undefined}
           >
             <Button
+              icon={<AngleRightIcon />}
               variant="plain"
               className={`metrics-content-button ${loading ? 'loading' : ''}`}
               onClick={() => moveHistogramRange(true)}
-            >
-              <AngleRightIcon />
-            </Button>
+            />
           </Tooltip>
           <Tooltip
             content={arrowButtonTips()}
@@ -310,12 +308,11 @@ export const Histogram: React.FC<HistogramProps> = ({
             isVisible={tooltipsTrigger === 'manual' ? false : undefined}
           >
             <Button
+              icon={<AngleDoubleRightIcon />}
               variant="plain"
               className={`metrics-content-button ${loading ? 'loading' : ''}`}
               onClick={() => moveRange(true)}
-            >
-              <AngleDoubleRightIcon />
-            </Button>
+            />
           </Tooltip>
         </FlexItem>
         <FlexItem flex={{ default: 'flex_1' }}>
@@ -327,13 +324,12 @@ export const Histogram: React.FC<HistogramProps> = ({
                 isVisible={tooltipsTrigger === 'manual' ? false : undefined}
               >
                 <Button
+                  icon={<SearchMinusIcon />}
                   variant="plain"
                   className={`metrics-content-button ${loading ? 'loading' : ''}`}
                   onClick={() => zoomRange(false)}
                   ref={zoomRef}
-                >
-                  <SearchMinusIcon />
-                </Button>
+                />
               </Tooltip>
             </FlexItem>
             <FlexItem>
@@ -343,24 +339,22 @@ export const Histogram: React.FC<HistogramProps> = ({
                 isVisible={tooltipsTrigger === 'manual' ? false : undefined}
               >
                 <Button
+                  icon={<SearchPlusIcon />}
                   variant="plain"
                   className={`metrics-content-button ${loading ? 'loading' : ''}`}
                   onClick={() => zoomRange(true)}
-                >
-                  <SearchPlusIcon />
-                </Button>
+                />
               </Tooltip>
             </FlexItem>
           </Flex>
         </FlexItem>
         <FlexItem>
           <Button
+            icon={<QuestionCircleIcon />}
             variant="plain"
             className={`metrics-content-button ${loading ? 'loading' : ''}`}
             onClick={() => guidedTourHandle?.startTour()}
-          >
-            <QuestionCircleIcon />
-          </Button>
+          />
         </FlexItem>
       </Flex>
       <Chart
@@ -486,7 +480,7 @@ export const HistogramContainer: React.FC<{
   ) : (
     <Bullseye data-test="no-datapoints-found">
       <EmptyState variant={EmptyStateVariant.full} isFullHeight>
-        <Title headingLevel="h6">{t('No datapoints found in the selected time range')}</Title>
+        <EmptyStateHeader titleText={t('No datapoints found in the selected time range')} headingLevel="h6" />
         <EmptyStateBody>{t('Reset time range and try again.')}</EmptyStateBody>
         <Button id="reset-timerange-button" data-test="reset-timerange-button" variant="link" onClick={resetRange}>
           {t('Reset time range')}

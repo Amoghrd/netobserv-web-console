@@ -32,7 +32,7 @@ export const ElementField: React.FC<ElementFieldProps> = ({
       <Text component={TextVariants.h4}>{label}</Text>
       <Flex>
         <FlexItem flex={{ default: 'flex_1' }}>
-          {forcedText ? <Text>{forcedText}</Text> : <PeerResourceLink peer={peer} />}
+          {forcedText ? <Text component="p">{forcedText}</Text> : <PeerResourceLink peer={peer} />}
         </FlexItem>
         <FlexItem>
           <SummaryFilterButton

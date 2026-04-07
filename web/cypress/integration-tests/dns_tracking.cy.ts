@@ -23,7 +23,7 @@ describe('(OCP-67087 Network_Observability) DNSTracking test', { tags: ['Network
 
         // open panels modal and verify all relevant panels are listed
         cy.openPanelsModal()
-        cy.checkPopupItems(overviewSelectors.panelsModal, overviewSelectors.manageDNSTrackingPanelsList);
+        cy.checkPopItems(overviewSelectors.panelsModal, overviewSelectors.manageDNSTrackingPanelsList);
 
         // select all panels and verify they are rendered
         cy.get(overviewSelectors.panelsModal).contains('Select all').click();

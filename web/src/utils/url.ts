@@ -1,5 +1,62 @@
+/**
+ * URL utilities and navigation helpers
+ *
+ * MIGRATION NOTE: React Router 7 Support
+ * ======================================
+ * Using react-router-dom-v5-compat as recommended by Console team.
+ *
+ * Current state (React Router 7 via v5-compat):
+ * - Wrap useNavigate to provide stable reference across renders
+ * - Components use navigate(path) instead of history.push(path)
+ * - Components use navigate(-1) instead of history.goBack()
+ * - All router imports centralized here for easy future migration
+ *
+ * Migration path (when Console updates):
+ * - Simply change the import from 'react-router-dom-v5-compat' to 'react-router'
+ * - No component changes needed!
+ */
 import _ from 'lodash';
-import { navigate } from '../components/dynamic-loader/dynamic-loader';
+import { useCallback, useRef } from 'react';
+import {
+  Link as RouterLink,
+  useNavigate as useRouterNavigate,
+  useParams as useRouterParams
+} from 'react-router-dom-v5-compat';
+
+// Re-export Link component from v5-compat for consistency
+export { RouterLink as Link };
+
+/**
+ * Stable wrapper around useNavigate to prevent re-render issues.
+ * Returns a memoized navigate function that doesn't change reference between renders.
+ *
+ * NOTE: This hook must be used within a Router context. Both Console and standalone
+ * app provide this context (Console via its router, standalone via BrowserRouter).
+ */
+export const useNavigate = () => {
+  const navigate = useRouterNavigate();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+
+  // Return a stable callback that uses the ref
+  return useCallback((to: string | number) => {
+    if (typeof to === 'number') {
+      navigateRef.current(to);
+    } else {
+      navigateRef.current(to);
+    }
+  }, []); // Empty deps - never changes reference
+};
+
+/**
+ * Wrapper around useParams for consistent usage.
+ *
+ * NOTE: This hook must be used within a Router context. Both Console and standalone
+ * app provide this context (Console via its router, standalone via BrowserRouter).
+ */
+export const useParams = <T extends Record<string, string | undefined> = Record<string, string | undefined>>(): T => {
+  return useRouterParams() as T;
+};
 
 export const netflowTrafficPath = '/netflow-traffic';
 export const flowCollectorNewPath = '/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/~new';
@@ -58,21 +115,29 @@ export const getURLParamAsBool = (arg: URLParam) => {
 export const setURLParams = (params: string) => {
   const url = new URL(window.location.href);
   const sp = new URLSearchParams(params);
-  navigate(`${url.pathname}?${sp.toString()}${url.hash}`);
+  window.history.pushState({}, '', `${url.pathname}?${sp.toString()}${url.hash}`);
 };
 
 export const setURLParam = (param: URLParam, value: string, replace?: boolean) => {
   const url = new URL(window.location.href);
   const params = new URLSearchParams(window.location.search);
   params.set(param, value);
-  navigate(`${url.pathname}?${params.toString()}${url.hash}`, { replace });
+  if (replace) {
+    window.history.replaceState({}, '', `${url.pathname}?${params.toString()}${url.hash}`);
+  } else {
+    window.history.pushState({}, '', `${url.pathname}?${params.toString()}${url.hash}`);
+  }
 };
 
 export const setSomeURLParams = (params: Map<URLParam, string>, replace?: boolean) => {
   const url = new URL(window.location.href);
   const sp = new URLSearchParams(window.location.search);
   params.forEach((v, k) => sp.set(k, v));
-  navigate(`${url.pathname}?${sp.toString()}${url.hash}`, { replace });
+  if (replace) {
+    window.history.replaceState({}, '', `${url.pathname}?${sp.toString()}${url.hash}`);
+  } else {
+    window.history.pushState({}, '', `${url.pathname}?${sp.toString()}${url.hash}`);
+  }
 };
 
 export const removeURLParam = (param: URLParam, replace?: boolean) => {
@@ -80,16 +145,30 @@ export const removeURLParam = (param: URLParam, replace?: boolean) => {
   if (params.has(param)) {
     params.delete(param);
     const url = new URL(window.location.href);
-    navigate(`${url.pathname}?${params.toString()}${url.hash}`, { replace });
+    if (replace) {
+      window.history.replaceState({}, '', `${url.pathname}?${params.toString()}${url.hash}`);
+    } else {
+      window.history.pushState({}, '', `${url.pathname}?${params.toString()}${url.hash}`);
+    }
   }
 };
 
 export const clearURLParams = () => {
   const url = new URL(window.location.href);
   console.info('clearing url parameters ' + url);
-  navigate(url.pathname);
+  window.history.pushState({}, '', url.pathname);
 };
 
 export const getPathWithParams = (pathName = '') => {
   return `${pathName}?${new URLSearchParams(window.location.search).toString()}`;
+};
+
+// Navigation helpers - utility functions
+export const navigateTo = (path: string) => {
+  window.history.pushState({}, '', path);
+  window.dispatchEvent(new PopStateEvent('popstate'));
+};
+
+export const navigateBack = () => {
+  window.history.back();
 };

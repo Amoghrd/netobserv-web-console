@@ -1,13 +1,13 @@
 import {
   Bullseye,
   EmptyState,
+  EmptyStateHeader,
   EmptyStateIcon,
   Grid,
   GridItem,
   Text,
   TextContent,
-  TextVariants,
-  Title
+  TextVariants
 } from '@patternfly/react-core';
 import { CheckCircleIcon } from '@patternfly/react-icons';
 import * as React from 'react';
@@ -33,8 +33,11 @@ export const HealthGlobal: React.FC<HealthGlobalProps> = ({ info, isDark }) => {
       {all.length === 0 ? (
         <Bullseye>
           <EmptyState>
-            <EmptyStateIcon icon={CheckCircleIcon} />
-            <Title headingLevel="h2">{t('No violations found')}</Title>
+            <EmptyStateHeader
+              titleText={t('No violations found')}
+              headingLevel="h2"
+              icon={<EmptyStateIcon icon={CheckCircleIcon} />}
+            />
           </EmptyState>
         </Bullseye>
       ) : (

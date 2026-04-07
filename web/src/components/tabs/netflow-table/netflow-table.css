@@ -2,10 +2,10 @@
   vertical-align: top;
 }
 
-#table-container.dark {
-  background: #0f1214;
-}
-
-#table-container.light {
-  background: #f0f0f0;
+.pf-v5-theme-dark #table-container {
+  --pf-t--global--background--color--primary--default: #292929;
+  --pf-t--global--background--color--secondary--default: #151515;
+  --pf-t--global--text--color--regular: #e0e0e0;
+  --pf-t--global--text--color--subtle: #c0c0c0;
+  color: #e0e0e0;
 }

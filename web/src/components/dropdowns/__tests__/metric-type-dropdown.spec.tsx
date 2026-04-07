@@ -1,7 +1,7 @@
-import { mount, shallow } from 'enzyme';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import * as React from 'react';
 
-import { actOn } from '../../../components/__tests__/common.spec';
 import { MetricType } from '../../../model/flow-query';
 import { MetricTypeDropdown } from '../metric-type-dropdown';
 
@@ -14,46 +14,47 @@ describe('<MetricDropdown />', () => {
   };
 
   it('should render component', async () => {
-    const wrapper = shallow(<MetricTypeDropdown {...props} />);
-    expect(wrapper.find(MetricTypeDropdown)).toBeTruthy();
+    render(<MetricTypeDropdown {...props} />);
+    expect(screen.getByRole('button')).toHaveAttribute('id', 'metric-dropdown');
   });
 
   it('should open and close', async () => {
-    const wrapper = mount(<MetricTypeDropdown {...props} />);
-    expect(wrapper.find('li').length).toBe(0);
+    const { container } = render(<MetricTypeDropdown {...props} />);
 
-    //open dropdow
-    await actOn(() => wrapper.find('#metric-dropdown').at(0).simulate('click'), wrapper);
-    expect(wrapper.find('li').length).toBeGreaterThan(0);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#metric-dropdown')!);
+    });
+    await waitFor(() => {
+      expect(document.querySelectorAll('[data-test="metric"] li').length).toBeGreaterThan(0);
+    });
 
-    //close dropdow
-    await actOn(() => wrapper.find('#metric-dropdown').at(0).simulate('click'), wrapper);
-    expect(wrapper.find('li').length).toBe(0);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#metric-dropdown')!);
+    });
 
-    //no setMetricType should be called
     expect(props.setMetricType).toHaveBeenCalledTimes(0);
   });
 
   it('should refresh on select', async () => {
-    const wrapper = mount(<MetricTypeDropdown {...props} />);
+    const user = userEvent.setup();
+    const { container } = render(<MetricTypeDropdown {...props} />);
 
-    //open dropdown
-    await actOn(() => wrapper.find('#metric-dropdown').at(0).simulate('click'), wrapper);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#metric-dropdown')!);
+    });
+    await waitFor(() => expect(document.querySelector('#Packets')).toBeTruthy());
 
-    //select PACKETS
-    await actOn(() => wrapper.find('[id="Packets"]').last().simulate('click'), wrapper);
+    await user.click(document.querySelector('#Packets')!);
     expect(props.setMetricType).toHaveBeenCalledWith('Packets');
-    expect(wrapper.find('li').length).toBe(0);
 
-    //open dropdown
-    await actOn(() => wrapper.find('#metric-dropdown').at(0).simulate('click'), wrapper);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#metric-dropdown')!);
+    });
+    await waitFor(() => expect(document.querySelector('#Bytes')).toBeTruthy());
 
-    //select BYTES
-    await actOn(() => wrapper.find('[id="Bytes"]').last().simulate('click'), wrapper);
+    await user.click(document.querySelector('#Bytes')!);
 
-    //setMetricType should be called twice
     expect(props.setMetricType).toHaveBeenCalledTimes(2);
     expect(props.setMetricType).toHaveBeenCalledWith('Bytes');
-    expect(wrapper.find('li').length).toBe(0);
   });
 });

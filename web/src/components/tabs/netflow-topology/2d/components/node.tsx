@@ -22,8 +22,8 @@ import {
   OnSelect,
   ShapeProps,
   StatusModifier,
-  TopologyQuadrant,
   TOP_LAYER as topLayer,
+  TopologyQuadrant,
   useCombineRefs,
   useHover,
   WithDndDragProps
@@ -252,9 +252,13 @@ const DefaultNodeInner: React.FunctionComponent<DefaultNodeInnerProps> = observe
 
     React.useEffect(() => {
       if (isHover) {
-        onShowCreateConnector && onShowCreateConnector();
+        if (onShowCreateConnector) {
+          onShowCreateConnector();
+        }
       } else {
-        onHideCreateConnector && onHideCreateConnector();
+        if (onHideCreateConnector) {
+          onHideCreateConnector();
+        }
       }
       if (element.hasController()) {
         element.getController().fireEvent(hoverEvent, {

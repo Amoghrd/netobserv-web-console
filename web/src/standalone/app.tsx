@@ -13,7 +13,7 @@ import {
 } from '@patternfly/react-core';
 import { configure } from 'mobx';
 import React from 'react';
-import { BrowserRouter, NavLink, Redirect, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom-v5-compat';
 import FlowCollectorForm from '../components/forms/flowCollector';
 import FlowCollectorStatus from '../components/forms/flowCollector-status';
 import FlowCollectorWizard from '../components/forms/flowCollector-wizard';
@@ -165,7 +165,7 @@ export const App: React.FunctionComponent<{ endUser?: boolean }> = ({ endUser })
                       <NavLink
                         id={`${page.id}-nav-item-link`}
                         to={`/console-${page.id}`}
-                        activeClassName="pf-m-current"
+                        className={({ isActive }) => (isActive ? 'pf-m-current' : '')}
                       >
                         {page.name}
                       </NavLink>
@@ -177,23 +177,17 @@ export const App: React.FunctionComponent<{ endUser?: boolean }> = ({ endUser })
           </PageSidebar>
         }
       >
-        <Switch>
+        <Routes>
           {pages.map(page => {
             if (page.addContext) {
               return (
-                <Route path={`/console-${page.id}`} key={page.id}>
-                  {withContext(page.content, page.name)}
-                </Route>
+                <Route path={`/console-${page.id}`} key={page.id} element={withContext(page.content, page.name)} />
               );
             }
-            return (
-              <Route path={`/console-${page.id}`} key={page.id}>
-                {page.content}
-              </Route>
-            );
+            return <Route path={`/console-${page.id}`} key={page.id} element={page.content} />;
           })}
-          <Redirect to={`/console-${pages[0].id}`} />
-        </Switch>
+          <Route path="*" element={<Navigate to={`/console-${pages[0].id}`} replace />} />
+        </Routes>
       </Page>
     </BrowserRouter>
   );

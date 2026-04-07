@@ -1,9 +1,8 @@
 import React, { FC } from 'react';
 
-import { Alert, AlertVariant, Button, Flex, FlexItem, PageSection, TextContent, Title } from '@patternfly/react-core';
+import { Alert, AlertVariant, Button, Flex, FlexItem, PageSection, Text, Title } from '@patternfly/react-core';
 import { useTranslation } from 'react-i18next';
-import { flowCollectorEditPath, flowCollectorNewPath, netflowTrafficPath } from '../../utils/url';
-import DynamicLoader, { navigate } from '../dynamic-loader/dynamic-loader';
+import { flowCollectorEditPath, flowCollectorNewPath, netflowTrafficPath, useNavigate } from '../../utils/url';
 import './forms.css';
 import { Pipeline } from './pipeline';
 import { ResourceStatus } from './resource-status';
@@ -13,106 +12,101 @@ export type FlowCollectorStatusProps = {};
 
 export const FlowCollectorStatus: FC<FlowCollectorStatusProps> = () => {
   const { t } = useTranslation('plugin__netobserv-plugin');
+  const navigate = useNavigate();
   const [selectedTypes, setSelectedTypes] = React.useState<string[]>([]);
 
   return (
-    <DynamicLoader>
-      <ResourceWatcher
-        group="flows.netobserv.io"
-        version="v1beta2"
-        kind="FlowCollector"
-        name="cluster"
-        skipErrors
-        defaultFrom="None"
-      >
-        <Consumer>
-          {ctx => {
-            // Check if operator is in hold mode
-            const isOnHold = ctx.data?.spec?.execution?.mode === 'OnHold';
+    <ResourceWatcher
+      group="flows.netobserv.io"
+      version="v1beta2"
+      kind="FlowCollector"
+      name="cluster"
+      skipErrors
+      defaultFrom="None"
+    >
+      <Consumer>
+        {ctx => {
+          // Check if operator is in hold mode
+          const isOnHold = ctx.data?.spec?.execution?.mode === 'OnHold';
 
-            return (
-              <PageSection id="pageSection">
-                <div id="pageHeader">
-                  <Title headingLevel="h1" size="2xl">
-                    {t('Network Observability FlowCollector status')}
-                  </Title>
-                </div>
-                {ctx.data && (
-                  <Flex className="status-container" direction={{ default: 'column' }}>
-                    <FlexItem flex={{ default: 'flex_1' }}>
-                      {isOnHold ? (
-                        <Alert variant={AlertVariant.info} isInline title={t('Network Observability is on hold')}>
-                          {t(
-                            // eslint-disable-next-line max-len
-                            'Execution mode is set to OnHold. All operator-managed workloads have been deleted, while preserving other resources. To change execution mode, update or remove "spec.execution.mode" in the FlowCollector resource.'
-                          )}
-                        </Alert>
-                      ) : (
-                        <Pipeline
-                          existing={ctx.data}
-                          selectedTypes={selectedTypes}
-                          setSelectedTypes={setSelectedTypes}
-                        />
-                      )}
-                    </FlexItem>
-                    <FlexItem className="status-list-container" flex={{ default: 'flex_1' }}>
-                      <ResourceStatus
-                        group={ctx.group}
-                        version={ctx.version}
-                        kind={ctx.kind}
-                        existing={ctx.data}
-                        selectedTypes={selectedTypes}
-                        setSelectedTypes={setSelectedTypes}
-                      />
-                    </FlexItem>
-                    <FlexItem>
-                      <Flex>
+          return (
+            <PageSection id="pageSection">
+              <div id="pageHeader">
+                <Title headingLevel="h1" size="2xl">
+                  {t('Network Observability FlowCollector status')}
+                </Title>
+              </div>
+              {ctx.data && (
+                <Flex className="status-container" direction={{ default: 'column' }}>
+                  <FlexItem flex={{ default: 'flex_1' }}>
+                    {isOnHold ? (
+                      <Alert variant={AlertVariant.info} isInline title={t('Network Observability is on hold')}>
+                        {t(
+                          // eslint-disable-next-line max-len
+                          'Execution mode is set to OnHold. All operator-managed workloads have been deleted, while preserving other resources. To change execution mode, update or remove "spec.execution.mode" in the FlowCollector resource.'
+                        )}
+                      </Alert>
+                    ) : (
+                      <Pipeline existing={ctx.data} selectedTypes={selectedTypes} setSelectedTypes={setSelectedTypes} />
+                    )}
+                  </FlexItem>
+                  <FlexItem className="status-list-container" flex={{ default: 'flex_1' }}>
+                    <ResourceStatus
+                      group={ctx.group}
+                      version={ctx.version}
+                      kind={ctx.kind}
+                      existing={ctx.data}
+                      selectedTypes={selectedTypes}
+                      setSelectedTypes={setSelectedTypes}
+                    />
+                  </FlexItem>
+                  <FlexItem>
+                    <Flex>
+                      <FlexItem>
+                        <Button
+                          id="edit-flow-collector"
+                          data-test-id="edit-flow-collector"
+                          variant="primary"
+                          onClick={() => navigate(flowCollectorEditPath)}
+                        >
+                          {t('Edit FlowCollector')}
+                        </Button>
+                      </FlexItem>
+                      {!isOnHold && (
                         <FlexItem>
                           <Button
-                            id="edit-flow-collector"
-                            data-test-id="edit-flow-collector"
-                            variant="primary"
-                            onClick={() => navigate(flowCollectorEditPath)}
+                            id="open-network-traffic"
+                            data-test-id="open-network-traffic"
+                            variant="link"
+                            onClick={() => navigate(netflowTrafficPath)}
                           >
-                            {t('Edit FlowCollector')}
+                            {t('Open Network Traffic page')}
                           </Button>
                         </FlexItem>
-                        {!isOnHold && (
-                          <FlexItem>
-                            <Button
-                              id="open-network-traffic"
-                              data-test-id="open-network-traffic"
-                              variant="link"
-                              onClick={() => navigate(netflowTrafficPath)}
-                            >
-                              {t('Open Network Traffic page')}
-                            </Button>
-                          </FlexItem>
-                        )}
-                      </Flex>
-                    </FlexItem>
-                  </Flex>
-                )}
-                {ctx.loadError && (
-                  <Flex direction={{ default: 'column' }}>
-                    <FlexItem>
-                      <TextContent>
-                        {t('An error occured while retreiving FlowCollector: {{error}}', { error: ctx.loadError })}
-                      </TextContent>
-                    </FlexItem>
-                    <FlexItem alignSelf={{ default: 'alignSelfCenter' }}>
-                      <Button id="create-flow-collector" onClick={() => navigate(flowCollectorNewPath)}>
-                        {t('Create FlowCollector')}
-                      </Button>
-                    </FlexItem>
-                  </Flex>
-                )}
-              </PageSection>
-            );
-          }}
-        </Consumer>
-      </ResourceWatcher>
-    </DynamicLoader>
+                      )}
+                    </Flex>
+                  </FlexItem>
+                </Flex>
+              )}
+              {ctx.loadError && (
+                <Flex direction={{ default: 'column' }}>
+                  <FlexItem>
+                    <Text>
+                      {t('An error occured while retreiving FlowCollector: {{error}}', { error: ctx.loadError })}
+                    </Text>
+                  </FlexItem>
+                  <FlexItem alignSelf={{ default: 'alignSelfCenter' }}>
+                    <Button id="create-flow-collector" onClick={() => navigate(flowCollectorNewPath)}>
+                      {t('Create FlowCollector')}
+                    </Button>
+                  </FlexItem>
+                </Flex>
+              )}
+            </PageSection>
+          );
+        }}
+      </Consumer>
+    </ResourceWatcher>
   );
 };
 

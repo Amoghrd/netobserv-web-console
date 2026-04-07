@@ -10,7 +10,7 @@ const config: Config = {
   globals: {
   },
   setupFiles: [
-    "<rootDir>/enzyme.config.ts"
+    "<rootDir>/jest.setup.ts"
   ],
   setupFilesAfterEnv: [
     "<rootDir>setup-tests.tsx"

@@ -1,4 +1,3 @@
-import { K8sModel } from '@openshift-console/dynamic-plugin-sdk';
 import { Drawer, DrawerContent, DrawerContentBody, Flex, FlexItem } from '@patternfly/react-core';
 import _ from 'lodash';
 import React from 'react';
@@ -6,22 +5,15 @@ import { useTranslation } from 'react-i18next';
 import { Record } from '../../api/ipfix';
 import { getFunctionMetricKey, getRateMetricKey, NetflowMetrics, Stats } from '../../api/loki';
 import { Config } from '../../model/config';
-import {
-  Filter,
-  FilterDefinition,
-  Filters,
-  filtersEqual,
-  hasIndexFields,
-  hasNonIndexFields
-} from '../../model/filters';
+import { Filter, Filters, filtersEqual, hasIndexFields, hasNonIndexFields } from '../../model/filters';
 import { FlowScope, MetricType, RecordType, StatFunction } from '../../model/flow-query';
-import { ScopeConfigDef } from '../../model/scope';
+import { useNetflowContext } from '../../model/netflow-context';
 import { GraphElementPeer, TopologyOptions } from '../../model/topology';
 import { Warning } from '../../model/warnings';
 import { Column, ColumnSizeMap } from '../../utils/columns';
 import { TimeRange } from '../../utils/datetime';
 import { StructuredError } from '../../utils/errors';
-import { OverviewPanel } from '../../utils/overview-panels';
+import { useTheme } from '../../utils/theme-hook';
 import { TruncateLength } from '../dropdowns/truncate-dropdown';
 import { ErrorComponent, Size } from '../messages/error';
 import { ViewId } from '../netflow-traffic';
@@ -43,14 +35,10 @@ export type NetflowTrafficDrawerHandle = {
 };
 
 export interface NetflowTrafficDrawerProps {
-  ref?: React.Ref<NetflowTrafficDrawerHandle>;
-  isDarkTheme: boolean;
-  defaultFilters: Filter[];
   error: string | StructuredError | undefined;
   currentState: string[];
   selectedViewId: ViewId;
   limit: number;
-  panels: OverviewPanel[];
   recordType: RecordType;
   metrics: NetflowMetrics;
   loading?: boolean;
@@ -59,19 +47,13 @@ export interface NetflowTrafficDrawerProps {
   setOverviewFocus: (v: boolean) => void;
   flows: Record[];
   selectedRecord?: Record;
-  availableColumns: Column[];
-  selectedColumns: Column[];
   setColumns: (v: Column[]) => void;
   columnSizes: ColumnSizeMap;
   setColumnSizes: (v: ColumnSizeMap) => void;
   size: Size;
-  allowPktDrop: boolean;
-  allowDNSMetric: boolean;
-  allowRTTMetric: boolean;
   resetDefaultFilters: (c?: Config) => void;
   clearFilters: () => void;
   filters: Filters;
-  k8sModels: { [key: string]: K8sModel };
   topologyMetricFunction: StatFunction;
   topologyMetricType: MetricType;
   topologyUDNIds: string[];
@@ -79,19 +61,15 @@ export interface NetflowTrafficDrawerProps {
   setMetricScope: (ms: FlowScope) => void;
   topologyOptions: TopologyOptions;
   setTopologyOptions: (o: TopologyOptions) => void;
-  filterDefinitions: FilterDefinition[];
   setFilters: (v: Filters) => void;
   selectedElement: GraphElementPeer | undefined;
   searchHandle: SearchHandle | null;
   searchEvent?: SearchEvent;
-  scopes: ScopeConfigDef[];
   isShowQuerySummary: boolean;
   lastRefresh: Date | undefined;
   range: TimeRange | number;
-  canSwitchTypes: boolean;
   setRange: (tr: TimeRange | number) => void;
   setRecordType: (r: RecordType) => void;
-  maxChunkAge?: number;
   stats?: Stats;
   lastDuration?: number;
   warning?: Warning;
@@ -102,16 +80,17 @@ export interface NetflowTrafficDrawerProps {
 }
 
 // eslint-disable-next-line react/display-name
-export const NetflowTrafficDrawer: React.FC<NetflowTrafficDrawerProps> = React.forwardRef(
-  (props, ref: React.Ref<NetflowTrafficDrawerHandle>) => {
+export const NetflowTrafficDrawer = React.forwardRef<NetflowTrafficDrawerHandle, NetflowTrafficDrawerProps>(
+  (props, ref) => {
     const { t } = useTranslation('plugin__netobserv-plugin');
+    const isDarkTheme = useTheme();
+    const { caps, config, k8sModels } = useNetflowContext();
 
     const overviewRef = React.useRef<NetflowOverviewHandle>(null);
     const tableRef = React.useRef<NetflowTableHandle>(null);
     const topologyRef = React.useRef<NetflowTopologyHandle>(null);
 
     const {
-      defaultFilters,
       metrics,
       resetDefaultFilters,
       clearFilters,
@@ -163,11 +142,11 @@ export const NetflowTrafficDrawer: React.FC<NetflowTrafficDrawerProps> = React.f
     );
 
     const getResetDefaultFiltersProp = React.useCallback(() => {
-      if (defaultFilters.length > 0 && !filtersEqual(filters.list, defaultFilters)) {
+      if (caps.defaultFilters.length > 0 && !filtersEqual(filters.list, caps.defaultFilters)) {
         return resetDefaultFilters;
       }
       return undefined;
-    }, [defaultFilters, resetDefaultFilters, filters.list]);
+    }, [caps.defaultFilters, resetDefaultFilters, filters.list]);
 
     const getClearFiltersProp = React.useCallback(() => {
       if (filters.list.length > 0) {
@@ -257,14 +236,14 @@ export const NetflowTrafficDrawer: React.FC<NetflowTrafficDrawerProps> = React.f
                 <NetflowOverview
                   ref={overviewRef}
                   limit={props.limit}
-                  panels={props.panels}
+                  panels={caps.selectedPanels}
                   recordType={props.recordType}
-                  scopes={props.scopes}
+                  scopes={caps.availableScopes}
                   metricScope={props.metricScope}
                   setMetricScope={props.setMetricScope}
                   metrics={props.metrics}
                   loading={props.loading}
-                  isDark={props.isDarkTheme}
+                  isDark={isDarkTheme}
                   resetDefaultFilters={getResetDefaultFiltersProp()}
                   clearFilters={getClearFiltersProp()}
                   truncateLength={props.overviewTruncateLength}
@@ -279,20 +258,20 @@ export const NetflowTrafficDrawer: React.FC<NetflowTrafficDrawerProps> = React.f
               <NetflowTable
                 ref={tableRef}
                 loading={props.loading}
-                allowPktDrops={props.allowPktDrop}
+                allowPktDrops={caps.isPktDrop}
                 flows={props.flows}
                 selectedRecord={props.selectedRecord}
                 size={props.size}
                 onSelect={onRecordSelect}
-                columns={props.selectedColumns}
+                columns={caps.selectedColumns}
                 setColumns={(v: Column[]) =>
-                  props.setColumns(v.concat(props.availableColumns.filter(col => !col.isSelected)))
+                  props.setColumns(v.concat(caps.availableColumns.filter(col => !col.isSelected)))
                 }
                 columnSizes={props.columnSizes}
                 setColumnSizes={props.setColumnSizes}
                 resetDefaultFilters={getResetDefaultFiltersProp()}
                 clearFilters={getClearFiltersProp()}
-                isDark={props.isDarkTheme}
+                isDark={isDarkTheme}
               />
             );
             break;
@@ -302,25 +281,25 @@ export const NetflowTrafficDrawer: React.FC<NetflowTrafficDrawerProps> = React.f
                 <NetflowTopology
                   ref={topologyRef}
                   loading={props.loading}
-                  k8sModels={props.k8sModels}
+                  k8sModels={k8sModels}
                   metricFunction={props.topologyMetricFunction}
                   metricType={props.topologyMetricType}
                   metricScope={props.metricScope}
-                  expectedNodes={[...props.topologyUDNIds]} // concat all expected nodes here
+                  expectedNodes={[...props.topologyUDNIds]}
                   setMetricScope={props.setMetricScope}
                   metrics={getTopologyMetrics() || []}
                   droppedMetrics={getTopologyDroppedMetrics() || []}
                   options={props.topologyOptions}
                   setOptions={props.setTopologyOptions}
                   filters={props.filters}
-                  filterDefinitions={props.filterDefinitions}
+                  filterDefinitions={caps.filterDefs}
                   setFilters={props.setFilters}
                   selected={props.selectedElement}
                   onSelect={onElementSelect}
                   searchHandle={props.searchHandle}
                   searchEvent={props.searchEvent}
-                  isDark={props.isDarkTheme}
-                  scopes={props.scopes}
+                  isDark={isDarkTheme}
+                  scopes={caps.availableScopes}
                   resetDefaultFilters={getResetDefaultFiltersProp()}
                   clearFilters={getClearFiltersProp()}
                 />
@@ -341,14 +320,14 @@ export const NetflowTrafficDrawer: React.FC<NetflowTrafficDrawerProps> = React.f
           <RecordPanel
             id="recordPanel"
             record={props.selectedRecord}
-            columns={props.availableColumns}
+            columns={caps.availableColumns}
             filters={props.filters.list}
-            filterDefinitions={props.filterDefinitions}
+            filterDefinitions={caps.filterDefs}
             range={props.range}
             type={props.recordType}
-            isDark={props.isDarkTheme}
-            canSwitchTypes={props.canSwitchTypes}
-            allowPktDrops={props.allowPktDrop}
+            isDark={isDarkTheme}
+            canSwitchTypes={caps.isFlow && caps.isConnectionTracking}
+            allowPktDrops={caps.isPktDrop}
             setFilters={setFiltersList}
             setRange={props.setRange}
             setType={props.setRecordType}
@@ -362,15 +341,15 @@ export const NetflowTrafficDrawer: React.FC<NetflowTrafficDrawerProps> = React.f
             flows={props.flows}
             metrics={props.metrics}
             type={props.recordType}
-            maxChunkAge={props.maxChunkAge}
+            maxChunkAge={config.maxChunkAgeMs}
             stats={props.stats}
             limit={props.limit}
             lastRefresh={props.lastRefresh}
             lastDuration={props.lastDuration}
             warning={checkSlownessReason(props.warning)}
             range={props.range}
-            showDNSLatency={props.allowDNSMetric}
-            showRTTLatency={props.allowRTTMetric}
+            showDNSLatency={caps.isDNSTracking}
+            showRTTLatency={caps.isFlowRTT}
             onClose={() => props.setShowQuerySummary(false)}
           />
         );
@@ -384,10 +363,10 @@ export const NetflowTrafficDrawer: React.FC<NetflowTrafficDrawerProps> = React.f
             metricType={props.topologyMetricType}
             truncateLength={props.topologyOptions.truncateLength}
             filters={props.filters}
-            filterDefinitions={props.filterDefinitions}
+            filterDefinitions={caps.filterDefs}
             setFilters={setFiltersList}
             onClose={() => onElementSelect(undefined)}
-            isDark={props.isDarkTheme}
+            isDark={isDarkTheme}
           />
         );
       } else {
@@ -409,7 +388,7 @@ export const NetflowTrafficDrawer: React.FC<NetflowTrafficDrawerProps> = React.f
               <FlexItem
                 id={`${props.selectedViewId}-container`}
                 flex={{ default: 'flex_1' }}
-                className={props.isDarkTheme ? 'dark' : 'light'}
+                className={isDarkTheme ? 'dark' : 'light'}
               >
                 {mainContent()}
               </FlexItem>
@@ -424,7 +403,7 @@ export const NetflowTrafficDrawer: React.FC<NetflowTrafficDrawerProps> = React.f
                     warning={checkSlownessReason(props.warning)}
                     isShowQuerySummary={props.isShowQuerySummary}
                     toggleQuerySummary={() => onToggleQuerySummary(!props.isShowQuerySummary)}
-                    isDark={props.isDarkTheme}
+                    isDark={isDarkTheme}
                   />
                 ) : (
                   <FlowsQuerySummary

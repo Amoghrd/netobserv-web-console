@@ -38,19 +38,21 @@ export const NetflowTableRow: React.FC<NetflowTableRowProps> = ({
   tableWidth,
   isDark
 }) => {
+  const nodeRef = React.useRef<HTMLTableRowElement>(null);
   const onRowClick = () => {
     onSelect(flow);
   };
 
   return (
-    <CSSTransition in={highlight} appear={highlight} timeout={100} classNames="newflow">
+    <CSSTransition nodeRef={nodeRef} in={highlight} appear={highlight} timeout={100} classNames="newflow">
       <Tr
+        ref={nodeRef}
         id={`netflow-table-row-${rowNumber || 0}`}
         data-last-render={lastRender || ''}
         data-test={`tr-${flow.key}`}
         isRowSelected={flow.key === selectedRecord?.key}
         onRowClick={onRowClick}
-        className={`${isDark ? 'dark' : 'light'}-stripped`}
+        className="stripped"
         style={{ height }}
       >
         {showContent &&

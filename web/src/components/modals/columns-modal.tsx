@@ -26,6 +26,8 @@ import { Column, ColumnSizeMap, getDefaultColumns, getFullColumnName } from '../
 import './columns-modal.css';
 import Modal from './modal';
 
+const COLUMNS_DRAG_ZONE = 'netobs-columns-modal';
+
 export const columnFilterKeys = ['source', 'destination', 'time', 'host', 'namespace', 'owner', 'ip', 'dns'];
 
 export interface ColumnsModalProps {
@@ -51,6 +53,7 @@ export const ColumnsModal: React.FC<ColumnsModalProps> = ({
   const [updatedColumns, setUpdatedColumns] = React.useState<Column[]>([]);
   const [filterKeys, setFilterKeys] = React.useState<string[]>([]);
   const { t } = useTranslation('plugin__netobserv-plugin');
+  const dragDescriptionId = 'columns-drag-description';
 
   React.useEffect(() => {
     if (isModalOpen) {
@@ -64,46 +67,6 @@ export const ColumnsModal: React.FC<ColumnsModalProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columns, isModalOpen]);
-
-  const onDrop = React.useCallback(
-    (source, dest) => {
-      if (dest) {
-        const result = [...updatedColumns];
-        const [removed] = result.splice(source.index, 1);
-        result.splice(dest.index, 0, removed);
-        setUpdatedColumns(result);
-        return true;
-      }
-      return false;
-    },
-    [updatedColumns, setUpdatedColumns]
-  );
-
-  const onCheck = React.useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    (event, checked) => {
-      if (event?.target?.id) {
-        const result = [...updatedColumns];
-        const selectedColumn = result.find(col => col.id === event.target.id);
-        if (selectedColumn) {
-          selectedColumn.isSelected = !selectedColumn.isSelected;
-          setUpdatedColumns(result);
-        }
-      }
-    },
-    [updatedColumns, setUpdatedColumns]
-  );
-
-  const onReset = React.useCallback(() => {
-    setResetClicked(true);
-    setUpdatedColumns(
-      getDefaultColumns(config.columns, config.fields).filter(c => columns.some(existing => existing.id === c.id))
-    );
-  }, [columns, config.columns, config.fields]);
-
-  const isSaveDisabled = React.useCallback(() => {
-    return _.isEmpty(updatedColumns.filter(c => c.isSelected));
-  }, [updatedColumns]);
 
   const isFilteredColumn = React.useCallback((c: Column, fks: string[]) => {
     return (
@@ -122,6 +85,69 @@ export const ColumnsModal: React.FC<ColumnsModalProps> = ({
     );
   }, []);
 
+  const onListDrop = React.useCallback(
+    (source: { droppableId: string; index: number }, dest?: { droppableId: string; index: number }) => {
+      if (!dest || source.droppableId !== dest.droppableId) {
+        return false;
+      }
+      const oldIndex = source.index;
+      const newIndex = dest.index;
+      if (oldIndex === newIndex) {
+        return false;
+      }
+      let accepted = false;
+      setUpdatedColumns(prev => {
+        const filtered = prev.filter(c => isFilteredColumn(c, filterKeys));
+        if (oldIndex < 0 || oldIndex >= filtered.length || newIndex < 0 || newIndex >= filtered.length) {
+          return prev;
+        }
+        const reorderedFiltered = [...filtered];
+        const [removed] = reorderedFiltered.splice(oldIndex, 1);
+        reorderedFiltered.splice(newIndex, 0, removed);
+        const next: Column[] = [];
+        const fq = [...reorderedFiltered];
+        for (const col of prev) {
+          if (isFilteredColumn(col, filterKeys)) {
+            const shifted = fq.shift();
+            if (shifted) {
+              next.push(shifted);
+            }
+          } else {
+            next.push(col);
+          }
+        }
+        accepted = true;
+        return next;
+      });
+      return accepted;
+    },
+    [filterKeys, isFilteredColumn]
+  );
+
+  const onCheck = React.useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (event: React.FormEvent<HTMLInputElement>, checked: boolean) => {
+      if (event?.target && 'id' in event.target) {
+        const columnId = (event.target as HTMLInputElement).id;
+        setUpdatedColumns(prevColumns =>
+          prevColumns.map(col => (col.id === columnId ? { ...col, isSelected: checked } : col))
+        );
+      }
+    },
+    []
+  );
+
+  const onReset = React.useCallback(() => {
+    setResetClicked(true);
+    setUpdatedColumns(
+      getDefaultColumns(config.columns, config.fields).filter(c => columns.some(existing => existing.id === c.id))
+    );
+  }, [columns, config.columns, config.fields]);
+
+  const isSaveDisabled = React.useCallback(() => {
+    return _.isEmpty(updatedColumns.filter(c => c.isSelected));
+  }, [updatedColumns]);
+
   const getColumnFilterKeys = React.useCallback(() => {
     return columnFilterKeys.filter(fk => columns.some(c => isFilteredColumn(c, [fk])));
   }, [columns, isFilteredColumn]);
@@ -136,14 +162,10 @@ export const ColumnsModal: React.FC<ColumnsModalProps> = ({
 
   const onSelectAll = React.useCallback(() => {
     const allSelected = isAllSelected();
-    const result = [...updatedColumns];
-    _.forEach(result, (c: Column) => {
-      if (isFilteredColumn(c, filterKeys)) {
-        c.isSelected = !allSelected;
-      }
-    });
-    setUpdatedColumns(result);
-  }, [isAllSelected, updatedColumns, isFilteredColumn, filterKeys]);
+    setUpdatedColumns(prevColumns =>
+      prevColumns.map(col => (isFilteredColumn(col, filterKeys) ? { ...col, isSelected: !allSelected } : col))
+    );
+  }, [isAllSelected, isFilteredColumn, filterKeys]);
 
   const onClose = React.useCallback(() => {
     setResetClicked(false);
@@ -170,40 +192,8 @@ export const ColumnsModal: React.FC<ColumnsModalProps> = ({
     [filterKeys]
   );
 
-  const draggableItems = filteredColumns().map((column, i) => (
-    <Draggable key={i} hasNoWrapper>
-      <DataListItem
-        key={'data-list-item-' + i}
-        aria-labelledby={'table-column-management-item' + i}
-        className="data-list-item"
-        data-test={'data-' + i}
-        id={'data-' + i}
-      >
-        <DataListItemRow key={'data-list-item-row-' + i}>
-          <DataListControl>
-            <DataListDragButton aria-label="Reorder" aria-labelledby={'table-column-management-item' + i} />
-            <DataListCheck
-              aria-labelledby={'table-column-management-item-' + i}
-              checked={column.isSelected}
-              id={column.id}
-              onChange={onCheck}
-            />
-          </DataListControl>
-          <DataListItemCells
-            dataListCells={[
-              <DataListCell key={'data-list-cell-' + i} className="center">
-                <label htmlFor={column.id}>{getFullColumnName(column)}</label>
-              </DataListCell>
-            ]}
-          />
-        </DataListItemRow>
-      </DataListItem>
-    </Draggable>
-  ));
-
   return (
     <Modal
-      data-test={id}
       id={id}
       title={t('Manage columns')}
       isOpen={isModalOpen}
@@ -252,7 +242,7 @@ export const ColumnsModal: React.FC<ColumnsModalProps> = ({
         </>
       }
       footer={
-        <div className="footer">
+        <>
           <Button data-test="columns-reset-button" key="reset" variant="link" onClick={() => onReset()}>
             {t('Restore default columns')}
           </Button>
@@ -270,12 +260,12 @@ export const ColumnsModal: React.FC<ColumnsModalProps> = ({
               {t('Save')}
             </Button>
           </Tooltip>
-        </div>
+        </>
       }
     >
-      <div className="co-m-form-row">
-        <DragDrop onDrop={onDrop}>
-          <Droppable hasNoWrapper>
+      <div className="co-m-form-row" id="drag-drop-container">
+        <DragDrop onDrop={onListDrop}>
+          <Droppable hasNoWrapper zone={COLUMNS_DRAG_ZONE} droppableId="columns-list">
             <DataList
               aria-label="Table column management"
               data-test="table-column-management"
@@ -283,9 +273,49 @@ export const ColumnsModal: React.FC<ColumnsModalProps> = ({
               className="centered-list"
               isCompact
             >
-              {draggableItems}
+              {filteredColumns().map(column => {
+                const rowLabelId = `table-column-management-item-${column.id}`;
+                return (
+                  <Draggable key={column.id} hasNoWrapper>
+                    <DataListItem aria-labelledby={rowLabelId} id={`table-column-management-row-${column.id}`}>
+                      <DataListItemRow>
+                        <DataListControl>
+                          <DataListDragButton
+                            aria-label={t('Reorder column')}
+                            aria-labelledby={rowLabelId}
+                            aria-describedby={dragDescriptionId}
+                            aria-pressed={false}
+                          />
+                          <DataListCheck
+                            aria-labelledby={rowLabelId}
+                            isChecked={column.isSelected}
+                            id={column.id}
+                            onChange={onCheck}
+                            otherControls
+                          />
+                        </DataListControl>
+                        <DataListItemCells
+                          dataListCells={[
+                            <DataListCell key={`data-list-cell-${column.id}`} className="center">
+                              <label htmlFor={column.id} id={rowLabelId}>
+                                {getFullColumnName(column)}
+                              </label>
+                            </DataListCell>
+                          ]}
+                        />
+                      </DataListItemRow>
+                    </DataListItem>
+                  </Draggable>
+                );
+              })}
             </DataList>
           </Droppable>
+          <div className="pf-v5-screen-reader" id={dragDescriptionId}>
+            {t(
+              // eslint-disable-next-line max-len
+              'Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation.'
+            )}
+          </div>
         </DragDrop>
       </div>
     </Modal>

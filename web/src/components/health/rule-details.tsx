@@ -1,8 +1,9 @@
 import { Flex, FlexItem, Label, Text, TextVariants, Tooltip } from '@patternfly/react-core';
 import { InfoCircleIcon } from '@patternfly/react-icons';
 import { ActionsColumn, Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
+import { TFunction } from 'i18next';
 import * as React from 'react';
-import { TFunction, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { formatActiveSince } from '../../utils/datetime';
 import { valueFormat } from '../../utils/format';
 import { HealthColorSquare } from './health-color-square';
@@ -33,7 +34,12 @@ const VerticalField: React.FC<{ label: string; children: React.ReactNode }> = ({
   <FlexItem>
     <Flex direction={{ default: 'column' }} gap={{ default: 'gapXs' }}>
       <FlexItem>
-        <Text component={TextVariants.small} style={{ color: 'var(--pf-v5-global--Color--200)' }}>
+        <Text
+          component={TextVariants.small}
+          style={{
+            color: 'var(--pf-t--global--text--color--subtle)'
+          }}
+        >
           {label}
         </Text>
       </FlexItem>
@@ -129,22 +135,22 @@ const RuleCard: React.FC<{
             <FlexItem>
               <HealthColorSquare item={item} />
             </FlexItem>
-            <FlexItem flex={{ default: 'flex_1' }} style={{ minWidth: 0 }}>
-              {item.summary}
+            <FlexItem flex={{ default: 'flex_1' }}>
+              <Flex gap={{ default: 'gapXs' }} alignItems={{ default: 'alignItemsCenter' }}>
+                <FlexItem>{item.summary}</FlexItem>
+                {item.description && (
+                  <FlexItem>
+                    <Tooltip content={item.description}>
+                      <InfoCircleIcon
+                        style={{
+                          color: 'var(--pf-t--global--text--color--subtle)'
+                        }}
+                      />
+                    </Tooltip>
+                  </FlexItem>
+                )}
+              </Flex>
             </FlexItem>
-          </Flex>
-          <Flex
-            gap={{ default: 'gapSm' }}
-            alignItems={{ default: 'alignItemsCenter' }}
-            flexWrap={{ default: 'nowrap' }}
-          >
-            {item.description && (
-              <FlexItem>
-                <Tooltip content={item.description}>
-                  <InfoCircleIcon style={{ color: 'var(--pf-v5-global--Color--200)' }} />
-                </Tooltip>
-              </FlexItem>
-            )}
             <FlexItem>
               <ActionsColumn
                 isDisabled={links.length === 0}

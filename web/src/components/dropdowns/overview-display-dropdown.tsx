@@ -1,4 +1,5 @@
-import { MenuToggle, MenuToggleElement, Select } from '@patternfly/react-core';
+import { Button, Popper } from '@patternfly/react-core';
+import { CogIcon } from '@patternfly/react-icons';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlowScope } from '../../model/flow-query';
@@ -30,20 +31,30 @@ export const OverviewDisplayDropdown: React.FC<OverviewDisplayDropdownProps> = (
   scopes
 }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
-  const ref = useOutsideClickEvent(() => setOpen(false));
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const popperRef = React.useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = React.useState<boolean>(false);
-  return (
-    <div id="display-dropdown-container" data-test="display-dropdown-container" ref={ref}>
-      <Select
-        id="overview-display-dropdown"
-        placeholder={t('Display options')}
-        isOpen={isOpen}
-        toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-          <MenuToggle ref={toggleRef} onClick={() => setOpen(!isOpen)} isExpanded={isOpen}>
-            {t('Display options')}
-          </MenuToggle>
-        )}
+
+  const ref = useOutsideClickEvent(() => setOpen(false));
+
+  const trigger = React.useCallback(() => {
+    return (
+      <Button
+        ref={triggerRef}
+        variant="link"
+        icon={<CogIcon />}
+        onClick={() => setOpen(!isOpen)}
+        data-test="display-dropdown-button"
       >
+        {t('Display options')}
+      </Button>
+    );
+  }, [isOpen, t]);
+
+  const popper = React.useCallback(() => {
+    return (
+      <div id="overview-display-popper" ref={popperRef} className="pf-v5-c-menu" role="dialog">
         <OverviewDisplayOptions
           metricScope={metricScope}
           setMetricScope={setMetricScope}
@@ -53,7 +64,23 @@ export const OverviewDisplayDropdown: React.FC<OverviewDisplayDropdownProps> = (
           setFocus={setFocus}
           scopes={scopes}
         />
-      </Select>
+      </div>
+    );
+  }, [metricScope, setMetricScope, truncateLength, setTruncateLength, focus, setFocus, scopes]);
+
+  return (
+    <div id="display-dropdown-container" data-test="display-dropdown-container" ref={ref}>
+      <div ref={containerRef}>
+        <Popper
+          trigger={trigger()}
+          triggerRef={triggerRef}
+          popper={popper()}
+          popperRef={popperRef}
+          isVisible={isOpen}
+          enableFlip={true}
+          appendTo={containerRef.current || undefined}
+        />
+      </div>
     </div>
   );
 };

@@ -6,6 +6,10 @@ div#app {
   height: 100%;
 }
 
+.pf-v5-c-page__main-container {
+  height: 100%;
+}
+
 /* fix page background color & spacing*/
 .pf-v5-c-page__main-section,
 section#pageSection {

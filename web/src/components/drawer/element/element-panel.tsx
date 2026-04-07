@@ -156,7 +156,6 @@ export const ElementPanel: React.FC<ElementPanelProps> = ({
                 metrics={metrics}
                 metricType={metricType}
                 truncateLength={truncateLength}
-                isDark={isDark}
               />
             </Tab>
           )}
@@ -169,7 +168,6 @@ export const ElementPanel: React.FC<ElementPanelProps> = ({
                 metrics={droppedMetrics}
                 metricType={metricType}
                 truncateLength={truncateLength}
-                isDark={isDark}
               />
             </Tab>
           )}
@@ -177,7 +175,7 @@ export const ElementPanel: React.FC<ElementPanelProps> = ({
             <Tab className="drawer-tab" eventKey={'health'} title={<TabTitleText>{t('Health')}</TabTitleText>}>
               <>
                 <HealthCard
-                  key={`card-${alert.name}`}
+                  key={`card-${data.health.name}`}
                   resourceHealth={data.health}
                   name={data.health.name}
                   k8sKind={data.health.k8sKind}

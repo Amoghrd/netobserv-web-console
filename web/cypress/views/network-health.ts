@@ -11,18 +11,18 @@ export namespace networkHealthSelectors {
 export const networkHealth = {
     clickOnAlert: (name: string) => {
         // pick the first from the list
-        cy.get(`label[for^="health-card-${name}"]`).eq(0).should('be.visible').click()
+        cy.get(`label[for^="health-card-selectable-${name}"]`).eq(0).should('be.visible').click()
     },
     verifyAlert: (name: string, mode: string = "alert", alertText?: string) => {
         // click force since node cards are covered
-        cy.get(`label[for^="health-card-${name}"]`).eq(0).should('be.visible').click({ force: true }).then(() => {
+        cy.get(`label[for^="health-card-selectable-${name}"]`).eq(0).should('be.visible').click({ force: true }).then(() => {
             cy.get(networkHealthSelectors.sidePanel).should('be.visible')
             cy.contains(mode).should('exist')
             if (alertText) {
                 cy.contains(alertText).should('exist')
 
             }
-            cy.get(`label[for^="health-card-${name}"]`).eq(0).click()
+            cy.get(`label[for^="health-card-selectable-${name}"]`).eq(0).click()
             cy.get(networkHealthSelectors.sidePanel).should('not.exist')
         })
     },

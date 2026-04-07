@@ -27,6 +27,8 @@ import { getDefaultOverviewPanels, getOverviewPanelInfo, OverviewPanel } from '.
 import Modal from './modal';
 import './overview-panels-modal.css';
 
+const PANELS_DRAG_ZONE = 'netobs-overview-panels-modal';
+
 export interface OverviewPanelsModalProps {
   isModalOpen: boolean;
   setModalOpen: (v: boolean) => void;
@@ -51,6 +53,7 @@ export const OverviewPanelsModal: React.FC<OverviewPanelsModalProps> = ({
   const [updatedPanels, setUpdatedPanels] = React.useState<OverviewPanel[]>([]);
   const [filterKeys, setFilterKeys] = React.useState<string[]>([]);
   const { t } = useTranslation('plugin__netobserv-plugin');
+  const dragDescriptionId = 'overview-panels-drag-description';
 
   React.useEffect(() => {
     if (isModalOpen) {
@@ -85,43 +88,6 @@ export const OverviewPanelsModal: React.FC<OverviewPanelsModalProps> = ({
     return panelFilterKeys;
   }, [features]);
 
-  const onDrop = React.useCallback(
-    (source, dest) => {
-      if (dest) {
-        const result = [...updatedPanels];
-        const [removed] = result.splice(source.index, 1);
-        result.splice(dest.index, 0, removed);
-        setUpdatedPanels(result);
-        return true;
-      }
-      return false;
-    },
-    [updatedPanels, setUpdatedPanels]
-  );
-
-  const onCheck = React.useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    (event, checked) => {
-      if (event?.target?.id) {
-        const result = [...updatedPanels];
-        const selectedPanel = result.find(p => p.id === event.target.id);
-        if (selectedPanel) {
-          selectedPanel.isSelected = !selectedPanel.isSelected;
-          setUpdatedPanels(result);
-        }
-      }
-    },
-    [updatedPanels, setUpdatedPanels]
-  );
-
-  const onReset = React.useCallback(() => {
-    setUpdatedPanels(getDefaultOverviewPanels(customIds).filter(p => panels.some(existing => existing.id === p.id)));
-  }, [customIds, panels]);
-
-  const isSaveDisabled = React.useCallback(() => {
-    return _.isEmpty(updatedPanels.filter(p => p.isSelected));
-  }, [updatedPanels]);
-
   const isFilteredPanel = React.useCallback(
     (p: OverviewPanel) => {
       return (
@@ -145,6 +111,66 @@ export const OverviewPanelsModal: React.FC<OverviewPanelsModalProps> = ({
     [filterKeys, recordType, t]
   );
 
+  const onListDrop = React.useCallback(
+    (source: { droppableId: string; index: number }, dest?: { droppableId: string; index: number }) => {
+      if (!dest || source.droppableId !== dest.droppableId) {
+        return false;
+      }
+      const oldIndex = source.index;
+      const newIndex = dest.index;
+      if (oldIndex === newIndex) {
+        return false;
+      }
+      let accepted = false;
+      setUpdatedPanels(prev => {
+        const filtered = prev.filter(p => isFilteredPanel(p));
+        if (oldIndex < 0 || oldIndex >= filtered.length || newIndex < 0 || newIndex >= filtered.length) {
+          return prev;
+        }
+        const reorderedFiltered = [...filtered];
+        const [removed] = reorderedFiltered.splice(oldIndex, 1);
+        reorderedFiltered.splice(newIndex, 0, removed);
+        const next: OverviewPanel[] = [];
+        const fq = [...reorderedFiltered];
+        for (const panel of prev) {
+          if (isFilteredPanel(panel)) {
+            const shifted = fq.shift();
+            if (shifted) {
+              next.push(shifted);
+            }
+          } else {
+            next.push(panel);
+          }
+        }
+        accepted = true;
+        return next;
+      });
+      return accepted;
+    },
+    [isFilteredPanel]
+  );
+
+  const onCheck = React.useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (event: React.FormEvent<HTMLInputElement>, checked: boolean) => {
+      if (event?.target && 'id' in event.target) {
+        const panelId = (event.target as HTMLInputElement).id;
+        setUpdatedPanels(prevPanels =>
+          prevPanels.map(panel => (panel.id === panelId ? { ...panel, isSelected: checked } : panel))
+        );
+      }
+    },
+    []
+  );
+
+  const onReset = React.useCallback(() => {
+    setUpdatedPanels(getDefaultOverviewPanels(customIds).filter(p => panels.some(existing => existing.id === p.id)));
+  }, [customIds, panels]);
+
+  const isSaveDisabled = React.useCallback(() => {
+    return _.isEmpty(updatedPanels.filter(p => p.isSelected));
+  }, [updatedPanels]);
+
   const filteredPanels = React.useCallback(() => {
     return updatedPanels.filter(p => isFilteredPanel(p));
   }, [isFilteredPanel, updatedPanels]);
@@ -155,14 +181,10 @@ export const OverviewPanelsModal: React.FC<OverviewPanelsModalProps> = ({
 
   const onSelectAll = React.useCallback(() => {
     const allSelected = isAllSelected();
-    const result = [...updatedPanels];
-    _.forEach(result, (p: OverviewPanel) => {
-      if (isFilteredPanel(p)) {
-        p.isSelected = !allSelected;
-      }
-    });
-    setUpdatedPanels(result);
-  }, [isAllSelected, updatedPanels, isFilteredPanel]);
+    setUpdatedPanels(prevPanels =>
+      prevPanels.map(panel => (isFilteredPanel(panel) ? { ...panel, isSelected: !allSelected } : panel))
+    );
+  }, [isAllSelected, isFilteredPanel]);
 
   const onClose = React.useCallback(() => {
     setUpdatedPanels(_.cloneDeep(panels));
@@ -185,46 +207,10 @@ export const OverviewPanelsModal: React.FC<OverviewPanelsModalProps> = ({
     [filterKeys, getFilterKeys]
   );
 
-  const draggableItems = filteredPanels().map((panel, i) => {
-    const info = getOverviewPanelInfo(t, panel.id, undefined, recordType === 'flowLog' ? t('flow') : t('conversation'));
-    return (
-      <Draggable key={i} hasNoWrapper>
-        <DataListItem
-          key={'data-list-item-' + i}
-          aria-labelledby={'overview-panel-management-item' + i}
-          className="data-list-item"
-          data-test={'data-' + i}
-          id={'data-' + i}
-        >
-          <DataListItemRow key={'data-list-item-row-' + i} className="center">
-            <DataListControl>
-              <DataListDragButton aria-label="Reorder" aria-labelledby={'overview-panel-management-item' + i} />
-              <DataListCheck
-                aria-labelledby={'overview-panel-management-item-' + i}
-                checked={panel.isSelected}
-                id={panel.id}
-                onChange={onCheck}
-              />
-            </DataListControl>
-            <DataListItemCells
-              dataListCells={[
-                <DataListCell key={'data-list-cell-' + i}>
-                  <label htmlFor={panel.id}>
-                    {info.title}
-                    {info.chartType && <>{' (' + info.chartType + ')'}</>}
-                  </label>
-                </DataListCell>
-              ]}
-            />
-          </DataListItemRow>
-        </DataListItem>
-      </Draggable>
-    );
-  });
+  const flowOrConversation = recordType === 'flowLog' ? t('flow') : t('conversation');
 
   return (
     <Modal
-      data-test={id}
       id={id}
       title={t('Manage panels')}
       isOpen={isModalOpen}
@@ -273,7 +259,7 @@ export const OverviewPanelsModal: React.FC<OverviewPanelsModalProps> = ({
         </>
       }
       footer={
-        <div className="footer">
+        <>
           <Button data-test="panels-reset-button" key="reset" variant="link" onClick={() => onReset()}>
             {t('Restore default panels')}
           </Button>
@@ -291,21 +277,63 @@ export const OverviewPanelsModal: React.FC<OverviewPanelsModalProps> = ({
               {t('Save')}
             </Button>
           </Tooltip>
-        </div>
+        </>
       }
     >
-      <div className="co-m-form-row">
-        <DragDrop onDrop={onDrop}>
-          <Droppable hasNoWrapper>
+      <div className="co-m-form-row" id="drag-drop-container-overview">
+        <DragDrop onDrop={onListDrop}>
+          <Droppable hasNoWrapper zone={PANELS_DRAG_ZONE} droppableId="overview-panels-list">
             <DataList
               aria-label="Overview panel management"
               data-test="overview-panel-management"
               id="overview-panel-management"
               isCompact
             >
-              {draggableItems}
+              {filteredPanels().map(panel => {
+                const info = getOverviewPanelInfo(t, panel.id, undefined, flowOrConversation);
+                const rowLabelId = `overview-panel-management-item-${panel.id}`;
+                return (
+                  <Draggable key={panel.id} hasNoWrapper>
+                    <DataListItem aria-labelledby={rowLabelId} id={`overview-panel-management-row-${panel.id}`}>
+                      <DataListItemRow>
+                        <DataListControl>
+                          <DataListDragButton
+                            aria-label={t('Reorder panel')}
+                            aria-labelledby={rowLabelId}
+                            aria-describedby={dragDescriptionId}
+                            aria-pressed={false}
+                          />
+                          <DataListCheck
+                            aria-labelledby={rowLabelId}
+                            isChecked={panel.isSelected}
+                            id={panel.id}
+                            onChange={onCheck}
+                            otherControls
+                          />
+                        </DataListControl>
+                        <DataListItemCells
+                          dataListCells={[
+                            <DataListCell key={`data-list-cell-${panel.id}`}>
+                              <label htmlFor={panel.id} id={rowLabelId}>
+                                {info.title}
+                                {info.chartType && <>{' (' + info.chartType + ')'}</>}
+                              </label>
+                            </DataListCell>
+                          ]}
+                        />
+                      </DataListItemRow>
+                    </DataListItem>
+                  </Draggable>
+                );
+              })}
             </DataList>
           </Droppable>
+          <div className="pf-v5-screen-reader" id={dragDescriptionId}>
+            {t(
+              // eslint-disable-next-line max-len
+              'Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation.'
+            )}
+          </div>
         </DragDrop>
       </div>
     </Modal>

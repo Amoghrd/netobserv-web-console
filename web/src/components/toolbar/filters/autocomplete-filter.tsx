@@ -218,6 +218,7 @@ export const AutocompleteFilter: React.FC<AutocompleteFilterProps> = ({
       </div>
       <FlexItem>
         <Button
+          icon={<CaretDownIcon />}
           data-test="autocomplete-menu-button"
           id="autocomplete-menu-button"
           variant="control"
@@ -231,9 +232,7 @@ export const AutocompleteFilter: React.FC<AutocompleteFilterProps> = ({
               }
             }, 100)
           }
-        >
-          <CaretDownIcon />
-        </Button>
+        ></Button>
       </FlexItem>
     </Flex>
   );

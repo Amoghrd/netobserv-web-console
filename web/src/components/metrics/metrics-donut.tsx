@@ -25,7 +25,6 @@ export interface MetricsDonutProps {
   smallerTexts?: boolean;
   showLegend?: boolean;
   animate?: boolean;
-  isDark?: boolean;
 }
 
 export const MetricsDonut: React.FC<MetricsDonutProps> = ({
@@ -43,8 +42,7 @@ export const MetricsDonut: React.FC<MetricsDonutProps> = ({
   showOutOfScope,
   smallerTexts,
   showLegend,
-  animate,
-  isDark
+  animate
 }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
 
@@ -122,23 +120,17 @@ export const MetricsDonut: React.FC<MetricsDonutProps> = ({
     />
   );
 
-  const containerRef = React.createRef<HTMLDivElement>();
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useLocalStorage<Dimensions>(
     `${localStorageOverviewDonutDimensionKey}${showLegend ? '-legend' : ''}`,
     defaultDimensions
   );
   React.useEffect(() => {
-    observeDimensions(containerRef, dimensions, setDimensions);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [containerRef, dimensions]);
+    return observeDimensions(containerRef, dimensions, setDimensions);
+  }, [containerRef, dimensions, setDimensions]);
 
   return (
-    <div
-      id={id}
-      className={`metrics-content-div ${isDark ? 'dark' : 'light'}`}
-      ref={containerRef}
-      data-test-metrics={topKMetrics.length}
-    >
+    <div id={id} className="metrics-content-div" ref={containerRef} data-test-metrics={topKMetrics.length}>
       <ChartDonut
         themeColor={ChartThemeColor.multiUnordered}
         constrainToVisibleArea

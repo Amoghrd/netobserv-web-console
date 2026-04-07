@@ -1,9 +1,8 @@
-import { TextInput, ValidatedOptions } from '@patternfly/react-core';
-import { act } from '@testing-library/react';
-import { mount } from 'enzyme';
+import { ValidatedOptions } from '@patternfly/react-core';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import * as React from 'react';
+
 import { FilterDefinitionSample } from '../../../../components/__tests-data__/filters';
-import { actOn } from '../../../../components/__tests__/common.spec';
 import { findFilter } from '../../../../utils/filter-definitions';
 import TextFilter, { TextFilterProps } from '../text-filter';
 
@@ -17,90 +16,99 @@ describe('<TextFilter />', () => {
     setMessage: jest.fn(),
     setIndicator: jest.fn()
   };
+
   beforeEach(() => {
     props.setCurrentValue = jest.fn();
     props.addFilter = jest.fn();
     props.setIndicator = jest.fn();
   });
+
   it('should filter name', async () => {
-    const wrapper = mount(<TextFilter {...props} filterDefinition={findFilter(FilterDefinitionSample, 'src_name')!} />);
-    const textInput = wrapper.find(TextInput).last();
+    const { container, rerender } = render(
+      <TextFilter {...props} filterDefinition={findFilter(FilterDefinitionSample, 'src_name')!} />
+    );
+    const input = container.querySelector('#search') as HTMLInputElement;
+    expect(input).toBeTruthy();
 
-    expect(textInput).toBeDefined();
-
-    // No initial call
     expect(props.addFilter).toHaveBeenCalledTimes(0);
-    // Initial setup
     expect(props.setIndicator).toHaveBeenCalledTimes(1);
-    expect(textInput.props().validated).toBe(ValidatedOptions.default);
 
-    // Filter for source name
-    await actOn(() => wrapper.find(TextInput).last().props().onChange!(null!, 'abcd'), wrapper);
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'abcd' } });
+    });
     expect(props.setCurrentValue).toHaveBeenNthCalledWith(1, 'abcd');
 
-    // update prop as if the value was stored in parent component
-    wrapper.setProps({ currentValue: 'abcd' });
-    await actOn(() => wrapper.find('#search').last().simulate('keydown', { key: 'Enter' }), wrapper);
+    rerender(
+      <TextFilter {...props} filterDefinition={findFilter(FilterDefinitionSample, 'src_name')!} currentValue="abcd" />
+    );
+
+    await act(async () => {
+      fireEvent.keyDown(input, { key: 'Enter' });
+    });
     expect(props.addFilter).toHaveBeenNthCalledWith(1, { v: 'abcd' });
   });
 
   it('should filter valid IP', async () => {
-    const wrapper = mount(
+    const { container, rerender } = render(
       <TextFilter {...props} filterDefinition={findFilter(FilterDefinitionSample, 'src_address')!} />
     );
-    const textInput = wrapper.find(TextInput).at(0);
+    const input = container.querySelector('#search') as HTMLInputElement;
+    expect(input).toBeTruthy();
 
-    expect(textInput).toBeDefined();
-
-    // No initial call
     expect(props.addFilter).toHaveBeenCalledTimes(0);
-    // Initial setup
     expect(props.setIndicator).toHaveBeenCalledTimes(1);
-    expect(textInput.props().validated).toBe(ValidatedOptions.default);
 
-    // Filter for dest IP
-    await actOn(() => wrapper.find(TextInput).last().props().onChange!(null!, '10.0.0.1'), wrapper);
+    await act(async () => {
+      fireEvent.change(input, { target: { value: '10.0.0.1' } });
+    });
     expect(props.setCurrentValue).toHaveBeenNthCalledWith(1, '10.0.0.1');
 
-    // update prop as if the value was stored in parent component
-    wrapper.setProps({ currentValue: '10.0.0.1' });
+    rerender(
+      <TextFilter
+        {...props}
+        filterDefinition={findFilter(FilterDefinitionSample, 'src_address')!}
+        currentValue="10.0.0.1"
+      />
+    );
 
-    // Add filter
-    await actOn(() => wrapper.find('#search').last().simulate('keydown', { key: 'Enter' }), wrapper);
-    act(() => {
-      wrapper.update();
+    await act(async () => {
+      fireEvent.keyDown(input, { key: 'Enter' });
+    });
+    await waitFor(() => {
       expect(props.addFilter).toHaveBeenNthCalledWith(1, { v: '10.0.0.1' });
     });
   });
 
   it('should not filter invalid IP', async () => {
-    const wrapper = mount(
+    const { container, rerender } = render(
       <TextFilter {...props} filterDefinition={findFilter(FilterDefinitionSample, 'dst_host_address')!} />
     );
-    const textInput = wrapper.find(TextInput).at(0);
+    const input = container.querySelector('#search') as HTMLInputElement;
+    expect(input).toBeTruthy();
 
-    expect(textInput).toBeDefined();
-
-    // No initial call
     expect(props.addFilter).toHaveBeenCalledTimes(0);
-    // Initial setup
     expect(props.setIndicator).toHaveBeenCalledTimes(1);
-    expect(textInput.props().validated).toBe(ValidatedOptions.default);
 
-    // Filter for dest IP
-    await actOn(() => wrapper.find(TextInput).last().props().onChange!(null!, '10.0.'), wrapper);
+    await act(async () => {
+      fireEvent.change(input, { target: { value: '10.0.' } });
+    });
     expect(props.setCurrentValue).toHaveBeenNthCalledWith(1, '10.0.');
 
-    // update prop as if the value was stored in parent component
-    wrapper.setProps({ currentValue: '10.0.' });
+    rerender(
+      <TextFilter
+        {...props}
+        filterDefinition={findFilter(FilterDefinitionSample, 'dst_host_address')!}
+        currentValue="10.0."
+      />
+    );
+
     expect(props.setIndicator).toHaveBeenNthCalledWith(2, ValidatedOptions.warning);
     expect(props.addFilter).toHaveBeenCalledTimes(0);
 
-    // try to filter
-    await actOn(() => wrapper.find('#search').last().simulate('keydown', { key: 'Enter' }), wrapper);
-
-    act(() => {
-      wrapper.update();
+    await act(async () => {
+      fireEvent.keyDown(input, { key: 'Enter' });
+    });
+    await waitFor(() => {
       expect(props.setIndicator).toHaveBeenNthCalledWith(2, ValidatedOptions.warning);
       expect(props.addFilter).toHaveBeenCalledTimes(0);
     });

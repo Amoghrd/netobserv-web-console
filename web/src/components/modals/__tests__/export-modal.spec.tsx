@@ -1,8 +1,14 @@
-import { shallow } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import * as React from 'react';
 
 import { ShuffledColumnSample } from '../../../components/__tests-data__/columns';
 import ExportModal, { ExportModalProps } from '../export-modal';
+
+jest.mock('../../../api/routes', () => ({
+  getExportFlowsURL: jest.fn(() => 'http://localhost/export'),
+  getConfig: jest.fn(() => Promise.resolve({})),
+  getRole: jest.fn(() => Promise.resolve('admin'))
+}));
 
 describe('<ExportModal />', () => {
   const props: ExportModalProps = {
@@ -16,7 +22,7 @@ describe('<ExportModal />', () => {
   };
 
   it('should render component', async () => {
-    const wrapper = shallow(<ExportModal {...props} />);
-    expect(wrapper.find(ExportModal)).toBeTruthy();
+    render(<ExportModal {...props} />);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 });

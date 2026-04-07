@@ -26,11 +26,9 @@ export const dnsRCodes: ReadOnlyValues = [
   { value: 23, name: 'BADCOOKIE', description: 'Bad/missing Server Cookie' }
 ] as const;
 
-const dnsRcodesValues = dnsRCodes.map(v => v.value);
-export type dnsRCodesValues = typeof dnsRcodesValues[number];
+export type dnsRCodesValues = typeof dnsRCodes[number]['value'];
 
-const dnsRcodesNames = dnsRCodes.map(v => v.name);
-export type dnsCodesNames = typeof dnsRcodesNames[number];
+export type dnsCodesNames = typeof dnsRCodes[number]['name'];
 
 export const getDNSRcodeDescription = (name: dnsCodesNames): string => {
   return dnsRCodes.find(v => v.name === name)?.description || 'Unassigned';

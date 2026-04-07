@@ -314,7 +314,7 @@ export function useK8sWatchResource(req: any) {
   }, [loaded, resource]);
 }
 
-export const ResourceIcon: React.FC<ResourceIconProps> = ({
+export const ResourceIcon: React.FC<ResourceIconProps & { children?: React.ReactNode }> = ({
   className,
   kind,
   children,

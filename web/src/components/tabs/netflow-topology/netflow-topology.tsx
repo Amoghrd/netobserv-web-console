@@ -5,31 +5,22 @@ import _ from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  FlowMetricsResult,
   FunctionMetrics,
   getFunctionMetricKey,
   getRateMetricKey,
-  NetflowMetrics,
   RateMetrics,
   Stats,
   TopologyMetrics
 } from '../../../api/loki';
 import { getK8SUDNIds } from '../../../api/routes';
-import { Config, Feature } from '../../../model/config';
+import { Config } from '../../../model/config';
 import { FilterDefinition, Filters } from '../../../model/filters';
-import {
-  FlowQuery,
-  FlowScope,
-  isTimeMetric,
-  MetricFunction,
-  MetricType,
-  StatFunction
-} from '../../../model/flow-query';
+import { FlowScope, isTimeMetric, MetricFunction, MetricType, StatFunction } from '../../../model/flow-query';
+import { useNetflowContext } from '../../../model/netflow-context';
 import { ScopeConfigDef } from '../../../model/scope';
 import { GraphElementPeer, LayoutName, TopologyOptions } from '../../../model/topology';
-import { config } from '../../../utils/config';
 import { TimeRange } from '../../../utils/datetime';
-import { getStructuredHTTPError, StructuredError } from '../../../utils/errors';
+import { getStructuredHTTPError } from '../../../utils/errors';
 import { observeDOMRect } from '../../../utils/metrics-helper';
 import { Result } from '../../../utils/result';
 import { fetchNetworkHealth } from '../../health/health-fetcher';
@@ -44,22 +35,14 @@ import './netflow-topology.css';
 
 export type NetflowTopologyHandle = {
   fetch: (
-    fq: FlowQuery,
     metricType: MetricType,
     metricFunction: StatFunction,
-    range: number | TimeRange,
-    features: Feature[],
-    metricsRef: React.MutableRefObject<NetflowMetrics>,
-    getMetrics: (q: FlowQuery, range: number | TimeRange) => Promise<FlowMetricsResult>,
-    setMetrics: (v: NetflowMetrics) => void,
-    setError: (err?: StructuredError | string) => void,
-    initFunction: () => void
+    range: number | TimeRange
   ) => Promise<Stats[]> | undefined;
   fetchUDNs: () => Promise<string[]>;
 };
 
 export interface NetflowTopologyProps {
-  ref?: React.Ref<NetflowTopologyHandle>;
   loading?: boolean;
   k8sModels: { [key: string]: K8sModel };
   metricFunction: StatFunction;
@@ -85,252 +68,245 @@ export interface NetflowTopologyProps {
 }
 
 // eslint-disable-next-line react/display-name
-export const NetflowTopology: React.FC<NetflowTopologyProps> = React.forwardRef(
-  (props, ref: React.Ref<NetflowTopologyHandle>) => {
-    const { t } = useTranslation('plugin__netobserv-plugin');
+export const NetflowTopology = React.forwardRef<NetflowTopologyHandle, NetflowTopologyProps>((props, ref) => {
+  const { t } = useTranslation('plugin__netobserv-plugin');
+  const { caps, config, fetchCallbacks } = useNetflowContext();
 
-    const containerRef = React.useRef<HTMLDivElement>(null);
-    const [containerSize, setContainerSize] = React.useState<DOMRect>({ width: 0, height: 0 } as DOMRect);
-    const [controller, setController] = React.useState<Visualization>();
-    const [health, setHealth] = React.useState<HealthStats>(buildStats([]));
-    const [lastStatsUpdateTime, setLastStatsUpdateTime] = React.useState<number>(0);
-    const statsRefreshIntervalMs = 30000; // Refresh stats every 30 seconds if outdated
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = React.useState<DOMRect>({ width: 0, height: 0 } as DOMRect);
+  const [controller, setController] = React.useState<Visualization>();
+  const [health, setHealth] = React.useState<HealthStats>(buildStats([]));
+  const [lastStatsUpdateTime, setLastStatsUpdateTime] = React.useState<number>(0);
+  const statsRefreshIntervalMs = 30000; // Refresh stats every 30 seconds if outdated
 
-    // Memoize health to prevent unnecessary getContent re-creation
-    const memoizedHealth = React.useMemo(() => health, [health]);
+  // Memoize health to prevent unnecessary getContent re-creation
+  const memoizedHealth = React.useMemo(() => health, [health]);
 
-    //show fully dropped metrics if no metrics available
-    const displayedMetrics = React.useMemo(
-      () => (_.isEmpty(props.metrics) ? props.droppedMetrics : props.metrics),
-      [props.metrics, props.droppedMetrics]
-    );
+  //show fully dropped metrics if no metrics available
+  const displayedMetrics = React.useMemo(
+    () => (_.isEmpty(props.metrics) ? props.droppedMetrics : props.metrics),
+    [props.metrics, props.droppedMetrics]
+  );
 
-    const fetchHealth = React.useCallback(async () => {
-      try {
-        // matching netobserv="true" catches all alerts designed for netobserv (not necessarily owned by it)
-        const res = await fetchNetworkHealth(config.recordingAnnotations || {});
-        setHealth(res.stats);
-        setLastStatsUpdateTime(Date.now());
-      } catch (err) {
-        console.log('Could not fetch topology alerts:', err);
-      }
-    }, []);
+  const fetchHealth = React.useCallback(async () => {
+    try {
+      // matching netobserv="true" catches all alerts designed for netobserv (not necessarily owned by it)
+      const res = await fetchNetworkHealth(config.recordingAnnotations || {});
+      setHealth(res.stats);
+      setLastStatsUpdateTime(Date.now());
+    } catch (err) {
+      console.log('Could not fetch topology alerts:', err);
+    }
+  }, [config.recordingAnnotations]);
 
-    // Trigger stats refresh if outdated
-    const refreshResourceStatsIfNeeded = React.useCallback(() => {
-      const now = Date.now();
-      if (now - lastStatsUpdateTime > statsRefreshIntervalMs) {
-        fetchHealth();
-      }
-    }, [lastStatsUpdateTime, statsRefreshIntervalMs, fetchHealth]);
+  // Trigger stats refresh if outdated
+  const refreshResourceStatsIfNeeded = React.useCallback(() => {
+    const now = Date.now();
+    if (now - lastStatsUpdateTime > statsRefreshIntervalMs) {
+      fetchHealth();
+    }
+  }, [lastStatsUpdateTime, statsRefreshIntervalMs, fetchHealth]);
 
-    const fetch = React.useCallback(
-      (
-        fq: FlowQuery,
-        metricType: MetricType,
-        metricFunction: StatFunction,
-        range: number | TimeRange,
-        features: Feature[],
-        metricsRef: React.MutableRefObject<NetflowMetrics>,
-        getMetrics: (q: FlowQuery, range: number | TimeRange) => Promise<FlowMetricsResult>,
-        setMetrics: (v: NetflowMetrics) => void,
-        setError: (err?: StructuredError | string) => void,
-        initFunction: () => void
-      ) => {
-        initFunction();
+  const fetch = React.useCallback(
+    (metricType: MetricType, metricFunction: StatFunction, range: number | TimeRange) => {
+      const fq = caps.flowQuery;
+      const features = config.features;
+      const { getMetrics } = caps.fetchFunctions;
+      const { metricsRef, setFlows, setMetrics, setError } = fetchCallbacks;
 
-        // Refresh resource stats if outdated
-        refreshResourceStatsIfNeeded();
+      setFlows([]);
 
-        const droppedType = features.includes('pktDrop')
-          ? fq.type === 'Bytes'
-            ? 'PktDropBytes'
-            : fq.type === 'Packets'
-            ? 'PktDropPackets'
-            : undefined
-          : undefined;
-        let currentMetrics = { ...metricsRef.current };
+      // Refresh resource stats if outdated
+      refreshResourceStatsIfNeeded();
 
-        const promises: Promise<Stats>[] = [
-          getMetrics(
-            {
-              ...fq,
-              function: isTimeMetric(metricType) ? (metricFunction as MetricFunction) : 'rate'
-            },
-            range
-          ).then(res => {
-            if (['Bytes', 'Packets'].includes(metricType)) {
-              const rateMetrics = {} as RateMetrics;
-              rateMetrics[getRateMetricKey(metricType)] = res.metrics;
-              currentMetrics = {
-                ...currentMetrics,
-                rate: Result.success(rateMetrics),
-                dnsLatency: Result.empty(),
-                rtt: Result.empty()
-              };
-              setMetrics(currentMetrics);
-            } else if (['PktDropBytes', 'PktDropPackets'].includes(metricType)) {
+      const droppedType = features.includes('pktDrop')
+        ? fq.type === 'Bytes'
+          ? 'PktDropBytes'
+          : fq.type === 'Packets'
+          ? 'PktDropPackets'
+          : undefined
+        : undefined;
+      let currentMetrics = { ...metricsRef.current };
+
+      const promises: Promise<Stats>[] = [
+        getMetrics(
+          {
+            ...fq,
+            function: isTimeMetric(metricType) ? (metricFunction as MetricFunction) : 'rate'
+          },
+          range
+        ).then(res => {
+          if (['Bytes', 'Packets'].includes(metricType)) {
+            const rateMetrics = {} as RateMetrics;
+            rateMetrics[getRateMetricKey(metricType)] = res.metrics;
+            currentMetrics = {
+              ...currentMetrics,
+              rate: Result.success(rateMetrics),
+              dnsLatency: Result.empty(),
+              rtt: Result.empty()
+            };
+            setMetrics(currentMetrics);
+          } else if (['PktDropBytes', 'PktDropPackets'].includes(metricType)) {
+            const droppedRateMetrics = {} as RateMetrics;
+            droppedRateMetrics[getRateMetricKey(metricType)] = res.metrics;
+            currentMetrics = { ...currentMetrics, droppedRate: Result.success(droppedRateMetrics) };
+            setMetrics(currentMetrics);
+          } else if (['DnsLatencyMs'].includes(metricType)) {
+            const dnsLatencyMetrics = {} as FunctionMetrics;
+            dnsLatencyMetrics[getFunctionMetricKey(metricFunction)] = res.metrics;
+            currentMetrics = {
+              ...currentMetrics,
+              rate: Result.empty(),
+              dnsLatency: Result.success(dnsLatencyMetrics),
+              rtt: Result.empty()
+            };
+            setMetrics(currentMetrics);
+          } else if (['TimeFlowRttNs'].includes(metricType)) {
+            const rttMetrics = {} as FunctionMetrics;
+            rttMetrics[getFunctionMetricKey(metricFunction)] = res.metrics;
+            currentMetrics = {
+              ...currentMetrics,
+              rate: Result.empty(),
+              dnsLatency: Result.empty(),
+              rtt: Result.success(rttMetrics)
+            };
+            setMetrics(currentMetrics);
+          }
+          return res.stats;
+        })
+      ];
+
+      if (droppedType) {
+        promises.push(
+          getMetrics({ ...fq, type: droppedType }, range)
+            .then(res => {
               const droppedRateMetrics = {} as RateMetrics;
               droppedRateMetrics[getRateMetricKey(metricType)] = res.metrics;
               currentMetrics = { ...currentMetrics, droppedRate: Result.success(droppedRateMetrics) };
               setMetrics(currentMetrics);
-            } else if (['DnsLatencyMs'].includes(metricType)) {
-              const dnsLatencyMetrics = {} as FunctionMetrics;
-              dnsLatencyMetrics[getFunctionMetricKey(metricFunction)] = res.metrics;
-              currentMetrics = {
-                ...currentMetrics,
-                rate: Result.empty(),
-                dnsLatency: Result.success(dnsLatencyMetrics),
-                rtt: Result.empty()
-              };
-              setMetrics(currentMetrics);
-            } else if (['TimeFlowRttNs'].includes(metricType)) {
-              const rttMetrics = {} as FunctionMetrics;
-              rttMetrics[getFunctionMetricKey(metricFunction)] = res.metrics;
-              currentMetrics = {
-                ...currentMetrics,
-                rate: Result.empty(),
-                dnsLatency: Result.empty(),
-                rtt: Result.success(rttMetrics)
-              };
-              setMetrics(currentMetrics);
-            }
-            return res.stats;
-          })
-        ];
-
-        if (droppedType) {
-          promises.push(
-            getMetrics({ ...fq, type: droppedType }, range)
-              .then(res => {
-                const droppedRateMetrics = {} as RateMetrics;
-                droppedRateMetrics[getRateMetricKey(metricType)] = res.metrics;
-                currentMetrics = { ...currentMetrics, droppedRate: Result.success(droppedRateMetrics) };
-                setMetrics(currentMetrics);
-                return res.stats;
-              })
-              .catch(err => {
-                // Error might occur for instance when fetching node-based topology with drop feature enabled, and Loki disabled
-                // We don't want to break the whole topology due to missing drops enrichement
-                const pErr = getStructuredHTTPError(err);
-                setError(pErr);
-                return { numQueries: 0, dataSources: [], limitReached: false };
-              })
-          );
-        } else if (!['PktDropBytes', 'PktDropPackets'].includes(metricType)) {
-          currentMetrics = { ...currentMetrics, droppedRate: Result.empty() };
-          setMetrics(currentMetrics);
-        }
-        return Promise.all(promises);
-      },
-      [refreshResourceStatsIfNeeded]
-    );
-
-    // Initial fetch and setup update trigger
-    React.useEffect(() => {
-      fetchHealth();
-    }, [fetchHealth]);
-
-    const fetchUDNs = React.useCallback(() => {
-      // Refresh resource stats if outdated
-      refreshResourceStatsIfNeeded();
-      return getK8SUDNIds();
-    }, [refreshResourceStatsIfNeeded]);
-
-    React.useImperativeHandle(ref, () => ({
-      fetch,
-      fetchUDNs
-    }));
-
-    const getContent = React.useCallback(() => {
-      if (props.options.layout === LayoutName.threeD) {
-        return <Text>{t('Sorry, 3D view is not implemented anymore.')}</Text>;
-      }
-
-      // Always render TopologyContent once controller is ready
-      // Show loading overlay instead of unmounting
-      if (!controller) {
-        return (
-          <Bullseye data-test="loading-contents">
-            <Spinner size="xl" />
-          </Bullseye>
+              return res.stats;
+            })
+            .catch(err => {
+              // Error might occur for instance when fetching node-based topology with drop feature enabled, and Loki disabled
+              // We don't want to break the whole topology due to missing drops enrichement
+              const pErr = getStructuredHTTPError(err);
+              setError(pErr);
+              return { numQueries: 0, dataSources: [], limitReached: false };
+            })
         );
+      } else if (!['PktDropBytes', 'PktDropPackets'].includes(metricType)) {
+        currentMetrics = { ...currentMetrics, droppedRate: Result.empty() };
+        setMetrics(currentMetrics);
       }
+      return Promise.all(promises);
+    },
+    [refreshResourceStatsIfNeeded, caps.flowQuery, caps.fetchFunctions, config.features, fetchCallbacks]
+  );
 
-      const showLoadingOverlay = _.isEmpty(props.metrics) && props.loading;
+  // Initial fetch and setup update trigger
+  React.useEffect(() => {
+    fetchHealth();
+  }, [fetchHealth]);
 
+  const fetchUDNs = React.useCallback(() => {
+    // Refresh resource stats if outdated
+    refreshResourceStatsIfNeeded();
+    return getK8SUDNIds();
+  }, [refreshResourceStatsIfNeeded]);
+
+  React.useImperativeHandle(ref, () => ({
+    fetch,
+    fetchUDNs
+  }));
+
+  const getContent = React.useCallback(() => {
+    if (props.options.layout === LayoutName.threeD) {
+      return <Text component="p">{t('Sorry, 3D view is not implemented anymore.')}</Text>;
+    }
+
+    // Always render TopologyContent once controller is ready
+    // Show loading overlay instead of unmounting
+    if (!controller) {
       return (
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          {showLoadingOverlay && (
-            <Bullseye
-              data-test="loading-contents"
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: props.isDark ? '#151515' : '#ffffff',
-                zIndex: 1000
-              }}
-            >
-              <Spinner size="xl" />
-            </Bullseye>
-          )}
-          <VisualizationProvider data-test="visualization-provider" controller={controller}>
-            <TopologyContent
-              containerRef={containerRef}
-              k8sModels={props.k8sModels}
-              expectedNodes={props.expectedNodes}
-              metricFunction={props.metricFunction}
-              metricType={props.metricType}
-              metricScope={props.metricScope}
-              setMetricScope={props.setMetricScope}
-              scopes={props.scopes}
-              metrics={displayedMetrics}
-              droppedMetrics={props.droppedMetrics}
-              options={props.options}
-              filters={props.filters}
-              filterDefinitions={props.filterDefinitions}
-              setFilters={props.setFilters}
-              selected={props.selected}
-              onSelect={props.onSelect}
-              searchHandle={props.searchHandle}
-              searchEvent={props.searchEvent}
-              isDark={props.isDark}
-              resetDefaultFilters={props.resetDefaultFilters}
-              clearFilters={props.clearFilters}
-              resourceStats={memoizedHealth}
-            />
-          </VisualizationProvider>
-        </div>
+        <Bullseye data-test="loading-contents">
+          <Spinner size="xl" />
+        </Bullseye>
       );
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [controller, props, displayedMetrics]);
+    }
 
-    //create controller on startup and register factories
-    React.useEffect(() => {
-      const c = new Visualization();
-      c.registerLayoutFactory(layoutFactory);
-      c.registerComponentFactory(componentFactory);
-      c.registerComponentFactory(stylesComponentFactory);
-      setController(c);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    React.useEffect(() => {
-      observeDOMRect(containerRef, containerSize, setContainerSize);
-    }, [containerRef, containerSize]);
+    const showLoadingOverlay = _.isEmpty(props.metrics) && props.loading;
 
     return (
-      <div id="topology-container-div" style={{ width: '100%', height: '100%' }} ref={containerRef}>
-        <div id={'topology-scope-slider-div'}>
-          <ScopeSlider scope={props.metricScope} setScope={props.setMetricScope} scopeDefs={props.scopes} />
-        </div>
-        <div id="topology-view-div">{getContent()}</div>
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        {showLoadingOverlay && (
+          <Bullseye
+            data-test="loading-contents"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: props.isDark ? '#151515' : '#ffffff',
+              zIndex: 1000
+            }}
+          >
+            <Spinner size="xl" />
+          </Bullseye>
+        )}
+        <VisualizationProvider data-test="visualization-provider" controller={controller}>
+          <TopologyContent
+            containerRef={containerRef}
+            k8sModels={props.k8sModels}
+            expectedNodes={props.expectedNodes}
+            metricFunction={props.metricFunction}
+            metricType={props.metricType}
+            metricScope={props.metricScope}
+            setMetricScope={props.setMetricScope}
+            scopes={props.scopes}
+            metrics={displayedMetrics}
+            droppedMetrics={props.droppedMetrics}
+            options={props.options}
+            filters={props.filters}
+            filterDefinitions={props.filterDefinitions}
+            setFilters={props.setFilters}
+            selected={props.selected}
+            onSelect={props.onSelect}
+            searchHandle={props.searchHandle}
+            searchEvent={props.searchEvent}
+            isDark={props.isDark}
+            resetDefaultFilters={props.resetDefaultFilters}
+            clearFilters={props.clearFilters}
+            resourceStats={memoizedHealth}
+          />
+        </VisualizationProvider>
       </div>
     );
-  }
-);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controller, props, displayedMetrics]);
+
+  //create controller on startup and register factories
+  React.useEffect(() => {
+    const c = new Visualization();
+    c.registerLayoutFactory(layoutFactory);
+    c.registerComponentFactory(componentFactory);
+    c.registerComponentFactory(stylesComponentFactory);
+    setController(c);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  React.useEffect(() => {
+    return observeDOMRect(containerRef, containerSize, setContainerSize);
+  }, [containerRef, containerSize, setContainerSize]);
+
+  return (
+    <div id="topology-container-div" style={{ width: '100%', height: '100%' }} ref={containerRef}>
+      <div id={'topology-scope-slider-div'}>
+        <ScopeSlider scope={props.metricScope} setScope={props.setMetricScope} scopeDefs={props.scopes} />
+      </div>
+      <div id="topology-view-div">{getContent()}</div>
+    </div>
+  );
+});
 
 export default NetflowTopology;

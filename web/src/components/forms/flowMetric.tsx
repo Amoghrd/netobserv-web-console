@@ -1,7 +1,6 @@
 import React, { FC } from 'react';
 
-import { useParams } from 'react-router-dom-v5-compat';
-import DynamicLoader, { back } from '../dynamic-loader/dynamic-loader';
+import { useNavigate, useParams } from '../../utils/url';
 import { flowMetricUISchema } from './config/uiSchema';
 import { ResourceForm } from './resource-form';
 import { ResourceWatcher } from './resource-watcher';
@@ -11,22 +10,21 @@ export type FlowMetricFormProps = {
 };
 
 export const FlowMetricForm: FC<FlowMetricFormProps> = props => {
-  const params = useParams();
+  const params = useParams<{ name?: string; namespace?: string }>();
+  const navigate = useNavigate();
 
   return (
-    <DynamicLoader>
-      <ResourceWatcher
-        group="flows.netobserv.io"
-        version="v1alpha1"
-        kind="FlowMetric"
-        name={params.name || props.name}
-        namespace={params.namespace || 'default'}
-        onSuccess={back}
-        defaultFrom="CRD"
-      >
-        <ResourceForm uiSchema={flowMetricUISchema} />
-      </ResourceWatcher>
-    </DynamicLoader>
+    <ResourceWatcher
+      group="flows.netobserv.io"
+      version="v1alpha1"
+      kind="FlowMetric"
+      name={params.name || props.name}
+      namespace={params.namespace || 'default'}
+      onSuccess={() => navigate(-1)}
+      defaultFrom="CRD"
+    >
+      <ResourceForm uiSchema={flowMetricUISchema} />
+    </ResourceWatcher>
   );
 };
 

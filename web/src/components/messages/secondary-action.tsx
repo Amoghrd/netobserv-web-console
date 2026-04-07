@@ -1,9 +1,9 @@
 import { Button, EmptyStateActions } from '@patternfly/react-core';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { Config } from '../../model/config';
 import { ContextSingleton } from '../../utils/context';
+import { Link } from '../../utils/url';
 
 export interface EmptyProps {
   resetDefaultFilters?: (c?: Config) => void;

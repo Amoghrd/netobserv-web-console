@@ -1,7 +1,7 @@
-import { DrawerCloseButton } from '@patternfly/react-core';
-import { shallow } from 'enzyme';
+import { Drawer, DrawerContent } from '@patternfly/react-core';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import * as React from 'react';
-import { waitForRender } from '../../../../components/__tests__/common.spec';
+
 import { DefaultColumnSample } from '../../../__tests-data__/columns';
 import { FilterDefinitionSample, FiltersSample } from '../../../__tests-data__/filters';
 import { FlowsSample, UnknownFlow } from '../../../__tests-data__/flows';
@@ -24,30 +24,43 @@ describe('<RecordPanel />', () => {
     id: 'record-panel-test'
   };
 
-  it('should render component', async () => {
-    const wrapper = shallow(<RecordPanel {...mocks} />);
-    await waitForRender(wrapper);
+  const renderInDrawer = (props: RecordDrawerProps) =>
+    render(
+      <Drawer isExpanded>
+        <DrawerContent panelContent={<RecordPanel {...props} />}>
+          <div />
+        </DrawerContent>
+      </Drawer>
+    );
 
-    expect(wrapper.find(RecordPanel)).toBeTruthy();
-    expect(wrapper.find('#record-panel-test')).toHaveLength(1);
-    // all columns with data + JSON field
-    // sample contains 20 fields
-    expect(wrapper.find('.record-field-container')).toHaveLength(20);
-    // No ICMP
-    expect(wrapper.find({ 'data-test-id': 'drawer-field-IcmpType' })).toHaveLength(0);
-    expect(wrapper.find({ 'data-test-id': 'drawer-field-IcmpCode' })).toHaveLength(0);
-    // same with 4 valid fields
-    wrapper.setProps({ record: UnknownFlow });
-    expect(wrapper.find('.record-field-container')).toHaveLength(4);
+  it('should render component', async () => {
+    const { rerender } = renderInDrawer(mocks);
+    await waitFor(() => {
+      expect(document.querySelector('#record-panel-test')).toBeTruthy();
+    });
+    const fieldContainers = document.querySelectorAll('.record-field-container');
+    expect(fieldContainers.length).toBe(20);
+    expect(document.querySelector('[data-test-id="drawer-field-IcmpType"]')).toBeNull();
+    expect(document.querySelector('[data-test-id="drawer-field-IcmpCode"]')).toBeNull();
+
+    rerender(
+      <Drawer isExpanded>
+        <DrawerContent panelContent={<RecordPanel {...mocks} record={UnknownFlow} />}>
+          <div />
+        </DrawerContent>
+      </Drawer>
+    );
+    await waitFor(() => {
+      expect(document.querySelectorAll('.record-field-container').length).toBe(4);
+    });
   });
 
   it('should close on click', async () => {
-    const wrapper = shallow(<RecordPanel {...mocks} />);
-    await waitForRender(wrapper);
-
-    const closeButton = wrapper.find(DrawerCloseButton);
-    expect(closeButton).toHaveLength(1);
-    closeButton.simulate('click');
+    renderInDrawer(mocks);
+    await waitFor(() => {
+      expect(document.querySelector('[data-test-id="drawer-close-button"]')).toBeTruthy();
+    });
+    fireEvent.click(document.querySelector('[data-test-id="drawer-close-button"]')!);
     expect(mocks.onClose).toHaveBeenCalled();
   });
 
@@ -60,11 +73,10 @@ describe('<RecordPanel />', () => {
         IcmpCode: 0
       }
     };
-    const wrapper = shallow(<RecordPanel {...mocks} record={flowWithICMP} />);
-    await waitForRender(wrapper);
-
-    expect(wrapper.find(RecordPanel)).toBeTruthy();
-    expect(wrapper.find({ 'data-test-id': 'drawer-field-IcmpType' })).toHaveLength(1);
-    expect(wrapper.find({ 'data-test-id': 'drawer-field-IcmpCode' })).toHaveLength(1);
+    renderInDrawer({ ...mocks, record: flowWithICMP });
+    await waitFor(() => {
+      expect(document.querySelector('[data-test-id="drawer-field-IcmpType"]')).toBeTruthy();
+    });
+    expect(document.querySelector('[data-test-id="drawer-field-IcmpCode"]')).toBeTruthy();
   });
 });

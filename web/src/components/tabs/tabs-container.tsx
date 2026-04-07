@@ -1,14 +1,14 @@
 import { Button, Flex, FlexItem, Tab, Tabs, TabTitleText, Tooltip } from '@patternfly/react-core';
 import React, { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNetflowContext } from '../../model/netflow-context';
 import { TimeRange } from '../../utils/datetime';
+import { useTheme } from '../../utils/theme-hook';
 import { ViewId } from '../netflow-traffic';
 
 export interface TabsContainerProps {
-  isDarkTheme: boolean;
   selectedViewId: ViewId;
   selectView: (v: ViewId) => void;
-  isAllowLoki: boolean;
   showHistogram: boolean;
   setShowViewOptions: (v: boolean) => void;
   setShowHistogram: (v: boolean) => void;
@@ -19,12 +19,15 @@ export interface TabsContainerProps {
 
 export const TabsContainer: React.FC<TabsContainerProps> = props => {
   const { t } = useTranslation('plugin__netobserv-plugin');
+  const isDarkTheme = useTheme();
+  const { caps } = useNetflowContext();
+  const isAllowLoki = caps.allowLoki;
 
   return (
     <Flex className="netflow-traffic-tabs-container" style={props.style}>
       <FlexItem id="tabs-container" flex={{ default: 'flex_1' }}>
         <Tabs
-          className={`netflow-traffic-tabs ${props.isDarkTheme ? 'dark' : 'light'}`}
+          className={`netflow-traffic-tabs ${isDarkTheme ? 'dark' : 'light'}`}
           usePageInsets
           activeKey={props.selectedViewId}
           onSelect={(event, eventkey) => props.selectView(eventkey as ViewId)}
@@ -38,9 +41,9 @@ export const TabsContainer: React.FC<TabsContainerProps> = props => {
           <Tab
             className="tableTabButton"
             eventKey={'table'}
-            isAriaDisabled={!props.isAllowLoki} // required instead of 'disabled' when used with a tooltip
+            isAriaDisabled={!isAllowLoki} // required instead of 'disabled' when used with a tooltip
             tooltip={
-              !props.isAllowLoki ? (
+              !isAllowLoki ? (
                 <Tooltip content={t('Only available when FlowCollector.loki.enable is true')} />
               ) : undefined
             }
@@ -54,7 +57,7 @@ export const TabsContainer: React.FC<TabsContainerProps> = props => {
         </Tabs>
       </FlexItem>
       {props.selectedViewId === 'table' && (
-        <FlexItem className={`${props.isDarkTheme ? 'dark' : 'light'}-bottom-border`}>
+        <FlexItem className={'bottom-border'}>
           <Button
             data-test="show-histogram-button"
             id="show-histogram-button"
@@ -70,7 +73,7 @@ export const TabsContainer: React.FC<TabsContainerProps> = props => {
           </Button>
         </FlexItem>
       )}
-      <FlexItem className={`${props.isDarkTheme ? 'dark' : 'light'}-bottom-border`}>
+      <FlexItem className={'bottom-border'}>
         <Button
           data-test="show-view-options-button"
           id="show-view-options-button"

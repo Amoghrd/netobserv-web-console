@@ -280,9 +280,11 @@ describe('swapFilterValue', () => {
   });
 
   it('should return unchanged filters when source filter not found', () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const filters: Filter[] = [];
     const result = swapFilterValue(FilterDefinitionSample, filters, 'src_namespace', { v: 'test' }, 'dst');
     expect(result).toEqual(filters);
+    spy.mockRestore();
   });
 });
 
@@ -410,6 +412,7 @@ describe('bnfFilterValue', () => {
   });
 
   it('should return unchanged filters when base filter definition not found', () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const customDef = { id: 'src_custom' as FilterId } as FilterDefinition;
     const filters: Filter[] = [
       {
@@ -423,18 +426,22 @@ describe('bnfFilterValue', () => {
 
     // Filters should be unchanged (base filter 'custom' doesn't exist)
     expect(result).toEqual(filters);
+    spy.mockRestore();
   });
 
   it('should return unchanged filters when source filter not found', () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const filters: Filter[] = [];
 
     const result = bnfFilterValue(FilterDefinitionSample, filters, 'src_namespace', { v: 'test' });
 
     // Filters should be unchanged
     expect(result).toEqual(filters);
+    spy.mockRestore();
   });
 
   it('should handle def missing', () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const srcDef = findFilter(FilterDefinitionSample, 'src_namespace')!;
     const value: FilterValue = { v: 'netobserv' };
     const filters: Filter[] = [
@@ -455,5 +462,6 @@ describe('bnfFilterValue', () => {
     expect(srcFilter).toBeDefined();
     expect(srcFilter?.values).toHaveLength(1);
     expect(srcFilter?.values[0].v).toBe('netobserv');
+    spy.mockRestore();
   });
 });

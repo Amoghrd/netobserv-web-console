@@ -49,40 +49,42 @@ export function useLocalStorage<T>(
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [storedValue, setStoredValue] = React.useState<T>(() => getLocalStorage<T>(key, initialValue, opts));
 
-  // Return a wrapped version of useState's setter function that persists the new value to localStorage
-  const setValue = (value: T) => {
-    try {
-      // Allow value to be a function so we have same API as useState
-      const stateValue = value instanceof Function ? value(storedValue) : value;
+  const setValue: React.Dispatch<React.SetStateAction<T>> = React.useCallback(
+    (value: React.SetStateAction<T>) => {
+      setStoredValue(prev => {
+        try {
+          const stateValue = value instanceof Function ? value(prev) : value;
 
-      // Save state and then localStorage
-      setStoredValue(stateValue);
+          const item = window.localStorage.getItem(localStoragePluginKey);
+          const parsedItem = item ? JSON.parse(item) : {};
+          const storeValue =
+            stateValue instanceof Map
+              ? Object.fromEntries((stateValue as unknown as Map<string, unknown>).entries())
+              : stateValue;
 
-      // Reload from localStorage
-      const item = window.localStorage.getItem(localStoragePluginKey);
-      const parsedItem = item ? JSON.parse(item) : {};
+          if (opts) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            parsedItem[key] = (storeValue as any[])
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              .filter((item: any) => item[opts.criteria])
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              .map((item: any) => item[opts.id]);
+          } else {
+            parsedItem[key] = storeValue;
+          }
 
-      // Stora maps as object
-      const storeValue = value instanceof Map ? Object.fromEntries(value.entries()) : stateValue;
+          window.localStorage.setItem(localStoragePluginKey, JSON.stringify(parsedItem));
+          return stateValue;
+        } catch (error) {
+          console.error(error);
+          clearLocalStorage();
+          return prev;
+        }
+      });
+    },
+    [key, opts]
+  );
 
-      // Set key values
-      if (opts) {
-        parsedItem[key] = storeValue
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .filter((item: any) => item[opts.criteria])
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .map((item: any) => item[opts.id]);
-      } else {
-        parsedItem[key] = storeValue;
-      }
-
-      // Save to localStorage
-      window.localStorage.setItem(localStoragePluginKey, JSON.stringify(parsedItem));
-    } catch (error) {
-      console.error(error);
-      clearLocalStorage();
-    }
-  };
   return [storedValue, setValue];
 }
 

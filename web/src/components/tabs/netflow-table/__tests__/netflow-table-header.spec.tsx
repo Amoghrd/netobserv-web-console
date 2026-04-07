@@ -1,5 +1,5 @@
-import { SortByDirection, Table, Tbody, Th, Thead, Tr } from '@patternfly/react-table';
-import { mount } from 'enzyme';
+import { SortByDirection, Table, Tbody } from '@patternfly/react-table';
+import { fireEvent, render } from '@testing-library/react';
 import * as React from 'react';
 import { Column, ColumnsId, ColumnSizeMap } from '../../../../utils/columns';
 import {
@@ -47,42 +47,44 @@ describe('<NetflowTableHeader />', () => {
   };
 
   it('should render component', async () => {
-    const wrapper = mount(<NetflowTableHeaderWrapper {...mocks} columns={AllSelectedColumnSample} />);
-    expect(wrapper.find(NetflowTableHeader)).toBeTruthy();
-    expect(wrapper.find(Thead)).toHaveLength(1);
-    expect(wrapper.find(Th).length).toBeGreaterThanOrEqual(AllSelectedColumnSample.length);
+    const { container } = render(<NetflowTableHeaderWrapper {...mocks} columns={AllSelectedColumnSample} />);
+    expect(container.querySelectorAll('thead')).toHaveLength(1);
+    expect(container.querySelectorAll('th').length).toBeGreaterThanOrEqual(AllSelectedColumnSample.length);
   });
 
   it('should render given columns', async () => {
-    const wrapper = mount(
+    const { container } = render(
       <NetflowTableHeaderWrapper {...mocks} columns={filterOrderedColumnsByIds([ColumnsId.endtime])} />
     );
-    expect(wrapper.find(NetflowTableHeader)).toBeTruthy();
-    expect(wrapper.find(Thead)).toHaveLength(1);
-    expect(wrapper.find(Tr)).toHaveLength(1);
-    expect(wrapper.find(Th)).toHaveLength(1);
+    expect(container.querySelectorAll('thead')).toHaveLength(1);
+    expect(container.querySelectorAll('thead tr')).toHaveLength(1);
+    expect(container.querySelectorAll('th')).toHaveLength(1);
   });
 
   it('should call sort function on click', async () => {
-    const wrapper = mount(<NetflowTableHeaderWrapper {...mocks} columns={DefaultColumnSample} />);
-    expect(wrapper.find(NetflowTableHeader)).toBeTruthy();
-    wrapper.find('button').at(0).simulate('click');
+    const { container } = render(<NetflowTableHeaderWrapper {...mocks} columns={DefaultColumnSample} />);
+    const firstButton = container.querySelector('button')!;
+    fireEvent.click(firstButton);
     expect(mocks.onSort).toHaveBeenCalledWith('StartTime', 'asc');
   });
 
   it('should nested consecutive group columns', async () => {
     const selectedIds = [ColumnsId.endtime, ColumnsId.srcname, ColumnsId.srcport, ColumnsId.dstname, ColumnsId.packets];
-    const wrapper = mount(<NetflowTableHeaderWrapper {...mocks} columns={filterOrderedColumnsByIds(selectedIds)} />);
-    expect(wrapper.find(Thead)).toHaveLength(1);
-    expect(wrapper.find(Tr)).toHaveLength(2);
-    expect(wrapper.find(Th).length).toBeGreaterThanOrEqual(selectedIds.length);
+    const { container } = render(
+      <NetflowTableHeaderWrapper {...mocks} columns={filterOrderedColumnsByIds(selectedIds)} />
+    );
+    expect(container.querySelectorAll('thead')).toHaveLength(1);
+    expect(container.querySelectorAll('thead tr')).toHaveLength(2);
+    expect(container.querySelectorAll('th').length).toBeGreaterThanOrEqual(selectedIds.length);
   });
 
   it('should keep flat non consecutive group columns', async () => {
     const selectedIds = [ColumnsId.endtime, ColumnsId.srcname, ColumnsId.dstname, ColumnsId.packets, ColumnsId.srcport];
-    const wrapper = mount(<NetflowTableHeaderWrapper {...mocks} columns={filterOrderedColumnsByIds(selectedIds)} />);
-    expect(wrapper.find(Thead)).toHaveLength(1);
-    expect(wrapper.find(Tr)).toHaveLength(1);
-    expect(wrapper.find(Th)).toHaveLength(selectedIds.length);
+    const { container } = render(
+      <NetflowTableHeaderWrapper {...mocks} columns={filterOrderedColumnsByIds(selectedIds)} />
+    );
+    expect(container.querySelectorAll('thead')).toHaveLength(1);
+    expect(container.querySelectorAll('thead tr')).toHaveLength(1);
+    expect(container.querySelectorAll('th')).toHaveLength(selectedIds.length);
   });
 });

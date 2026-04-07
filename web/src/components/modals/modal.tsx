@@ -11,18 +11,13 @@ export interface CustomModalProps {
   footer?: JSX.Element;
   onClose?: () => void;
   isOpen: boolean;
-  scrollable: boolean;
+  scrollable?: boolean;
   id?: string;
 }
 
-/* This Modal component replace patternfly one that has issues with overflows
- * it is based on console approach but their component doesn't manage non scrollable content & overflow
- * in @openshift-console/dynamic-plugin-sdk
- * https://github.com/openshift/console/blob/master/frontend/public/components/factory/modal.tsx
- */
 const CustomModal: React.FC<CustomModalProps> = ({
   id,
-  scrollable,
+  scrollable = true,
   isOpen,
   onClose,
   title,

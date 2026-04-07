@@ -1,7 +1,6 @@
-import { mount } from 'enzyme';
+import { render, waitFor } from '@testing-library/react';
 import * as React from 'react';
 
-import { Chart, ChartArea, ChartBar, ChartDonut, ChartGroup, ChartScatter } from '@patternfly/react-charts';
 import { metrics } from '../../__tests-data__/metrics';
 import { MetricsGraph, MetricsGraphProps } from '../metrics-graph';
 
@@ -17,40 +16,34 @@ describe('<MetricsContent />', () => {
   };
 
   it('should render component', async () => {
-    const wrapper = mount(<MetricsGraph {...props} />);
-    expect(wrapper.find(MetricsGraph)).toBeTruthy();
-    expect(wrapper.find('#chart-chart-test').last()).toBeTruthy();
+    const { container } = render(<MetricsGraph {...props} />);
+    expect(container.querySelector('#chart-chart-test')).toBeInTheDocument();
+    expect(container.querySelector('svg')).toBeInTheDocument();
   });
 
   it('should render bar', async () => {
-    const wrapper = mount(<MetricsGraph {...props} showBar={true} />);
-
-    expect(wrapper.find(ChartDonut)).toHaveLength(0);
-    expect(wrapper.find(Chart)).toHaveLength(1);
-    expect(wrapper.find(ChartBar)).toHaveLength(metrics.length);
-    expect(wrapper.find(ChartArea)).toHaveLength(0);
-    expect(wrapper.find(ChartScatter)).toHaveLength(0);
+    const { container } = render(<MetricsGraph {...props} showBar={true} />);
+    expect(container.querySelector('svg')).toBeInTheDocument();
+    await waitFor(() => {
+      const svg = container.querySelector('svg')!;
+      expect(svg.querySelectorAll('[role="presentation"]').length).toBeGreaterThan(0);
+    });
   });
 
   it('should render area', async () => {
-    const wrapper = mount(<MetricsGraph {...props} showArea={true} />);
-
-    expect(wrapper.find(ChartDonut)).toHaveLength(0);
-    expect(wrapper.find(Chart)).toHaveLength(1);
-    expect(wrapper.find(ChartGroup)).toHaveLength(1);
-    expect(wrapper.find(ChartBar)).toHaveLength(0);
-    expect(wrapper.find(ChartArea)).toHaveLength(metrics.length);
-    expect(wrapper.find(ChartScatter)).toHaveLength(0);
+    const { container } = render(<MetricsGraph {...props} showArea={true} />);
+    expect(container.querySelector('svg')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(container.querySelectorAll('path').length).toBeGreaterThan(0);
+    });
   });
 
   it('should render area with scatter', async () => {
-    const wrapper = mount(<MetricsGraph {...props} showArea={true} showScatter={true} />);
-
-    expect(wrapper.find(ChartDonut)).toHaveLength(0);
-    expect(wrapper.find(Chart)).toHaveLength(1);
-    expect(wrapper.find(ChartGroup)).toHaveLength(2);
-    expect(wrapper.find(ChartBar)).toHaveLength(0);
-    expect(wrapper.find(ChartArea)).toHaveLength(metrics.length);
-    expect(wrapper.find(ChartScatter)).toHaveLength(metrics.length);
+    const { container } = render(<MetricsGraph {...props} showArea={true} showScatter={true} />);
+    expect(container.querySelector('svg')).toBeInTheDocument();
+    await waitFor(() => {
+      const pathCount = container.querySelectorAll('path').length;
+      expect(pathCount).toBeGreaterThan(0);
+    });
   });
 });

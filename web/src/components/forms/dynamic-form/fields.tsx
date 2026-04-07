@@ -56,9 +56,16 @@ export const Description: React.FC<{
         headerContent={label}
         bodyContent={<div className={`co-pre-line description`}>{content}</div>}
       >
-        <Button className={`co-pre-line description`} variant="plain" style={{ paddingLeft: 0 }}>
-          {formatText(parts[0])} {t('(see more...)')}
-        </Button>
+        <Button
+          icon={
+            <>
+              {formatText(parts[0])} {t('(see more...)')}
+            </>
+          }
+          className={`co-pre-line description`}
+          variant="plain"
+          style={{ paddingLeft: 0 }}
+        />
       </Popover>
     );
   }
@@ -135,12 +142,10 @@ export const FieldSet: React.FC<FieldSetProps> = props => {
       <AccordionItem>
         <AccordionToggle
           id={`${idSchema.$id}_accordion-toggle`}
-          isExpanded={expanded}
           onClick={() => setExpanded(!expanded)}
+          isExpanded={expanded}
         >
-          <label className={classnames({ 'co-required': required })} htmlFor={`${idSchema.$id}_accordion-content`}>
-            {label}
-          </label>
+          <span className={classnames({ 'co-required': required })}>{label}</span>
         </AccordionToggle>
         {description && (
           <Description

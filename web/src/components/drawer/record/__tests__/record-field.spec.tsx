@@ -1,12 +1,11 @@
-import { Button } from '@patternfly/react-core';
-import { shallow } from 'enzyme';
+import { fireEvent, render } from '@testing-library/react';
 import * as React from 'react';
-import { waitForRender } from '../../../../components/__tests__/common.spec';
+
 import { compareNumbers } from '../../../../utils/base-compare';
 import { ColumnsId } from '../../../../utils/columns';
-import { Size } from '../../../dropdowns/table-display-dropdown';
 import { DefaultColumnSample } from '../../../__tests-data__/columns';
 import { FlowsSample } from '../../../__tests-data__/flows';
+import { Size } from '../../../dropdowns/table-display-dropdown';
 import RecordField, { RecordFieldFilter } from '../record-field';
 
 describe('<RecordField />', () => {
@@ -22,31 +21,24 @@ describe('<RecordField />', () => {
   };
 
   it('should render single field', async () => {
-    //datetime column will produce a single field
-    const wrapper = shallow(<RecordField flow={FlowsSample[0]} column={DefaultColumnSample[0]} {...mocks} />);
-    await waitForRender(wrapper);
-
-    expect(wrapper.find(RecordField)).toBeTruthy();
-    expect(wrapper.find('.record-field-content.m')).toHaveLength(1);
+    const { container } = render(<RecordField flow={FlowsSample[0]} column={DefaultColumnSample[0]} {...mocks} />);
+    expect(container.querySelector('.record-field-content.m')).toBeTruthy();
   });
 
   it('should filter', async () => {
-    const wrapper = shallow(
+    const { container } = render(
       <RecordField flow={FlowsSample[0]} column={DefaultColumnSample[0]} filter={filterMock} {...mocks} />
     );
-    await waitForRender(wrapper);
-
-    expect(wrapper.find(RecordField)).toBeTruthy();
-    expect(wrapper.find('.record-field-flex-container')).toHaveLength(1);
-    expect(wrapper.find('.record-field-flex')).toHaveLength(1);
-    const button = wrapper.find(Button);
-    expect(button).toHaveLength(1);
-    button.simulate('click');
+    expect(container.querySelector('.record-field-flex-container')).toBeTruthy();
+    expect(container.querySelector('.record-field-flex')).toBeTruthy();
+    const button = container.querySelector('button')!;
+    expect(button).toBeTruthy();
+    fireEvent.click(button);
     expect(filterMock.onClick).toHaveBeenCalledTimes(1);
   });
 
   it('should display <1ms DNS latency', async () => {
-    const wrapper = shallow(
+    const { container } = render(
       <RecordField
         flow={FlowsSample[2]}
         column={{
@@ -61,10 +53,8 @@ describe('<RecordField />', () => {
         {...mocks}
       />
     );
-    await waitForRender(wrapper);
-
-    expect(wrapper.find(RecordField)).toBeTruthy();
-    expect(wrapper.find('.record-field-value')).toHaveLength(1);
-    expect(wrapper.find('.record-field-value').childAt(0).text()).toBe('< 1ms');
+    const valueEl = container.querySelector('.record-field-value');
+    expect(valueEl).toBeTruthy();
+    expect(valueEl?.textContent).toBe('< 1ms');
   });
 });

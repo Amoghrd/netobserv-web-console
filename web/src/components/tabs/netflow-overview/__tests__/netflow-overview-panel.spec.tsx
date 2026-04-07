@@ -1,13 +1,10 @@
-import { mount, shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 import * as React from 'react';
 
-import { Card } from '@patternfly/react-core';
-import { waitForRender } from '../../../../components/__tests__/common.spec';
 import { MetricType } from '../../../../model/flow-query';
-import { MetricsGraph, MetricsGraphProps } from '../../../metrics/metrics-graph';
 import { metrics } from '../../../__tests-data__/metrics';
 import { SamplePanel } from '../../../__tests-data__/panels';
-import { NetflowOverview } from '../netflow-overview';
+import { MetricsGraph, MetricsGraphProps } from '../../../metrics/metrics-graph';
 import { NetflowOverviewPanel } from '../netflow-overview-panel';
 
 describe('<NetflowOverviewPanel />', () => {
@@ -27,20 +24,16 @@ describe('<NetflowOverviewPanel />', () => {
   };
 
   it('should render component', async () => {
-    const wrapper = shallow(<NetflowOverviewPanel {...panelProps} />);
-    await waitForRender(wrapper);
-
-    expect(wrapper.find(NetflowOverview)).toBeTruthy();
+    const { container } = render(<NetflowOverviewPanel {...panelProps} />);
+    expect(container.firstChild).toBeTruthy();
   });
 
   it('should render content', async () => {
-    const wrapper = mount(
+    const { container } = render(
       <NetflowOverviewPanel {...panelProps}>
         <MetricsGraph {...contentProps} />
       </NetflowOverviewPanel>
     );
-    await waitForRender(wrapper);
-
-    expect(wrapper.find(Card)).toHaveLength(1);
+    expect(container.querySelector('.pf-v5-c-card')).toBeTruthy();
   });
 });

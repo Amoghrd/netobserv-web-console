@@ -6,7 +6,7 @@ declare global {
             checkPanel(panelName: string[]): Chainable<Element>
             openPanelsModal(): Chainable<Element>
             openColumnsModal(): Chainable<Element>
-            checkPopupItems(id: string, names: string[]): Chainable<Element>
+            checkPopItems(id: string, names: string[]): Chainable<Element>
             checkQuerySummary(metric: JQuery<HTMLElement>): Chainable<Element>
             checkPerformance(page: string, loadTime: number, memoryUsage: number): Chainable<Element>
             changeQueryOption(name: string): Chainable<Element>
@@ -304,7 +304,7 @@ Cypress.Commands.add('checkPanel', (panelName) => {
     }
 });
 
-Cypress.Commands.add('checkPopupItems', (id, names) => {
+Cypress.Commands.add('checkPopItems', (id, names) => {
     for (let i = 0; i < names.length; i++) {
         cy.get(id).contains(names[i])
             .closest('.pf-v5-c-data-list__item-row').find('.pf-v5-c-data-list__check');

@@ -49,3 +49,10 @@ pre.backticks {
 #open-flow-collector-form, #open-flow-metrics-form {
   padding: 0;
 }
+
+/* PF6 accordion CSS variables inherit through the DOM tree, so when a parent
+   AccordionItem is expanded, nested collapsed items inherit visibility: visible
+   instead of hidden. Force-hide content of non-expanded items to fix this. */
+.co-dynamic-form__accordion .pf-v5-c-accordion__item:not(.pf-m-expanded) > .pf-v5-c-accordion__expandable-content {
+  display: none;
+}

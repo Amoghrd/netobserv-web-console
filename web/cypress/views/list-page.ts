@@ -59,9 +59,9 @@ export const listPage = {
   dvFilter: {
     byName: (name: string) => {
       cy.get('[data-ouia-component-id="DataViewFilters"]').within(() =>
-        cy.get('.pf-v6-c-menu-toggle').first().click(),
+        cy.get('.pf-v5-c-menu-toggle').first().click(),
       );
-      cy.get('.pf-v6-c-menu__list-item').contains('Name').click();
+      cy.get('.pf-v5-c-menu__list-item').contains('Name').click();
       cy.get('[aria-label="Name filter"]').clear().type(name);
     },
     by: (checkboxLabel: string) => {

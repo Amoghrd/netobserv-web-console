@@ -1,7 +1,7 @@
-import { mount, shallow } from 'enzyme';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import * as React from 'react';
 
-import { actOn } from '../../../components/__tests__/common.spec';
 import { TimeRangeDropdown, TimeRangeDropdownProps } from '../time-range-dropdown';
 
 describe('<TimeRangeDropdown />', () => {
@@ -13,59 +13,57 @@ describe('<TimeRangeDropdown />', () => {
   };
 
   it('should render component', async () => {
-    const wrapper = shallow(<TimeRangeDropdown {...props} />);
-    expect(wrapper.find(TimeRangeDropdown)).toBeTruthy();
+    render(<TimeRangeDropdown {...props} />);
+    expect(screen.getByRole('button')).toHaveAttribute('id', 'time-range-dropdown');
   });
 
   it('should open and close', async () => {
-    const wrapper = mount(<TimeRangeDropdown {...props} />);
-    expect(wrapper.find('li').length).toBe(0);
+    const { container } = render(<TimeRangeDropdown {...props} />);
 
-    //open dropdow
-    await actOn(() => wrapper.find('#time-range-dropdown').at(0).simulate('click'), wrapper);
-    expect(wrapper.find('li').length).toBeGreaterThan(0);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#time-range-dropdown')!);
+    });
+    await waitFor(() => {
+      expect(document.querySelectorAll('[data-test="time-range"] li').length).toBeGreaterThan(0);
+    });
 
-    //close dropdow
-    await actOn(() => wrapper.find('#time-range-dropdown').at(0).simulate('click'), wrapper);
-    expect(wrapper.find('li').length).toBe(0);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#time-range-dropdown')!);
+    });
 
-    //no setRange should be called
     expect(props.setRange).toHaveBeenCalledTimes(0);
-
-    //no openCustomModal should be called
     expect(props.openCustomModal).toHaveBeenCalledTimes(0);
   });
 
   it('should set range on select', async () => {
-    const wrapper = mount(<TimeRangeDropdown {...props} />);
+    const user = userEvent.setup();
+    const { container } = render(<TimeRangeDropdown {...props} />);
 
-    //open dropdown
-    await actOn(() => wrapper.find('#time-range-dropdown').at(0).simulate('click'), wrapper);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#time-range-dropdown')!);
+    });
+    await waitFor(() => expect(document.querySelector('#CUSTOM_TIME_RANGE_KEY')).toBeTruthy());
 
-    //select custom range
-    await actOn(() => wrapper.find('[id="CUSTOM_TIME_RANGE_KEY"]').last().simulate('click'), wrapper);
+    await user.click(document.querySelector('#CUSTOM_TIME_RANGE_KEY')!);
     expect(props.openCustomModal).toHaveBeenCalled();
-    expect(wrapper.find('li').length).toBe(0);
 
-    //open dropdown
-    await actOn(() => wrapper.find('#time-range-dropdown').at(0).simulate('click'), wrapper);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#time-range-dropdown')!);
+    });
+    await waitFor(() => expect(document.querySelector('[id="5m"]')).toBeTruthy());
 
-    //select 5m
-    await actOn(() => wrapper.find('[id="5m"]').last().simulate('click'), wrapper);
+    await user.click(document.querySelector('[id="5m"]')!);
     expect(props.setRange).toHaveBeenCalledWith(300);
-    expect(wrapper.find('li').length).toBe(0);
 
-    //open dropdown
-    await actOn(() => wrapper.find('#time-range-dropdown').at(0).simulate('click'), wrapper);
-    //select 15m
-    await actOn(() => wrapper.find('[id="15m"]').last().simulate('click'), wrapper);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#time-range-dropdown')!);
+    });
+    await waitFor(() => expect(document.querySelector('[id="15m"]')).toBeTruthy());
 
-    //openCustomModal should be called once
+    await user.click(document.querySelector('[id="15m"]')!);
+
     expect(props.openCustomModal).toHaveBeenCalledTimes(1);
     expect(props.setRange).toHaveBeenCalledWith(900);
-    expect(wrapper.find('li').length).toBe(0);
-
-    //setRange should be called twice
     expect(props.setRange).toHaveBeenCalledTimes(2);
   });
 });

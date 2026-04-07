@@ -1,7 +1,7 @@
-#table-display-dropdown {
+#table-display-popper {
   padding-bottom: 1em !important;
 }
 
-#table-display-dropdown>.pf-v5-c-menu__group {
+#table-display-popper>.pf-v5-c-menu__group {
   width: 100%;
 }

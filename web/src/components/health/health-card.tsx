@@ -96,13 +96,17 @@ export const HealthCard: React.FC<HealthCardProps> = ({
       <CardHeader
         className={hideTitle ? 'card-header-hidden' : 'card-header'}
         selectableActions={{
-          selectableActionId: `health-card-${name || 'global'}`,
-          selectableActionAriaLabelledby: `selectable-card-${name || 'global'}`,
+          selectableActionId: `health-card-selectable-${name || 'global'}`,
+          selectableActionAriaLabelledby: `health-card-title-${name || 'global'}`,
           variant: 'single',
           onClickAction: onClick
         }}
       >
-        {!hideTitle && (
+        {hideTitle ? (
+          <span id={`health-card-title-${name || 'global'}`} className="pf-v5-screen-reader">
+            {k8sKind && name ? `${k8sKind} ${name}` : t('Global')}
+          </span>
+        ) : (
           <Flex
             gap={{ default: 'gapSm' }}
             alignItems={{ default: 'alignItemsCenter' }}
@@ -110,7 +114,7 @@ export const HealthCard: React.FC<HealthCardProps> = ({
           >
             <FlexItem>{icon}</FlexItem>
             <FlexItem>
-              <CardTitle>
+              <CardTitle id={`health-card-title-${name || 'global'}`}>
                 {k8sKind && name ? <ResourceLink inline={true} kind={k8sKind} name={name} /> : t('Global')}
               </CardTitle>
             </FlexItem>
@@ -148,7 +152,12 @@ export const HealthCard: React.FC<HealthCardProps> = ({
             <Flex direction={{ default: 'column' }} alignItems={{ default: 'alignItemsCenter' }}>
               <FlexItem>
                 <TextContent>
-                  <Text component={TextVariants.small} style={{ color: 'var(--pf-v5-global--Color--200)' }}>
+                  <Text
+                    component={TextVariants.small}
+                    style={{
+                      color: 'var(--pf-t--global--text--color--subtle)'
+                    }}
+                  >
                     {t('Score')}
                   </Text>
                 </TextContent>

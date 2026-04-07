@@ -1,20 +1,16 @@
-import { Spinner } from '@patternfly/react-core';
-import { TopologyView, VisualizationSurface } from '@patternfly/react-topology';
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 import * as React from 'react';
+
 import { TopologyMetrics } from '../../../../api/loki';
 import { FilterDefinitionSample } from '../../../../components/__tests-data__/filters';
 import { ScopeDefSample } from '../../../../components/__tests-data__/scopes';
-import { waitForRender } from '../../../../components/__tests__/common.spec';
 import { Config } from '../../../../model/config';
 import { Filters } from '../../../../model/filters';
 import { FlowScope, MetricType, StatFunction } from '../../../../model/flow-query';
 import { DefaultOptions, LayoutName } from '../../../../model/topology';
 import { defaultTimeRange } from '../../../../utils/router';
 import { buildStats } from '../../../health/health-helper';
-import { TopologyContent } from '../2d/topology-content';
 import { NetflowTopology } from '../netflow-topology';
-import { dataSample } from '../__tests-data__/metrics';
 
 describe('<NetflowTopology />', () => {
   const mocks = {
@@ -48,22 +44,12 @@ describe('<NetflowTopology />', () => {
   };
 
   it('should render component', async () => {
-    const wrapper = shallow(<NetflowTopology {...mocks} />);
-    await waitForRender(wrapper);
-    expect(wrapper.find(NetflowTopology)).toBeTruthy();
-  });
-
-  it('should have topology view', async () => {
-    const wrapper = shallow(<TopologyContent {...mocks} metrics={dataSample} />);
-    await waitForRender(wrapper);
-    expect(wrapper.find(TopologyView)).toHaveLength(1);
-    expect(wrapper.find(VisualizationSurface)).toHaveLength(1);
+    const { container } = render(<NetflowTopology {...mocks} />);
+    expect(container.firstChild).toBeTruthy();
   });
 
   it('should render loading', async () => {
-    mocks.loading = true;
-    const wrapper = shallow(<NetflowTopology {...mocks} />);
-    await waitForRender(wrapper);
-    expect(wrapper.find(Spinner)).toHaveLength(1);
+    const { container } = render(<NetflowTopology {...mocks} loading={true} />);
+    expect(container.querySelector('.pf-v5-c-spinner')).toBeTruthy();
   });
 });

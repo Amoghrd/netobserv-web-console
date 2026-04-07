@@ -5,11 +5,11 @@ import { TopologyMetrics } from '../../api/loki';
 import { getTimeRangeOptions, TimeRange } from '../../utils/datetime';
 import { formatDuration, getDateMsInSeconds, getDateSInMiliseconds, parseDuration } from '../../utils/duration';
 import { defaultTimeRange } from '../../utils/router';
+import { useTheme } from '../../utils/theme-hook';
 import { GuidedTourHandle } from '../guided-tour/guided-tour';
 import HistogramContainer from '../metrics/histogram';
 
 export interface HistogramToolbarProps {
-  isDarkTheme: boolean;
   loading: boolean;
   lastRefresh: Date | undefined;
   totalMetric: TopologyMetrics | undefined;
@@ -25,6 +25,7 @@ export interface HistogramToolbarProps {
 
 export const HistogramToolbar: React.FC<HistogramToolbarProps> = props => {
   const { t } = useTranslation('plugin__netobserv-plugin');
+  const isDarkTheme = useTheme();
 
   const moveRange = React.useCallback(
     (next: boolean) => {
@@ -99,19 +100,14 @@ export const HistogramToolbar: React.FC<HistogramToolbarProps> = props => {
   );
 
   return (
-    <Toolbar
-      data-test-id="histogram-toolbar"
-      id="histogram-toolbar"
-      isFullHeight
-      className={props.isDarkTheme ? 'dark' : ''}
-    >
-      <ToolbarItem className="histogram" widths={{ default: '100%' }}>
+    <Toolbar data-test-id="histogram-toolbar" id="histogram-toolbar" isFullHeight className={isDarkTheme ? 'dark' : ''}>
+      <ToolbarItem className="histogram">
         <HistogramContainer
           id={'histogram'}
           loading={props.loading}
           totalMetric={props.totalMetric}
           limit={props.limit}
-          isDark={props.isDarkTheme}
+          isDark={isDarkTheme}
           range={props.histogramRange}
           guidedTourHandle={props.guidedTourHandle}
           setRange={props.setHistogramRange}

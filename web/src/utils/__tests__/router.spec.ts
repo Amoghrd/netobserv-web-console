@@ -1,11 +1,23 @@
-import { setNavFunction } from '../../components/dynamic-loader/dynamic-loader';
 import { FilterDefinitionSample } from '../../components/__tests-data__/filters';
 import { FilterCompare, Filters } from '../../model/filters';
 import { findFilter } from '../filter-definitions';
 import { getFiltersFromURL, setURLFilters } from '../router';
 
-const nav = jest.fn();
-setNavFunction(nav);
+// Mock window.history.pushState
+const mockPushState = jest.fn();
+const originalPushState = window.history.pushState;
+
+beforeAll(() => {
+  window.history.pushState = mockPushState;
+});
+
+afterAll(() => {
+  window.history.pushState = originalPushState;
+});
+
+beforeEach(() => {
+  mockPushState.mockClear();
+});
 
 describe('Filters URL', () => {
   it('should set Filters -> URL', async () => {
@@ -26,9 +38,11 @@ describe('Filters URL', () => {
     };
     setURLFilters(filters, false);
 
-    expect(nav).toHaveBeenCalledWith('/?filters=src_namespace%3Dtest%3Bdst_name%21%3Dtest&match=bidirectional', {
-      replace: false
-    });
+    expect(mockPushState).toHaveBeenCalledWith(
+      {},
+      '',
+      '/?filters=src_namespace%3Dtest%3Bdst_name%21%3Dtest&match=bidirectional'
+    );
   });
 
   it('should get URL -> Filters', async () => {

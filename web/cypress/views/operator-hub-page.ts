@@ -44,7 +44,7 @@ export const installedOperators = {
 
 export const operatorHubPage = {
   getAllTileLabels: () => {
-    return cy.get('.pf-v6-c-badge')
+    return cy.get('.pf-v5-c-badge')
   },
   checkCustomCatalog: (name: string) => {
     sourceActions(name, 'view');

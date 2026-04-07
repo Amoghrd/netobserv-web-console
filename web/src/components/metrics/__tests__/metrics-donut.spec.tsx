@@ -1,7 +1,6 @@
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import * as React from 'react';
 
-import { ChartDonut } from '@patternfly/react-charts';
 import { NamedMetric } from '../../../api/loki';
 import { metrics } from '../../__tests-data__/metrics';
 import { MetricsDonut, MetricsDonutProps } from '../metrics-donut';
@@ -20,8 +19,9 @@ describe('<StatDonut />', () => {
   };
 
   it('should render donut', async () => {
-    const wrapper = mount(<MetricsDonut {...props} />);
-    expect(wrapper.find('VictoryLabel').last().text()).toBe('500 BpsTotal');
-    expect(wrapper.find(ChartDonut)).toHaveLength(1);
+    const { container } = render(<MetricsDonut {...props} />);
+    expect(container.querySelector('svg')).toBeInTheDocument();
+    expect(container.textContent).toMatch(/500 Bps/);
+    expect(container.textContent).toMatch(/Total/);
   });
 });

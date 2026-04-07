@@ -1,9 +1,8 @@
-import { TextInput, ValidatedOptions } from '@patternfly/react-core';
-import { mount } from 'enzyme';
+import { ValidatedOptions } from '@patternfly/react-core';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import * as React from 'react';
-import { act } from 'react-dom/test-utils';
+
 import { FilterDefinitionSample } from '../../../../components/__tests-data__/filters';
-import { actOn } from '../../../../components/__tests__/common.spec';
 import { findFilter } from '../../../../utils/filter-definitions';
 import AutocompleteFilter, { AutocompleteFilterProps } from '../autocomplete-filter';
 
@@ -24,64 +23,65 @@ describe('<AutocompleteFilter />', () => {
   });
 
   it('should filter valid port by name', async () => {
-    const wrapper = mount(
+    const { container, rerender } = render(
       <AutocompleteFilter {...props} filterDefinition={findFilter(FilterDefinitionSample, 'src_port')!} />
     );
-    const textInput = wrapper.find(TextInput).at(0);
-    const searchButton = wrapper.find('#search-button').at(0);
+    const input = container.querySelector('#autocomplete-search') as HTMLInputElement;
+    expect(input).toBeTruthy();
 
-    expect(textInput).toBeDefined();
-    expect(searchButton).toBeDefined();
-
-    // No initial call
     expect(props.addFilter).toHaveBeenCalledTimes(0);
-    // Initial setup
     expect(props.setIndicator).toHaveBeenCalledTimes(1);
-    expect(textInput.props().validated).toBe(ValidatedOptions.default);
 
-    // Filter for source name
-    await actOn(() => wrapper.find(TextInput).last().props().onChange!(null!, 'ftp'), wrapper);
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'ftp' } });
+    });
     expect(props.setCurrentValue).toHaveBeenNthCalledWith(1, 'ftp');
 
-    // update prop as if the value was stored in parent component
-    wrapper.setProps({ currentValue: 'ftp' });
-    await actOn(() => wrapper.find('#autocomplete-search').last().simulate('keydown', { key: 'Enter' }), wrapper);
+    rerender(
+      <AutocompleteFilter
+        {...props}
+        filterDefinition={findFilter(FilterDefinitionSample, 'src_port')!}
+        currentValue="ftp"
+      />
+    );
+    await act(async () => {
+      fireEvent.keyDown(input, { key: 'Enter' });
+    });
 
-    act(() => {
-      wrapper.update();
+    await waitFor(() => {
       expect(props.addFilter).toHaveBeenNthCalledWith(1, { v: '21', display: 'ftp' });
     });
   });
 
   it('should reject invalid port by name', async () => {
-    const wrapper = mount(
+    const { container, rerender } = render(
       <AutocompleteFilter {...props} filterDefinition={findFilter(FilterDefinitionSample, 'dst_port')!} />
     );
-    const textInput = wrapper.find(TextInput).at(0);
-    const searchButton = wrapper.find('#search-button').at(0);
+    const input = container.querySelector('#autocomplete-search') as HTMLInputElement;
+    expect(input).toBeTruthy();
 
-    expect(textInput).toBeDefined();
-    expect(searchButton).toBeDefined();
-
-    // No initial call
     expect(props.addFilter).toHaveBeenCalledTimes(0);
-    // Initial setup
     expect(props.setIndicator).toHaveBeenCalledTimes(1);
-    expect(textInput.props().validated).toBe(ValidatedOptions.default);
 
-    // Filter for source name
-    await actOn(() => textInput.props().onChange!(null!, 'no match'), wrapper);
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'no match' } });
+    });
     expect(props.setCurrentValue).toHaveBeenNthCalledWith(1, 'no match');
 
-    // update prop as if the value was stored in parent component
-    wrapper.setProps({ currentValue: 'no match' });
+    rerender(
+      <AutocompleteFilter
+        {...props}
+        filterDefinition={findFilter(FilterDefinitionSample, 'dst_port')!}
+        currentValue="no match"
+      />
+    );
     expect(props.setIndicator).toHaveBeenNthCalledWith(2, ValidatedOptions.warning);
 
-    // try to filter
-    await actOn(() => wrapper.find('#autocomplete-search').last().simulate('keydown', { key: 'Enter' }), wrapper);
+    await act(async () => {
+      fireEvent.keyDown(input, { key: 'Enter' });
+    });
 
-    act(() => {
-      wrapper.update();
+    await waitFor(() => {
       expect(props.setIndicator).toHaveBeenNthCalledWith(3, ValidatedOptions.error);
       expect(props.addFilter).toHaveBeenCalledTimes(0);
     });

@@ -19,6 +19,7 @@ import {
   getDateSInMiliseconds,
   parseDuration
 } from '../../utils/duration';
+import { useTheme } from '../../utils/theme-hook';
 
 export interface TimeRangeDropdownProps {
   range: number | TimeRange;
@@ -30,6 +31,8 @@ export interface TimeRangeDropdownProps {
 export const customTimeRangeKey = 'CUSTOM_TIME_RANGE_KEY';
 
 export const TimeRangeDropdown: React.FC<TimeRangeDropdownProps> = ({ id, range, setRange, openCustomModal }) => {
+  const isDark = useTheme();
+  const contentStyle = { color: isDark ? '#000' : '#fff' };
   const [isOpen, setOpen] = React.useState<boolean>(false);
   const { t } = useTranslation('plugin__netobserv-plugin');
 
@@ -58,8 +61,8 @@ export const TimeRangeDropdown: React.FC<TimeRangeDropdownProps> = ({ id, range,
       if (prettyPrint) {
         return (
           <TextContent className="netobserv-tooltip-text">
-            <Text component={TextVariants.p}>{`${t('From')} ${fromText}`}</Text>
-            <Text component={TextVariants.p}>{`${t('To')} ${toText}`}</Text>
+            <Text component={TextVariants.p} style={contentStyle}>{`${t('From')} ${fromText}`}</Text>
+            <Text component={TextVariants.p} style={contentStyle}>{`${t('To')} ${toText}`}</Text>
           </TextContent>
         );
       } else {

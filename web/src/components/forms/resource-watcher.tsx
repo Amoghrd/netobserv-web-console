@@ -11,7 +11,6 @@ import { JSONSchema7 } from 'json-schema';
 import React, { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useK8sModel } from '../../utils/k8s-models-hook';
-import { back } from '../dynamic-loader/dynamic-loader';
 import { ErrorComponent } from '../messages/error';
 import { prune } from './dynamic-form/utils';
 import './forms.css';
@@ -200,7 +199,7 @@ export const ResourceWatcher: FC<ResourceWatcherProps> = ({
               }
             })
               .then(() => {
-                back();
+                window.history.back();
               })
               .catch(e => setErrors([e.message]));
           } else {
@@ -211,7 +210,9 @@ export const ResourceWatcher: FC<ResourceWatcherProps> = ({
             })
               .then(res => {
                 setErrors([]);
-                onSuccess && onSuccess(res);
+                if (onSuccess) {
+                  onSuccess(res);
+                }
               })
               .catch(e => setErrors([e.message]));
           }

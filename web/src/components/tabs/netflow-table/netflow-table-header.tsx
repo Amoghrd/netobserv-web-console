@@ -33,7 +33,6 @@ export interface NetflowTableHeaderProps {
   columnSizes: ColumnSizeMap;
   setColumnSizes: (v: ColumnSizeMap) => void;
   tableWidth: number;
-  isDark?: boolean;
 }
 
 export const NetflowTableHeader: React.FC<NetflowTableHeaderProps> = ({
@@ -44,8 +43,7 @@ export const NetflowTableHeader: React.FC<NetflowTableHeaderProps> = ({
   setColumns,
   columnSizes,
   setColumnSizes,
-  tableWidth,
-  isDark
+  tableWidth
 }) => {
   const resizedElement = React.useRef<ResizedElement>();
   const draggedElement = React.useRef<HTMLElement>();
@@ -146,7 +144,7 @@ export const NetflowTableHeader: React.FC<NetflowTableHeaderProps> = ({
     (nh: ColumnGroup) => {
       return (
         <Th
-          className={`netobserv-header nested ${isDark ? 'dark' : ''}`}
+          className="netobserv-header nested"
           data-test={`nested-th-${nh.title || 'empty'}`}
           data-index={columns.indexOf(nh.columns[0])}
           key={`nested-${nh.title}-${headersState.nestedHeaders.indexOf(nh)}`}
@@ -172,7 +170,7 @@ export const NetflowTableHeader: React.FC<NetflowTableHeaderProps> = ({
         </Th>
       );
     },
-    [columns, headersState.nestedHeaders, isDark, onDragStart, onDrop]
+    [columns, headersState.nestedHeaders, onDragStart, onDrop]
   );
 
   const getTableHeader = React.useCallback(
@@ -181,7 +179,7 @@ export const NetflowTableHeader: React.FC<NetflowTableHeaderProps> = ({
         headersState.useNested && headersState.nestedHeaders.find(nh => _.last(nh.columns) === c) !== undefined;
       return (
         <Th
-          className={`netobserv-header column ${isDark ? 'dark' : ''}`}
+          className="netobserv-header column"
           data-test={`th-${c.id}`}
           data-index={columns.indexOf(c)}
           hasRightBorder={showBorder}
@@ -236,7 +234,6 @@ export const NetflowTableHeader: React.FC<NetflowTableHeaderProps> = ({
       columns,
       headersState.nestedHeaders,
       headersState.useNested,
-      isDark,
       onDragStart,
       onDrop,
       onMouseDown,
@@ -255,11 +252,7 @@ export const NetflowTableHeader: React.FC<NetflowTableHeaderProps> = ({
   }, [columns]);
 
   return (
-    <Thead
-      className={`${isDark ? 'dark' : 'light'}-bottom-shadow`}
-      data-test="thead"
-      hasNestedHeader={headersState.useNested}
-    >
+    <Thead className="bottom-shadow" data-test="thead" hasNestedHeader={headersState.useNested}>
       {headersState.useNested && <Tr>{headersState.nestedHeaders.map(nh => getNestedTableHeader(nh))}</Tr>}
       <Tr data-test="thead-tr">{headersState.headers.map(c => getTableHeader(c))}</Tr>
     </Thead>
