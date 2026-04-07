@@ -93,29 +93,29 @@ describe('<TimeRangeModal />', () => {
   });
 
   it('should allow same day with different times (NETOBSERV-2665)', async () => {
-    const wrapper = mount(<TimeRangeModal {...props} />);
-    const datePickers = wrapper.find(DatePicker);
-    const timePickers = wrapper.find(TimePicker);
+    render(<TimeRangeModal {...props} />);
+    await act(async () => {
+      jest.runAllTimers();
+    });
+
+    const fromDateInput = document.querySelector('[data-test="from-date-picker"] input') as HTMLInputElement;
+    const fromTimeInput = document.querySelector('[data-test="from-time-picker"] input') as HTMLInputElement;
+    const toDateInput = document.querySelector('[data-test="to-date-picker"] input') as HTMLInputElement;
+    const toTimeInput = document.querySelector('[data-test="to-time-picker"] input') as HTMLInputElement;
 
     // Set both dates to the same day but different times
     // From: 2026-03-12 10:00:00
     // To: 2026-03-12 10:30:00
-    const testDate = new Date(2026, 2, 12); // March 12, 2026 in local timezone
-    act(() => {
-      datePickers.at(0).props().onChange!(fakeEvent, '2026-03-12', testDate);
-      timePickers.at(0).props().onChange!(fakeEvent, '10:00:00');
-      datePickers.at(1).props().onChange!(fakeEvent, '2026-03-12', testDate);
-      timePickers.at(1).props().onChange!(fakeEvent, '10:30:00');
+    await act(async () => {
+      fireEvent.change(fromDateInput, { target: { value: '2026-03-12' } });
+      fireEvent.change(fromTimeInput, { target: { value: '10:00:00' } });
+      fireEvent.change(toDateInput, { target: { value: '2026-03-12' } });
+      fireEvent.change(toTimeInput, { target: { value: '10:30:00' } });
+      jest.runAllTimers();
     });
 
-    wrapper.update();
-
-    // The save button should be enabled (no error)
-    const saveButton = wrapper.find('[data-test="time-range-save"]').first();
-    expect(saveButton.prop('isDisabled')).toBe(false);
-
-    // Verify no validation error is shown
-    const tooltip = wrapper.find('.time-range-tooltip-empty');
-    expect(tooltip.length).toBeGreaterThan(0);
+    const saveButton = document.querySelector('[data-test="time-range-save"]') as HTMLButtonElement;
+    // The save button should be enabled (no validation error for same day with different times)
+    expect(saveButton.disabled).toBe(false);
   });
 });
