@@ -46,7 +46,7 @@ export namespace dashboardSelectors {
 }
 
 export const graphSelector = {
-    graphBody: '.pf-v6-c-card__body > div > div'
+    graphBody: '[role="region"] > div > div'
 }
 
 export const appsInfra = [
@@ -68,7 +68,7 @@ Cypress.Commands.add('checkDashboards', (names) => {
         // Check that graph body doesn't have empty state - use a custom retry mechanism
         cy.byTestID(names[i], { timeout: 120000 }).first().within(() => {
             cy.get(graphSelector.graphBody, { timeout: 120000 }).should($body => {
-                const hasEmptyState = $body.hasClass('pf-v6-c-empty-state')
+                const hasEmptyState = $body.find('[data-test="empty-state"]').length > 0
                 if (hasEmptyState) {
                     // Force a retry by throwing an error
                     throw new Error('Dashboard panel still showing empty state, retrying...')

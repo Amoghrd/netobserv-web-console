@@ -81,7 +81,7 @@ Cypress.Commands.add('openPanelsModal', () => {
   cy.showAdvancedOptions();
   cy.get('#manage-overview-panels-button').click();
   cy.get('#overview-panels-modal').should('exist');
-  cy.get('#overview-panels-modal').find('.pf-v5-c-data-list__item-content').should('have.length', c.availablePanelsCount);
+  cy.get('#overview-panels-modal').find('[role="listitem"]').should('have.length', c.availablePanelsCount);
 });
 
 Cypress.Commands.add('checkColumns', (groups = c.defaultColumnGroupCount, cols = c.defaultColumnCount) => {
@@ -106,19 +106,22 @@ Cypress.Commands.add('openColumnsModal', () => {
   cy.showAdvancedOptions();
   cy.get('#manage-columns-button').click();
   cy.get('#columns-modal').should('exist');
-  cy.get('#columns-modal').find('.pf-v5-c-data-list__item-content').should('have.length', c.availableColumnCount);
+  cy.get('#columns-modal').find('[role="listitem"]').should('have.length', c.availableColumnCount);
 });
 
 Cypress.Commands.add('selectPopupItems', (id, names) => {
   for (let i = 0; i < names.length; i++) {
-    cy.get(id).get('.pf-v5-c-modal-box__body').contains(names[i])
-      .closest('.pf-v5-c-data-list__item-row').find('.pf-v5-c-data-list__check').click();
+    cy.get(id).within(() => {
+      cy.contains(names[i])
+        .closest('[role="listitem"]')
+        .find('input[type="checkbox"]').click();
+    });
   }
 });
 
 Cypress.Commands.add('checkPopupItems', (id, ids) => {
   for (let i = 0; i < ids.length; i++) {
-    cy.get(id).find('.pf-v5-c-modal-box__body').find(`#${ids[i]}`).check();
+    cy.get(id).find(`#${ids[i]}`).check();
   }
 });
 
@@ -133,8 +136,7 @@ Cypress.Commands.add('sortColumn', (name) => {
 
 Cypress.Commands.add('dropdownSelect', (id, name) => {
   cy.get(`#${id}`).click();
-  cy.get('.pf-v5-c-menu__content').should('exist');
-  cy.get('.pf-v5-c-menu__content').find(`#${name}`).click();
+  cy.get(`#${name}`).click();
 });
 
 Cypress.Commands.add('checkContent', (topology) => {
@@ -163,7 +165,7 @@ Cypress.Commands.add('changeQueryOption', (name, topology) => {
 
 Cypress.Commands.add('changeTimeRange', (name, topology) => {
   cy.get('#time-range-dropdown-dropdown').click();
-  cy.get('.pf-v5-c-menu__content').contains(name).click();
+  cy.contains(name).click();
   cy.checkContent(topology);
 });
 
@@ -179,7 +181,7 @@ Cypress.Commands.add('changeMetricType', (name) => {
   cy.showDisplayOptions();
 
   cy.get('#metricType-dropdown').click();
-  cy.get('.pf-v5-c-menu__content').contains(name).click();
+  cy.contains(name).click();
   
   // For Packets metric, we expect a full page error due to mock timeout
   if (name === 'Packets') {

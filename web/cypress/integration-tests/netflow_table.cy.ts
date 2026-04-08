@@ -124,7 +124,8 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408 Network_Observability) Net
         netflowPage.clearAllFilters()
 
         // verify NOT filter
-        cy.get(filterSelectors.filterDropdown).click().get('.pf-v5-c-panel__main-body').should('be.visible')
+        cy.get(filterSelectors.filterDropdown).click()
+        cy.get('#column-filter-dropdown').should('be.visible')
         cy.get(filterSelectors.sourceRadio).should('exist').click()
         cy.get(filterSelectors.columnFilter).should('exist').click().get('#namespace').should('exist').click()
         cy.get(filterSelectors.compareDropdown).should('exist').click().get('#not-equal').should('exist').click()
@@ -136,13 +137,13 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408 Network_Observability) Net
 
         // verify src port filter and port Naming
         cy.get(filterSelectors.filterInput).type("src_port=3100" + '{enter}')
-        cy.get('#src_port-0-toggle > span.pf-v5-c-menu-toggle__text').should('contain.text', 'loki')
+        cy.get('#src_port-0-toggle').should('contain.text', 'loki')
 
         // disable filter
         cy.get('#src_port-0-toggle').click().get('#dropdown-item-disable').click()
 
         // sort by port
-        cy.get('[data-test=th-SrcPort] > .pf-v5-c-table__button').click()
+        cy.get('[data-test=th-SrcPort] button').click()
 
         // Verify SrcPort doesnt not have text loki for all rows
         cy.get('[data-test-td-column-id=SrcPort]').each((td) => {

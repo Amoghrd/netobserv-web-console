@@ -25,7 +25,7 @@ describe('(OCP-72610 Network_Observability) Export automation', { tags: ['Networ
         cy.readFile('cypress/downloads/overview_page.png')
 
         // Export only Top 5 average bytes rates panel
-        cy.get('#panel-kebab-top_avg_byte_rates-container > .pf-v5-c-menu-toggle').should('exist').click()
+        cy.get('#panel-kebab-top_avg_byte_rates-container button').should('exist').click()
         cy.contains("Export panel").should('exist').click()
         cy.readFile('cypress/downloads/overview_panel_top_avg_byte_rates.png')
         cy.exec('rm cypress/downloads/overview_page.png')

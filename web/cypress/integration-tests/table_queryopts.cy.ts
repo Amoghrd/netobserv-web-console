@@ -120,7 +120,7 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408 Network_Observability) Net
 
         // filter on DSCP values
         cy.get(filterSelectors.filterInput).type("dscp=0" + '{enter}').click()
-        cy.get('#dscp-0-toggle > span.pf-v5-c-menu-toggle__text').should('contain.text', 'Standard')
+        cy.get('#dscp-0-toggle').should('contain.text', 'Standard')
 
         // Verify DSCP value is Standard for all rows
         cy.get('[data-test-td-column-id=Dscp]').each((td) => {

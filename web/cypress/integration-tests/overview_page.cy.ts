@@ -126,7 +126,7 @@ describe('(OCP-54839 Network_Observability) Netflow Overview page tests', { tags
         cy.get(overviewSelectors.panelsModal).contains('Save').should('be.disabled');
 
         // select 1 panel and verify its visible on console
-        cy.get('.pf-v5-c-data-list__check > #top_avg_packet_rates').click();
+        cy.get('#top_avg_packet_rates').check();
         cy.get(overviewSelectors.panelsModal).contains('Save').click();
         netflowPage.waitForLokiQuery()
         cy.checkPanel([overviewSelectors.allPanels[2]])
