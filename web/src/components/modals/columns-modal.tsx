@@ -279,7 +279,7 @@ export const ColumnsModal: React.FC<ColumnsModalProps> = ({
                   <Draggable key={column.id} hasNoWrapper>
                     <DataListItem aria-labelledby={rowLabelId} id={`table-column-management-row-${column.id}`}>
                       <DataListItemRow>
-                        <DataListControl>
+                        <DataListControl className="netobserv-data-list-control">
                           <DataListDragButton
                             aria-label={t('Reorder column')}
                             aria-labelledby={rowLabelId}

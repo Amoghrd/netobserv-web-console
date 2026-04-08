@@ -131,7 +131,7 @@ export const App: React.FunctionComponent<{ endUser?: boolean }> = ({ endUser })
 
   const withContext = (content: JSX.Element, name: string) => {
     return (
-      <PageSection id="consolePageSection" className={`tab' ${isDark ? 'dark' : 'light'}`}>
+      <PageSection id="netobservPageSection" className={`tab ${isDark ? 'dark' : 'light'}`}>
         <div style={{ padding: '1rem' }}>
           <Title headingLevel="h1">{`${name} example`}</Title>
         </div>

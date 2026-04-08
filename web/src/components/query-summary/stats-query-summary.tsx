@@ -4,7 +4,6 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Warning } from '../../model/warnings';
 import { formatDurationAboveMillisecond } from '../../utils/duration';
-import { useTheme } from '../../utils/theme-hook';
 import './query-summary.css';
 
 export interface StatsQuerySummaryProps {
@@ -26,8 +25,6 @@ export const StatsQuerySummary: React.FC<StatsQuerySummaryProps> = ({
   loading,
   warning
 }) => {
-  const isDark = useTheme();
-  const contentStyle = { color: isDark ? '#000' : '#fff' };
   const { t } = useTranslation('plugin__netobserv-plugin');
 
   const dateText = lastRefresh ? lastRefresh.toLocaleTimeString() : t('Loading...');
@@ -42,37 +39,21 @@ export const StatsQuerySummary: React.FC<StatsQuerySummaryProps> = ({
       <Tooltip
         content={
           <>
-            <Text component="p" style={contentStyle}>
+            <p>
               {lastRefresh
                 ? t('Last refresh: {{time}}', {
                     time: dateText
                   })
                 : dateText}
-            </Text>
-            {dataSources?.length && (
-              <Text component="p" style={contentStyle}>
-                {t('Datasource(s): {{sources}}', { sources: formatDatasources() })}
-              </Text>
-            )}
-            {numQueries && (
-              <Text component="p" style={contentStyle}>
-                {t('Query count: {{numQueries}}', { numQueries })}
-              </Text>
-            )}
-            {durationText !== '' && (
-              <Text component="p" style={contentStyle}>
-                {t('Duration: {{duration}}', { duration: durationText })}
-              </Text>
-            )}
+            </p>
+            {dataSources?.length && <p>{t('Datasource(s): {{sources}}', { sources: formatDatasources() })}</p>}
+            {numQueries && <p>{t('Query count: {{numQueries}}', { numQueries })}</p>}
+            {durationText !== '' && <p>{t('Duration: {{duration}}', { duration: durationText })}</p>}
             {warning !== undefined && (
               <>
                 <br />
-                <Text component="p" style={contentStyle}>
-                  {warning.summary}
-                </Text>
-                <Text component="p" style={contentStyle}>
-                  {warning.details}
-                </Text>
+                <p>{warning.summary}</p>
+                <p>{warning.details}</p>
               </>
             )}
           </>

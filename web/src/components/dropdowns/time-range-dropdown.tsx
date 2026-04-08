@@ -1,13 +1,4 @@
-import {
-  Dropdown,
-  DropdownItem,
-  MenuToggle,
-  MenuToggleElement,
-  Text,
-  TextContent,
-  TextVariants,
-  Tooltip
-} from '@patternfly/react-core';
+import { Dropdown, DropdownItem, MenuToggle, MenuToggleElement, Tooltip } from '@patternfly/react-core';
 import * as _ from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,8 +10,6 @@ import {
   getDateSInMiliseconds,
   parseDuration
 } from '../../utils/duration';
-import { useTheme } from '../../utils/theme-hook';
-
 export interface TimeRangeDropdownProps {
   range: number | TimeRange;
   setRange: (v: number) => void;
@@ -31,8 +20,6 @@ export interface TimeRangeDropdownProps {
 export const customTimeRangeKey = 'CUSTOM_TIME_RANGE_KEY';
 
 export const TimeRangeDropdown: React.FC<TimeRangeDropdownProps> = ({ id, range, setRange, openCustomModal }) => {
-  const isDark = useTheme();
-  const contentStyle = { color: isDark ? '#000' : '#fff' };
   const [isOpen, setOpen] = React.useState<boolean>(false);
   const { t } = useTranslation('plugin__netobserv-plugin');
 
@@ -60,10 +47,10 @@ export const TimeRangeDropdown: React.FC<TimeRangeDropdownProps> = ({ id, range,
       let toText = getFormattedDate(to);
       if (prettyPrint) {
         return (
-          <TextContent className="netobserv-tooltip-text">
-            <Text component={TextVariants.p} style={contentStyle}>{`${t('From')} ${fromText}`}</Text>
-            <Text component={TextVariants.p} style={contentStyle}>{`${t('To')} ${toText}`}</Text>
-          </TextContent>
+          <div>
+            <p>{`${t('From')} ${fromText}`}</p>
+            <p>{`${t('To')} ${toText}`}</p>
+          </div>
         );
       } else {
         //remove common part of date if possible

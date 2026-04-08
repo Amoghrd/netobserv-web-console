@@ -296,7 +296,7 @@ export const OverviewPanelsModal: React.FC<OverviewPanelsModalProps> = ({
                   <Draggable key={panel.id} hasNoWrapper>
                     <DataListItem aria-labelledby={rowLabelId} id={`overview-panel-management-row-${panel.id}`}>
                       <DataListItemRow>
-                        <DataListControl>
+                        <DataListControl className="netobserv-data-list-control">
                           <DataListDragButton
                             aria-label={t('Reorder panel')}
                             aria-labelledby={rowLabelId}

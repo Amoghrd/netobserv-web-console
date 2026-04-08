@@ -44,6 +44,7 @@ import { TruncateLength } from '../dropdowns/truncate-dropdown';
 import { GuidedTourHandle } from '../guided-tour/guided-tour';
 import BrushHandleComponent from './brush-handle';
 import './histogram.css';
+import './metrics-content.css';
 
 export const VoronoiContainer = createContainer('voronoi', 'brush');
 

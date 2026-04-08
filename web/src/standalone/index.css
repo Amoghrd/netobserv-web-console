@@ -25,11 +25,11 @@ section#pageSection.light {
   background: #fff !important;
 }
 
-#consolePageSection {
+#netobservPageSection {
   display: contents;
 }
 
-#consolePageSection>section {
+#netobservPageSection>section {
   flex: 1;
 }
 
@@ -53,6 +53,40 @@ label.pf-v5-c-menu__menu-item {
   position: relative;
   left: 16px;
   padding: 0;
+}
+
+/* Map PF6 semantic tokens for standalone mode (light).
+   In OCP Console, these are provided by the Console shell. */
+#pageSection, #netobservPageSection {
+  --pf-t--global--background--color--primary--default: #fff;
+  --pf-t--global--background--color--secondary--default: #f0f0f0;
+  --pf-t--global--border--color--default: #d2d2d2;
+  --pf-t--global--text--color--subtle: #6a6e73;
+  --pf-t--global--text--color--inverse: #fff;
+  --pf-t--global--text--color--regular: #151515;
+  --pf-t--global--text--color--status--danger--default: #c9190b;
+  --pf-t--global--text--color--status--warning--default: #f0ab00;
+  --pf-t--global--text--color--status--info--default: #2b9af3;
+  --pf-t--global--color--brand--default: #06c;
+  --pf-t--global--color--status--danger--default: #c9190b;
+  --pf-t--global--spacer--xs: 0.25rem;
+}
+
+/* Map PF6 semantic tokens for standalone mode (dark). */
+.pf-v5-theme-dark #pageSection,
+.pf-v5-theme-dark #netobservPageSection {
+  --pf-t--global--background--color--primary--default: #1b1d21;
+  --pf-t--global--background--color--secondary--default: #0f1214;
+  --pf-t--global--border--color--default: #444548;
+  --pf-t--global--text--color--subtle: #aaabac;
+  --pf-t--global--text--color--inverse: #1b1d21;
+  --pf-t--global--text--color--regular: #e0e0e0;
+  --pf-t--global--text--color--status--danger--default: #fe5142;
+  --pf-t--global--text--color--status--warning--default: #f0ab00;
+  --pf-t--global--text--color--status--info--default: #2b9af3;
+  --pf-t--global--color--brand--default: #1fa7f8;
+  --pf-t--global--color--status--danger--default: #fe5142;
+  --pf-t--global--spacer--xs: 0.25rem;
 }
 
 /*set font & titles styles*/

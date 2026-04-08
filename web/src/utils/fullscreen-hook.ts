@@ -4,27 +4,22 @@ export function useFullScreen(): [boolean, React.Dispatch<React.SetStateAction<b
   const [isFullScreen, setFullScreen] = React.useState(false);
 
   React.useEffect(() => {
-    if (isFullScreen && document.getElementsByClassName('pf-v5-c-page__sidebar pf-m-expanded').length) {
+    const sidebarExpanded = document.querySelector(
+      '.pf-v5-c-page__sidebar.pf-m-expanded, .pf-v6-c-page__sidebar.pf-m-expanded'
+    );
+    if (isFullScreen && sidebarExpanded) {
       document.getElementById('nav-toggle')?.click();
     }
 
-    const header = document.getElementById('page-main-header');
-    const headersCompat = document.getElementsByClassName('pf-v5-c-masthead');
-    const sideBar = document.getElementById('page-sidebar');
-    const sideBarsCompat = document.getElementsByClassName('pf-v5-c-page__sidebar');
-    const notification = document.getElementsByClassName('co-global-notifications');
+    const elements = document.querySelectorAll(
+      '#page-main-header, .pf-v5-c-masthead, .pf-v6-c-masthead, #page-sidebar, .pf-v5-c-page__sidebar, .pf-v6-c-page__sidebar'
+    );
 
-    [
-      header,
-      ...(headersCompat ? Array.from(headersCompat) : []),
-      sideBar,
-      ...(sideBarsCompat ? Array.from(sideBarsCompat) : []),
-      ...(notification ? Array.from(notification) : [])
-    ].forEach(e => {
+    elements.forEach(e => {
       if (isFullScreen) {
-        e?.classList.add('hidden');
+        e.classList.add('hidden');
       } else {
-        e?.classList.remove('hidden');
+        e.classList.remove('hidden');
       }
     });
   }, [isFullScreen]);
