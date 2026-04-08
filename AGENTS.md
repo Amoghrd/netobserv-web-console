@@ -6,10 +6,12 @@ Best practices for AI coding agents on NetObserv Web Console.
 
 ## Project Context
 
-**NetObserv Web Console** - OpenShift Console dynamic plugin for network observability visualization
+**NetObserv Web Console** - a network observability console that can be deployed either as:
+- OpenShift console plugin: Integrates into OpenShift Console with extended views
+- Standalone console: Single-page application showing Netflow Traffic and Network Health
 
 **Components:**
-- **Frontend**: TypeScript/React with PatternFly components (OpenShift Console dynamic plugin SDK)
+- **Frontend**: TypeScript/React with PatternFly components (uses OpenShift Console dynamic plugin SDK for plugin mode)
 - **Backend**: Go HTTP server providing API endpoints for Loki queries, Kubernetes resources, and Prometheus metrics
 
 **Deployment Modes:**
@@ -31,8 +33,9 @@ Best practices for AI coding agents on NetObserv Web Console.
 ## Critical Constraints
 
 ### 🚨 OpenShift Console Plugin SDK
-- Must use `@openshift-console/dynamic-plugin-sdk` APIs
-- Follow OpenShift Console conventions for navigation, extensions, theming
+- Plugin mode must use `@openshift-console/dynamic-plugin-sdk` APIs
+- Plugin mode must follow OpenShift Console conventions for navigation, extensions, theming
+- Standalone mode uses the same codebase but without Console integration
 - Test both plugin and standalone modes
 
 ### 🚨 Node Version Consistency
@@ -105,8 +108,8 @@ FlowCollector CRD field changed in operator:
 ## Repository-Specific Context
 
 ### Plugin vs Standalone Modes
-- **Plugin** (default): Console integration (localhost:9001), requires Console clone for dev
-- **Standalone**: Independent app (`make start-standalone` or `make start-standalone-mock`), build with `STANDALONE=true make images`
+- **Plugin mode**: Console integration (localhost:9001), requires Console clone for dev
+- **Standalone mode**: Independent app (`make start-standalone` or `make start-standalone-mock`), build with `STANDALONE=true make images`
 - FLAVOR=`enduser` limits production standalone to Network Traffic/Health tabs
 
 ### Loki Query Optimization
