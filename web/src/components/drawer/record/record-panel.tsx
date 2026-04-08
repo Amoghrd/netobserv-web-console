@@ -322,16 +322,14 @@ export const RecordPanel: React.FC<RecordDrawerProps> = ({
         <div className="record-group-container" key={key} data-test-id={key}>
           <Divider />
           <AccordionItem data-test-id={key}>
-            {
-              <AccordionToggle
-                className="borderless-accordion"
-                onClick={() => toggle(toggleId)}
-                isExpanded={!hidden.includes(toggleId)}
-                id={toggleId}
-              >
-                {g.title}
-              </AccordionToggle>
-            }
+            <AccordionToggle
+              className="borderless-accordion"
+              onClick={() => toggle(toggleId)}
+              id={toggleId}
+              isExpanded={!hidden.includes(toggleId)}
+            >
+              {g.title}
+            </AccordionToggle>
             <AccordionContent
               className="borderless-accordion"
               id={toggleId + '-content'}
@@ -458,9 +456,11 @@ export const RecordPanel: React.FC<RecordDrawerProps> = ({
                               ) : undefined
                             }
                           >
-                            <Button variant="plain" className="record-field-title-popover-button">
-                              <Text component={TextVariants.h4}>{getShortColumnName(c)}</Text>
-                            </Button>
+                            <Button
+                              icon={<Text component={TextVariants.h4}>{getShortColumnName(c)}</Text>}
+                              variant="plain"
+                              className="record-field-title-popover-button"
+                            />
                           </Popover>
                         ) : (
                           <Text component={TextVariants.h4} className="record-field-title">

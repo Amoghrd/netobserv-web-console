@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+import { TFunction } from 'i18next';
 import { Filter, FilterCompare, FilterConfigDef, FilterId, FilterValue } from '../../model/filters';
 import { findFilter, getFilterDefinitions } from '../../utils/filter-definitions';
 import { ColumnConfigSampleDefs } from './columns';
@@ -382,7 +383,11 @@ export const FilterConfigSampleDefs: FilterConfigDef[] = [
   }
 ];
 
-export const FilterDefinitionSample = getFilterDefinitions(FilterConfigSampleDefs, ColumnConfigSampleDefs, v => v);
+export const FilterDefinitionSample = getFilterDefinitions(
+  FilterConfigSampleDefs,
+  ColumnConfigSampleDefs,
+  ((key: string) => key) as TFunction
+);
 
 const filter = (id: FilterId, values: FilterValue[]): Filter => {
   return {

@@ -46,48 +46,72 @@ export const HealthScoringDrawer: React.FC<HealthScoringDrawerProps> = ({ isOpen
           <Text component={TextVariants.p}>{t('Issues are classified into three severity levels:')}</Text>
 
           <Text component={TextVariants.h4}>
-            <span style={{ color: 'var(--pf-v5-global--danger-color--100)' }}>Critical</span>
+            <span
+              style={{
+                color: 'var(--pf-t--global--text--color--status--danger--default)'
+              }}
+            >
+              Critical
+            </span>
           </Text>
           <Text component={TextVariants.p}>
             {t('Severe problems requiring immediate attention. Critical issues can reduce the score down to 0.')}
           </Text>
-          <Text className="health-scoring-list-item">{`• ${t('Score range: 0-6')}`}</Text>
-          <Text className="health-scoring-list-item">{`• ${t('Weight: High (1.0)')}`}</Text>
-          <Text className="health-scoring-list-item">{`• ${t('Examples: connectivity loss, service failures')}`}</Text>
+          <Text component="p" className="health-scoring-list-item">{`• ${t('Score range: 0-6')}`}</Text>
+          <Text component="p" className="health-scoring-list-item">{`• ${t('Weight: High (1.0)')}`}</Text>
+          <Text component="p" className="health-scoring-list-item">{`• ${t(
+            'Examples: connectivity loss, service failures'
+          )}`}</Text>
 
           <Text component={TextVariants.h4}>
-            <span style={{ color: 'var(--pf-v5-global--warning-color--100)' }}>Warning</span>
+            <span
+              style={{
+                color: 'var(--pf-t--global--text--color--status--warning--default)'
+              }}
+            >
+              Warning
+            </span>
           </Text>
           <Text component={TextVariants.p}>
             {t('Moderate problems that should be reviewed. Warnings can reduce the score down to 4.')}
           </Text>
-          <Text className="health-scoring-list-item">{`• ${t('Score range: 4-8')}`}</Text>
-          <Text className="health-scoring-list-item">{`• ${t('Weight: Medium (0.5)')}`}</Text>
-          <Text className="health-scoring-list-item">{`• ${t('Examples: elevated latency, increased errors')}`}</Text>
+          <Text component="p" className="health-scoring-list-item">{`• ${t('Score range: 4-8')}`}</Text>
+          <Text component="p" className="health-scoring-list-item">{`• ${t('Weight: Medium (0.5)')}`}</Text>
+          <Text component="p" className="health-scoring-list-item">{`• ${t(
+            'Examples: elevated latency, increased errors'
+          )}`}</Text>
 
           <Text component={TextVariants.h4}>
-            <span style={{ color: 'var(--pf-v5-global--info-color--100)' }}>Info</span>
+            <span
+              style={{
+                color: 'var(--pf-t--global--text--color--status--info--default)'
+              }}
+            >
+              Info
+            </span>
           </Text>
           <Text component={TextVariants.p}>
             {t('Minor observations worth noting. Info issues can reduce the score down to 6.')}
           </Text>
-          <Text className="health-scoring-list-item">{`• ${t('Score range: 6-10')}`}</Text>
-          <Text className="health-scoring-list-item">{`• ${t('Weight: Low (0.25)')}`}</Text>
-          <Text className="health-scoring-list-item">{`• ${t('Examples: traffic increases, minor anomalies')}`}</Text>
+          <Text component="p" className="health-scoring-list-item">{`• ${t('Score range: 6-10')}`}</Text>
+          <Text component="p" className="health-scoring-list-item">{`• ${t('Weight: Low (0.25)')}`}</Text>
+          <Text component="p" className="health-scoring-list-item">{`• ${t(
+            'Examples: traffic increases, minor anomalies'
+          )}`}</Text>
 
           <Text component={TextVariants.h3}>{t('Alert States')}</Text>
-          <Text className="health-scoring-list-item">
+          <Text component="p" className="health-scoring-list-item">
             <strong>{t('Inactive')}</strong>:{' '}
             {t('No problem detected - contributes best possible score for its severity')}
           </Text>
-          <Text className="health-scoring-list-item">
+          <Text component="p" className="health-scoring-list-item">
             <strong>{t('Pending')}</strong>:{' '}
             {t('Problem detected, awaiting confirmation - reduced impact (30% of full impact)')}
           </Text>
-          <Text className="health-scoring-list-item">
+          <Text component="p" className="health-scoring-list-item">
             <strong>{t('Firing')}</strong>: {t('Active problem - full impact on score')}
           </Text>
-          <Text className="health-scoring-list-item">
+          <Text component="p" className="health-scoring-list-item">
             <strong>{t('Silenced')}</strong>:{' '}
             {t('Known issue, temporarily ignored - minimal impact (10% of full impact)')}
           </Text>
@@ -108,14 +132,16 @@ export const HealthScoringDrawer: React.FC<HealthScoringDrawerProps> = ({ isOpen
               'Pre-calculated metrics that are continuously evaluated. Unlike alerts, they always have a current value and are classified by severity based on threshold ranges:'
             )}
           </Text>
-          <Text className="health-scoring-list-item">{`• ${t(
+          <Text component="p" className="health-scoring-list-item">{`• ${t(
             'Value < info threshold: Not included in scoring'
           )}`}</Text>
-          <Text className="health-scoring-list-item">{`• ${t('Value ≥ info threshold: Classified as info')}`}</Text>
-          <Text className="health-scoring-list-item">{`• ${t(
+          <Text component="p" className="health-scoring-list-item">{`• ${t(
+            'Value ≥ info threshold: Classified as info'
+          )}`}</Text>
+          <Text component="p" className="health-scoring-list-item">{`• ${t(
             'Value ≥ warning threshold: Classified as warning'
           )}`}</Text>
-          <Text className="health-scoring-list-item">{`• ${t(
+          <Text component="p" className="health-scoring-list-item">{`• ${t(
             'Value ≥ critical threshold: Classified as critical'
           )}`}</Text>
           <Text component={TextVariants.p}>
@@ -128,14 +154,14 @@ export const HealthScoringDrawer: React.FC<HealthScoringDrawerProps> = ({ isOpen
               'The final score is a weighted average of all issues (both alerts and recording rules). Each issue contributes based on:'
             )}
           </Text>
-          <Text className="health-scoring-list-item">
+          <Text component="p" className="health-scoring-list-item">
             <strong>{t('How severe it is')}</strong>:{' '}
             {t('The distance between the current value and the threshold, mapped to the severity range')}
           </Text>
-          <Text className="health-scoring-list-item">
+          <Text component="p" className="health-scoring-list-item">
             <strong>{t('Its severity level')}</strong>: {t('Critical issues have more weight than warnings or info')}
           </Text>
-          <Text className="health-scoring-list-item">
+          <Text component="p" className="health-scoring-list-item">
             <strong>{t('Its state')}</strong>:{' '}
             {t('Firing issues have full impact, pending and silenced have reduced impact')}
           </Text>

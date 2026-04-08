@@ -46,7 +46,7 @@ export namespace dashboardSelectors {
 }
 
 export const graphSelector = {
-    graphBody: '.pf-v6-c-card__body > div > div'
+    graphBody: '.pf-v5-c-card__body > div > div'
 }
 
 export const appsInfra = [
@@ -57,7 +57,7 @@ export const appsInfra = [
 Cypress.Commands.add('checkDashboards', (names) => {
     for (let i = 0; i < names.length; i++) {
         cy.byTestID(names[i], { timeout: 120000 }).should('exist')
-            .find(graphSelector.graphBody, { timeout: 120000 }).should('not.have.class', 'pf-v6-c-empty-state')
+            .find(graphSelector.graphBody, { timeout: 120000 }).should('not.have.class', 'pf-v5-c-empty-state')
     }
 })
 

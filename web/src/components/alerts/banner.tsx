@@ -9,7 +9,7 @@ import {
 } from '@patternfly/react-core';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { navigate } from '../dynamic-loader/dynamic-loader';
+import { useNavigate } from '../../utils/url';
 import './banner.css';
 
 export interface AlertBannerProps {
@@ -19,6 +19,8 @@ export interface AlertBannerProps {
 
 export const AlertBanner: React.FC<AlertBannerProps> = ({ rule, onDelete }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
+  const navigate = useNavigate();
+
   const routeAlert = () => {
     let path = `/monitoring/alerts/${rule.id}`;
     path += `?alertname=${rule.name}&app=${rule.labels.app}&severity=${rule.labels.severity}`;

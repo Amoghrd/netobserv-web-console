@@ -1,4 +1,11 @@
-import { EmptyState, EmptyStateBody, EmptyStateIcon, Text, TextVariants, Title } from '@patternfly/react-core';
+import {
+  EmptyState,
+  EmptyStateBody,
+  EmptyStateHeader,
+  EmptyStateIcon,
+  Text,
+  TextVariants
+} from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import * as React from 'react';
 
@@ -11,10 +18,7 @@ export const HealthError: React.FC<HealthErrorProps> = ({ title, body }) => {
   return (
     <div id="netobserv-error-container">
       <EmptyState data-test="error-state">
-        <EmptyStateIcon className="netobserv-error-icon" icon={ExclamationCircleIcon} />
-        <Title headingLevel="h2" size="lg">
-          {title}
-        </Title>
+        <EmptyStateHeader titleText={title} headingLevel="h2" icon={<EmptyStateIcon icon={ExclamationCircleIcon} />} />
         <EmptyStateBody className="error-body">
           <Text className="netobserv-error-message" component={TextVariants.p}>
             {body}

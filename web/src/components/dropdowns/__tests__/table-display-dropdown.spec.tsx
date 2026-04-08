@@ -1,8 +1,6 @@
-import { Radio } from '@patternfly/react-core';
-import { mount, shallow } from 'enzyme';
+import { act, fireEvent, render } from '@testing-library/react';
 import * as React from 'react';
 
-import { act } from 'react-dom/test-utils';
 import { Size, TableDisplayDropdown } from '../table-display-dropdown';
 import { TableDisplayOptions } from '../table-display-options';
 
@@ -15,27 +13,22 @@ describe('<DisplayDropdown />', () => {
   };
 
   it('should render component', async () => {
-    const wrapper = shallow(<TableDisplayDropdown {...props} />);
-    expect(wrapper.find(TableDisplayDropdown)).toBeTruthy();
+    const { container } = render(<TableDisplayDropdown {...props} />);
+    expect(container.querySelector('[data-test="display-dropdown-button"]')).toBeTruthy();
   });
 
   it('should setSize on select', async () => {
-    const wrapper = mount(<TableDisplayOptions {...props} />);
+    const { container } = render(<TableDisplayOptions {...props} size="m" />);
 
-    //select compact
-    act(() => {
-      wrapper.find('#size-s').find(Radio).props().onChange!({} as React.FormEvent<HTMLInputElement>, true);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#size-s')!);
     });
     expect(props.setSize).toHaveBeenCalledWith('s');
-    expect(wrapper.find('li').length).toBe(0);
 
-    //select large
-    act(() => {
-      wrapper.find('#size-l').find(Radio).props().onChange!({} as React.FormEvent<HTMLInputElement>, true);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#size-l')!);
     });
     expect(props.setSize).toHaveBeenCalledWith('l');
-
-    //setSize should be called twice
     expect(props.setSize).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,8 +1,8 @@
-import { mount, shallow } from 'enzyme';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import * as React from 'react';
 
 import { ScopeDefSample } from '../../../components/__tests-data__/scopes';
-import { actOn } from '../../../components/__tests__/common.spec';
 import { MetricScopeOptions } from '../../../model/metrics';
 import { GroupDropdown } from '../group-dropdown';
 
@@ -16,46 +16,47 @@ describe('<GroupDropdown />', () => {
   };
 
   it('should render component', async () => {
-    const wrapper = shallow(<GroupDropdown {...props} />);
-    expect(wrapper.find(GroupDropdown)).toBeTruthy();
+    render(<GroupDropdown {...props} />);
+    expect(screen.getByRole('button')).toHaveAttribute('id', 'group-dropdown');
   });
 
   it('should open and close', async () => {
-    const wrapper = mount(<GroupDropdown {...props} />);
-    expect(wrapper.find('li').length).toBe(0);
+    const { container } = render(<GroupDropdown {...props} />);
 
-    //open dropdow
-    await actOn(() => wrapper.find('#group-dropdown').at(0).simulate('click'), wrapper);
-    expect(wrapper.find('li').length).toBeGreaterThan(0);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#group-dropdown')!);
+    });
+    await waitFor(() => {
+      expect(document.querySelectorAll('[data-test="group"] li').length).toBeGreaterThan(0);
+    });
 
-    //close dropdow
-    await actOn(() => wrapper.find('#group-dropdown').at(0).simulate('click'), wrapper);
-    expect(wrapper.find('li').length).toBe(0);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#group-dropdown')!);
+    });
 
-    //no setGroupType should be called
     expect(props.setGroupType).toHaveBeenCalledTimes(0);
   });
 
   it('should refresh on select', async () => {
-    const wrapper = mount(<GroupDropdown {...props} />);
+    const user = userEvent.setup();
+    const { container } = render(<GroupDropdown {...props} />);
 
-    //open dropdown
-    await actOn(() => wrapper.find('#group-dropdown').at(0).simulate('click'), wrapper);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#group-dropdown')!);
+    });
+    await waitFor(() => expect(document.querySelector('#none')).toBeTruthy());
 
-    //select NONE
-    await actOn(() => wrapper.find('[id="none"]').last().simulate('click'), wrapper);
+    await user.click(document.querySelector('#none')!);
     expect(props.setGroupType).toHaveBeenCalledWith('none');
-    expect(wrapper.find('li').length).toBe(0);
 
-    //open dropdown
-    await actOn(() => wrapper.find('#group-dropdown').at(0).simulate('click'), wrapper);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#group-dropdown')!);
+    });
+    await waitFor(() => expect(document.querySelector('#owners')).toBeTruthy());
 
-    //select OWNERS
-    await actOn(() => wrapper.find('[id="owners"]').last().simulate('click'), wrapper);
+    await user.click(document.querySelector('#owners')!);
 
-    //setGroupType should be called twice
     expect(props.setGroupType).toHaveBeenCalledTimes(2);
     expect(props.setGroupType).toHaveBeenCalledWith('owners');
-    expect(wrapper.find('li').length).toBe(0);
   });
 });

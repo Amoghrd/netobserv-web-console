@@ -31,6 +31,7 @@
 
 .netobserv-refresh-container {
     align-self: end;
+    padding-left: 1em;
 }
 
 span.pf-v5-c-button__icon.pf-v5-m-start {
@@ -62,6 +63,7 @@ span.pf-v5-c-button__icon.pf-v5-m-start {
     height: 100%;
     flex: 1;
     padding: 0;
+    gap: 0;
 }
 
 /* fix page section color for PF4 compat in OCP 4.15+ */
@@ -140,6 +142,7 @@ span.pf-v5-c-button__icon.pf-v5-m-start {
 
 #histogram-toolbar,
 #view-options-toolbar {
+    padding-top: 1em;
     z-index: 5;
     box-shadow: 0 0.125rem 0.1rem -0.0625rem rgba(3, 3, 3, 0.16);
 }
@@ -207,29 +210,15 @@ span.pf-v5-c-button__icon.pf-v5-m-start {
 }
 
 /* outside bottom border */
-.light-bottom-border {
+.bottom-border {
     margin: 0 !important;
     align-self: flex-end;
-    border-bottom: 1px #d2d2d2 solid;
-}
-
-.dark-bottom-border {
-    margin: 0 !important;
-    align-self: flex-end;
-    border-bottom: 1px #444548 solid;
+    border-bottom: 1px var(--pf-t--global--border--color--default) solid;
 }
 
 /* inside bottom border */
-.light-bottom-shadow {
-    -webkit-box-shadow: inset 0 -1px 0 0 #d2d2d2;
-    -moz-box-shadow: inset 0 -1px 0 0 #d2d2d2;
-    box-shadow: inset 0 -1px 0 0 #d2d2d2;
-}
-
-.dark-bottom-shadow {
-    -webkit-box-shadow: inset 0 -1px 0 0 #444548;
-    -moz-box-shadow: inset 0 -1px 0 0 #444548;
-    box-shadow: inset 0 -1px 0 0 #444548;
+.bottom-shadow {
+    box-shadow: inset 0 -1px 0 0 var(--pf-t--global--border--color--default);
 }
 
 .query-option-tooltip-text {
@@ -255,4 +244,8 @@ span.pf-v5-c-button__icon.pf-v5-m-start {
 .centered-list button,
 .centered-list .center {
     align-self: center;
+}
+
+div#table-display-popper {
+    padding: 1em 2em 2em 0;
 }

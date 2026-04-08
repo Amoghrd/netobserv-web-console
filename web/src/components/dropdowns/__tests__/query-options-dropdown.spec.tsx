@@ -1,7 +1,6 @@
-import { Radio, Select } from '@patternfly/react-core';
-import { shallow } from 'enzyme';
+import { act, fireEvent, render } from '@testing-library/react';
 import * as React from 'react';
-import { act } from 'react-dom/test-utils';
+
 import { QueryOptionsDropdown, QueryOptionsProps } from '../query-options-dropdown';
 import { QueryOptionsPanel } from '../query-options-panel';
 
@@ -22,10 +21,10 @@ describe('<QueryOptionsDropdown />', () => {
     setRecordType: jest.fn(),
     setDataSource: jest.fn()
   };
+
   it('should render component', async () => {
-    const wrapper = shallow(<QueryOptionsDropdown {...props} />);
-    expect(wrapper.find(QueryOptionsDropdown)).toBeTruthy();
-    expect(wrapper.find(Select)).toBeTruthy();
+    render(<QueryOptionsDropdown {...props} />);
+    expect(document.querySelector('[data-test="query-options-dropdown-container"]')).toBeTruthy();
   });
 });
 
@@ -52,23 +51,22 @@ describe('<QueryOptionsPanel />', () => {
   });
 
   it('should render component', async () => {
-    const wrapper = shallow(<QueryOptionsPanel {...props} />);
-    expect(wrapper.find('.pf-v5-c-menu__group').length).toBe(4);
-    expect(wrapper.find('.pf-v5-c-menu__group-title').length).toBe(4);
-    expect(wrapper.find(Radio)).toHaveLength(13);
+    const { container } = render(<QueryOptionsPanel {...props} />);
+    expect(container.querySelectorAll('.pf-v5-c-menu__group').length).toBe(4);
+    expect(container.querySelectorAll('.pf-v5-c-menu__group-title').length).toBe(4);
+    expect(container.querySelectorAll('input[type="radio"]')).toHaveLength(13);
 
-    //setOptions should not be called at startup, because it is supposed to be already initialized from URL
     expect(props.setLimit).toHaveBeenCalledTimes(0);
   });
 
   it('should set options', async () => {
-    const wrapper = shallow(<QueryOptionsPanel {...props} />);
+    const { container, rerender } = render(<QueryOptionsPanel {...props} />);
     expect(props.setLimit).toHaveBeenCalledTimes(0);
 
-    act(() => {
-      wrapper.find('#limit-1000').find(Radio).props().onChange!({} as React.FormEvent<HTMLInputElement>, true);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#limit-1000')!);
     });
     expect(props.setLimit).toHaveBeenNthCalledWith(1, 1000);
-    wrapper.setProps({ ...props, limit: 1000 });
+    rerender(<QueryOptionsPanel {...props} limit={1000} />);
   });
 });

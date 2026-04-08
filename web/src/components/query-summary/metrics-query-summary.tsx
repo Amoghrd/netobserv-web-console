@@ -29,7 +29,7 @@ export const MetricsQuerySummary: React.FC<MetricsQuerySummaryProps> = ({
   isDark
 }) => {
   return (
-    <Card id="query-summary" isFlat>
+    <Card id="query-summary">
       <MetricsQuerySummaryContent
         className="summary-container"
         direction="row"

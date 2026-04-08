@@ -1,4 +1,12 @@
-import { Bullseye, EmptyState, EmptyStateBody, EmptyStateIcon, Text, TextVariants } from '@patternfly/react-core';
+import {
+  Bullseye,
+  EmptyState,
+  EmptyStateBody,
+  EmptyStateHeader,
+  EmptyStateIcon,
+  Text,
+  TextVariants
+} from '@patternfly/react-core';
 import { ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -22,12 +30,11 @@ export const PanelErrorIndicator: React.FC<PanelErrorIndicatorProps> = ({ error,
   return (
     <Bullseye className="panel-error-indicator">
       <EmptyState>
-        <EmptyStateIcon
-          className="panel-error-icon"
-          icon={isCritical ? ExclamationCircleIcon : ExclamationTriangleIcon}
-          color={isCritical ? 'var(--pf-v5-global--danger-color--100)' : undefined}
+        <EmptyStateHeader
+          titleText={t('Failed to load {{metric}}', { metric: metricType || t('metric') })}
+          headingLevel="h3"
+          icon={<EmptyStateIcon icon={isCritical ? ExclamationCircleIcon : ExclamationTriangleIcon} />}
         />
-        <Text component={TextVariants.h3}>{t('Failed to load {{metric}}', { metric: metricType || t('metric') })}</Text>
         {showDetails && (
           <EmptyStateBody className="panel-error-body">
             <Text component={TextVariants.p} className="panel-error-message">

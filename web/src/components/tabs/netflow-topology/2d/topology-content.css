@@ -6,8 +6,12 @@
   fill: #06c !important;
 }
 
+.pf-v5-c-form-control:has(#topology-search-result-count) {
+  width: 5em;
+  align-items: center;
+}
+
 #topology-search-result-count {
-  flex: 0.5;
   text-align: center;
   padding: 0;
   background: transparent;
@@ -15,10 +19,6 @@
 
 #search-topology-element-input {
   width: 250px;
-}
-
-span.pf-topology-control-bar {
-  left: 0;
 }
 
 g.netobserv.topology.shadowed {

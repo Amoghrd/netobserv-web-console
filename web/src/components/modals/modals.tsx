@@ -1,7 +1,7 @@
 import React from 'react';
-import { Config } from '../../model/config';
 import { Filter } from '../../model/filters';
-import { FlowQuery, RecordType } from '../../model/flow-query';
+import { RecordType } from '../../model/flow-query';
+import { useNetflowContext } from '../../model/netflow-context';
 import { Column, ColumnSizeMap } from '../../utils/columns';
 import { TimeRange } from '../../utils/datetime';
 import { OverviewPanel } from '../../utils/overview-panels';
@@ -15,26 +15,22 @@ export interface ModalsProps {
   setTRModalOpen: (v: boolean) => void;
   range: number | TimeRange;
   setRange: (v: number | TimeRange) => void;
-  maxChunkAge?: number;
   isOverviewModalOpen: boolean;
   setOverviewModalOpen: (v: boolean) => void;
   recordType: RecordType;
-  panels: OverviewPanel[];
   setPanels: (v: OverviewPanel[]) => void;
-  customIds?: string[];
   isColModalOpen: boolean;
   setColModalOpen: (v: boolean) => void;
-  availableColumns: Column[];
   setColumns: (v: Column[]) => void;
   setColumnSizes: (v: ColumnSizeMap) => void;
-  config: Config;
   isExportModalOpen: boolean;
   setExportModalOpen: (v: boolean) => void;
-  flowQuery: FlowQuery;
   filters: Filter[];
 }
 
 export const Modals: React.FC<ModalsProps> = props => {
+  const { caps, config } = useNetflowContext();
+
   return (
     <>
       <TimeRangeModal
@@ -43,24 +39,24 @@ export const Modals: React.FC<ModalsProps> = props => {
         setModalOpen={props.setTRModalOpen}
         range={typeof props.range === 'object' ? props.range : undefined}
         setRange={props.setRange}
-        maxChunkAge={props.maxChunkAge}
+        maxChunkAge={config.maxChunkAgeMs}
       />
       <OverviewPanelsModal
         id="overview-panels-modal"
         isModalOpen={props.isOverviewModalOpen}
         setModalOpen={props.setOverviewModalOpen}
         recordType={props.recordType}
-        panels={props.panels}
+        panels={caps.availablePanels}
         setPanels={props.setPanels}
-        customIds={props.config.panels}
-        features={props.config.features}
+        customIds={config.panels}
+        features={config.features}
       />
       <ColumnsModal
         id="columns-modal"
         isModalOpen={props.isColModalOpen}
         setModalOpen={props.setColModalOpen}
-        config={props.config}
-        columns={props.availableColumns}
+        config={config}
+        columns={caps.availableColumns}
         setColumns={props.setColumns}
         setColumnSizes={props.setColumnSizes}
       />
@@ -68,8 +64,8 @@ export const Modals: React.FC<ModalsProps> = props => {
         id="export-modal"
         isModalOpen={props.isExportModalOpen}
         setModalOpen={props.setExportModalOpen}
-        flowQuery={props.flowQuery}
-        columns={props.availableColumns.filter(c => c.field && !c.field.name.startsWith('Time'))}
+        flowQuery={caps.flowQuery}
+        columns={caps.availableColumns.filter(c => c.field && !c.field.name.startsWith('Time'))}
         range={props.range}
         filters={props.filters}
       />

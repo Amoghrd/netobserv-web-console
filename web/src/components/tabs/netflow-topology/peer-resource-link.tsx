@@ -21,7 +21,7 @@ export const PeerResourceLink: React.FC<PeerResourceLinkProps> = ({ peer }) => {
       const kind = gvkString || peer.resourceKind;
       return <ResourceLink inline={true} kind={kind} name={name} namespace={peer.namespace} />;
     } else {
-      return <Text>{name}</Text>;
+      return <Text component="p">{name}</Text>;
     }
   }
   return null;

@@ -44,15 +44,16 @@ export const TimeRangeModal: React.FC<TimeRangeModalProps> = ({
 
   const dateValidator = React.useCallback(
     (isFrom: boolean, date: Date): string => {
-      const d = new Date(isFrom ? Date.parse(`${toDate} ${toTime}`) : Date.parse(`${fromDate} ${fromTime}`));
+      const otherDate = isFrom ? toDate : fromDate;
+      const d = otherDate ? new Date(Date.parse(otherDate)) : undefined;
       if (isFrom && date > new Date()) {
         return t('From date cannot be in the future');
       }
-      return !isValidDate(d) || (!isFrom && date >= d) || (isFrom && date <= d)
+      return !d || !isValidDate(d) || (!isFrom && date >= d) || (isFrom && date <= d)
         ? ''
         : t('To date must be after From date');
     },
-    [fromDate, fromTime, t, toDate, toTime]
+    [fromDate, t, toDate]
   );
 
   //this is a hack to allow user to type into date / time inputs without having to delete previous content
@@ -165,6 +166,7 @@ export const TimeRangeModal: React.FC<TimeRangeModalProps> = ({
                   onChange={(e: unknown, v: unknown) => setFromDate(typeof e === 'string' ? String(e) : String(v))}
                   onInput={e => onInput(e, 'date')}
                   value={fromDate}
+                  appendTo={() => document.body}
                 />
               </FlexItem>
               <FlexItem>
@@ -178,6 +180,7 @@ export const TimeRangeModal: React.FC<TimeRangeModalProps> = ({
                   onChange={(e: unknown, t: unknown) => setFromTime(typeof e === 'string' ? String(e) : String(t))}
                   onInput={e => onInput(e, 'time')}
                   time={fromTime}
+                  menuAppendTo={() => document.body}
                 />
               </FlexItem>
             </Flex>
@@ -194,6 +197,7 @@ export const TimeRangeModal: React.FC<TimeRangeModalProps> = ({
                   onChange={(e: unknown, v: unknown) => setToDate(typeof e === 'string' ? String(e) : String(v))}
                   onInput={e => onInput(e, 'date')}
                   value={toDate}
+                  appendTo={() => document.body}
                 />
               </FlexItem>
               <FlexItem>
@@ -207,6 +211,7 @@ export const TimeRangeModal: React.FC<TimeRangeModalProps> = ({
                   onChange={(e: unknown, t: unknown) => setToTime(typeof e === 'string' ? String(e) : String(t))}
                   onInput={e => onInput(e, 'time')}
                   time={toTime}
+                  menuAppendTo={() => document.body}
                 />
               </FlexItem>
             </Flex>
@@ -240,14 +245,13 @@ export const TimeRangeModal: React.FC<TimeRangeModalProps> = ({
 
   return (
     <Modal
-      data-test={id}
       id={id}
       title={t('Custom time range')}
       isOpen={isModalOpen}
       scrollable={false}
       onClose={() => onCancel()}
       footer={
-        <div className="footer">
+        <>
           <Button data-test="time-range-reset" key="reset" variant="link" onClick={() => reloadInputs(true)}>
             {t('Reset')}
           </Button>
@@ -270,7 +274,7 @@ export const TimeRangeModal: React.FC<TimeRangeModalProps> = ({
               {t('Save')}
             </Button>
           </Tooltip>
-        </div>
+        </>
       }
     >
       <TextContent>

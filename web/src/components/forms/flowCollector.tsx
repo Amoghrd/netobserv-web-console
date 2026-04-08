@@ -1,7 +1,6 @@
 import React, { FC } from 'react';
 
-import { useParams } from 'react-router-dom-v5-compat';
-import DynamicLoader, { back } from '../dynamic-loader/dynamic-loader';
+import { useNavigate, useParams } from '../../utils/url';
 import { flowCollectorUISchema } from './config/uiSchema';
 import { ResourceForm } from './resource-form';
 import { ResourceWatcher } from './resource-watcher';
@@ -11,21 +10,20 @@ export type FlowCollectorFormProps = {
 };
 
 export const FlowCollectorForm: FC<FlowCollectorFormProps> = props => {
-  const params = useParams();
+  const params = useParams<{ name?: string }>();
+  const navigate = useNavigate();
 
   return (
-    <DynamicLoader>
-      <ResourceWatcher
-        group="flows.netobserv.io"
-        version="v1beta2"
-        kind="FlowCollector"
-        name={params.name || props.name}
-        onSuccess={back}
-        defaultFrom="CSVExample"
-      >
-        <ResourceForm uiSchema={flowCollectorUISchema} />
-      </ResourceWatcher>
-    </DynamicLoader>
+    <ResourceWatcher
+      group="flows.netobserv.io"
+      version="v1beta2"
+      kind="FlowCollector"
+      name={params.name || props.name}
+      onSuccess={() => navigate(-1)}
+      defaultFrom="CSVExample"
+    >
+      <ResourceForm uiSchema={flowCollectorUISchema} />
+    </ResourceWatcher>
   );
 };
 

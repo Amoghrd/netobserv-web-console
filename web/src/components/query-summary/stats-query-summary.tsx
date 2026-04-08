@@ -39,21 +39,21 @@ export const StatsQuerySummary: React.FC<StatsQuerySummaryProps> = ({
       <Tooltip
         content={
           <>
-            <Text>
+            <p>
               {lastRefresh
                 ? t('Last refresh: {{time}}', {
                     time: dateText
                   })
                 : dateText}
-            </Text>
-            {dataSources?.length && <Text>{t('Datasource(s): {{sources}}', { sources: formatDatasources() })}</Text>}
-            {numQueries && <Text>{t('Query count: {{numQueries}}', { numQueries })}</Text>}
-            {durationText !== '' && <Text>{t('Duration: {{duration}}', { duration: durationText })}</Text>}
+            </p>
+            {dataSources?.length && <p>{t('Datasource(s): {{sources}}', { sources: formatDatasources() })}</p>}
+            {numQueries && <p>{t('Query count: {{numQueries}}', { numQueries })}</p>}
+            {durationText !== '' && <p>{t('Duration: {{duration}}', { duration: durationText })}</p>}
             {warning !== undefined && (
               <>
                 <br />
-                <Text>{warning.summary}</Text>
-                <Text>{warning.details}</Text>
+                <p>{warning.summary}</p>
+                <p>{warning.details}</p>
               </>
             )}
           </>

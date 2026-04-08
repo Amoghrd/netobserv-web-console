@@ -10,10 +10,10 @@ import {
   Bullseye,
   EmptyState,
   EmptyStateBody,
+  EmptyStateHeader,
   EmptyStateVariant,
   PageSection,
-  Spinner,
-  Title
+  Spinner
 } from '@patternfly/react-core';
 import _ from 'lodash';
 import * as React from 'react';
@@ -90,9 +90,9 @@ export const NetflowTrafficTab: React.FC<NetflowTrafficTabProps> = ({ match, obj
       }
     }
 
-    const container = document.getElementById('content-scrollable');
-    if (container) {
-      setContainerHeight(container.clientHeight);
+    const containers = document.getElementsByClassName('pf-v5-c-tab-content');
+    if (containers.length > 0) {
+      setContainerHeight(containers[0].clientHeight);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -289,9 +289,7 @@ export const NetflowTrafficTab: React.FC<NetflowTrafficTabProps> = ({ match, obj
     return (
       <PageSection id="pageSection" data-test="tab-page-section">
         <EmptyState data-test="error-state" variant={EmptyStateVariant.sm}>
-          <Title headingLevel="h2" size="lg">
-            {t('Kind not managed')}
-          </Title>
+          <EmptyStateHeader titleText={t('Kind not managed')} headingLevel="h2" />
           <EmptyStateBody>{obj?.kind}</EmptyStateBody>
         </EmptyState>
       </PageSection>

@@ -1,4 +1,4 @@
-import { Radio, Text, TextContent, TextVariants, Tooltip } from '@patternfly/react-core';
+import { Radio, Text, TextVariants, Tooltip } from '@patternfly/react-core';
 import { InfoAltIcon } from '@patternfly/react-icons';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -186,23 +186,17 @@ export const QueryOptionsPanel: React.FC<QueryOptionsProps> = ({
       <div className="pf-v5-c-menu__group">
         <Tooltip
           content={
-            <TextContent className="netobserv-tooltip-text">
-              <Text component={TextVariants.p}>
+            <div>
+              <p className="netobserv-align-start">
                 {t('Filter flows by their drop status. Only packets dropped by the kernel are monitored here.')}
-              </Text>
-              <Text component={TextVariants.p} className="netobserv-align-start">
-                - {t('Fully dropped shows the flows that are 100% dropped')}
-              </Text>
-              <Text component={TextVariants.p} className="netobserv-align-start">
+              </p>
+              <p className="netobserv-align-start"> - {t('Fully dropped shows the flows that are 100% dropped')}</p>
+              <p className="netobserv-align-start">
                 - {t('Containing drops shows the flows having at least one packet dropped')}
-              </Text>
-              <Text component={TextVariants.p} className="netobserv-align-start">
-                - {t('Without drops show the flows having 0% dropped')}
-              </Text>
-              <Text component={TextVariants.p} className="netobserv-align-start">
-                - {t('All shows everything')}
-              </Text>
-            </TextContent>
+              </p>
+              <p className="netobserv-align-start"> - {t('Without drops show the flows having 0% dropped')}</p>
+              <p className="netobserv-align-start"> - {t('All shows everything')}</p>
+            </div>
           }
         >
           <div className="pf-v5-c-menu__group-title">

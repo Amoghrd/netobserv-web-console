@@ -1,8 +1,6 @@
 import {
   Button,
   Checkbox,
-  Chip,
-  ChipGroup,
   DataList,
   DataListCell,
   DataListCheck,
@@ -10,14 +8,16 @@ import {
   DataListItem,
   DataListItemCells,
   DataListItemRow,
+  Label,
+  LabelGroup,
   Text,
   TextContent,
   TextVariants
 } from '@patternfly/react-core';
+
 import _ from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { getExportFlowsURL } from '../../api/routes';
 import { Filter } from '../../model/filters';
 import { FlowQuery } from '../../model/flow-query';
@@ -26,6 +26,7 @@ import { getTimeRangeOptions, TimeRange } from '../../utils/datetime';
 import { formatDuration, getDateSInMiliseconds } from '../../utils/duration';
 import { getFilterFullName } from '../../utils/filters-helper';
 import { getLocalStorage, localStorageExportColsKey, useLocalStorage } from '../../utils/local-storage-hook';
+import { Link } from '../../utils/url';
 import './export-modal.css';
 import Modal from './modal';
 
@@ -88,10 +89,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
   const onCheck = React.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    (event, checked) => {
-      if (event?.target?.id) {
+    (event: React.FormEvent<HTMLInputElement>, checked: boolean) => {
+      if (event?.target && 'id' in event.target) {
         const result = [...selectedColumns];
-        const selectedColumn = result.find(col => col.id === event.target.id);
+        const selectedColumn = result.find(col => col.id === (event.target as HTMLInputElement).id);
         if (selectedColumn) {
           selectedColumn.isSelected = !selectedColumn.isSelected;
           setSelectedColumns(result);
@@ -150,26 +151,26 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             <Text component={TextVariants.p}>{t('Following query will be exported as CSV format:')}&nbsp;</Text>
           </TextContent>
           <div data-test="export-chips" id="export-chips">
-            <ChipGroup isClosable={false} categoryName={t('Time Range')}>
-              <Chip isReadOnly={true}>{rangeText()}</Chip>
-            </ChipGroup>
-            <ChipGroup isClosable={false} categoryName={t('Limit')}>
-              <Chip isReadOnly={true}>{flowQuery.limit}</Chip>
-            </ChipGroup>
+            <LabelGroup isClosable={false} categoryName={t('Time Range')}>
+              <Label variant="outline">{rangeText()}</Label>
+            </LabelGroup>
+            <LabelGroup isClosable={false} categoryName={t('Limit')}>
+              <Label variant="outline">{flowQuery.limit}</Label>
+            </LabelGroup>
             {filters.map((filter, fIndex) => (
-              <ChipGroup key={fIndex} isClosable={false} categoryName={getFilterFullName(filter.def, t)}>
+              <LabelGroup key={fIndex} isClosable={false} categoryName={getFilterFullName(filter.def, t)}>
                 {filter.values.map((value, fvIndex) => (
-                  <Chip key={fvIndex} isReadOnly={true}>
+                  <Label variant="outline" key={fvIndex}>
                     {value.display ? value.display : value.v}
-                  </Chip>
+                  </Label>
                 ))}
-              </ChipGroup>
+              </LabelGroup>
             ))}
           </div>
         </>
       }
       footer={
-        <div className="footer">
+        <>
           <Button data-test="export-close-button" key="close" variant="link" onClick={() => setModalOpen(false)}>
             {t('Close')}
           </Button>
@@ -189,7 +190,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           >
             {t('Export')}
           </Button>
-        </div>
+        </>
       }
     >
       <div>

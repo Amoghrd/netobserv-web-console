@@ -21,5 +21,5 @@ export const usePoll = (callback: () => void, delay?: number, dependencies?: Rea
     }
     // Note on eslint disabled: static check of deps doesn't work here because it's not an array literal
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [delay].concat(dependencies));
+  }, [delay, ...(dependencies || [])]);
 };

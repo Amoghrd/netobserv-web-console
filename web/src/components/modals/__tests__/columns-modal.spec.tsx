@@ -1,4 +1,4 @@
-import { mount, shallow } from 'enzyme';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import * as React from 'react';
 
 import { Config, defaultConfig } from '../../../model/config';
@@ -16,36 +16,65 @@ describe('<ColumnsModal />', () => {
     id: 'columns-modal'
   };
 
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
   it('should render component', async () => {
-    const wrapper = shallow(<ColumnsModal {...props} />);
-    expect(wrapper.find(ColumnsModal)).toBeTruthy();
+    render(<ColumnsModal {...props} />);
+    await act(async () => {
+      jest.runAllTimers();
+    });
   });
 
   it('should save once', async () => {
-    const wrapper = mount(<ColumnsModal {...props} />);
-    const confirmButton = wrapper.find('.pf-v5-c-button.pf-m-primary');
-    expect(confirmButton.length).toEqual(1);
+    render(<ColumnsModal {...props} />);
+    await act(async () => {
+      jest.runAllTimers();
+    });
 
-    confirmButton.at(0).simulate('click');
+    const confirmButton = document.querySelector('.pf-v5-c-button.pf-m-primary') as HTMLElement;
+    expect(confirmButton).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.click(confirmButton);
+      jest.runAllTimers();
+    });
     expect(props.setColumns).toHaveBeenCalledTimes(1);
   });
 
   it('should update columns selected on save', async () => {
-    const wrapper = mount(<ColumnsModal {...props} />);
-    expect(props.setColumns).toHaveBeenNthCalledWith(1, props.columns);
-    //unselect first and second columns
+    render(<ColumnsModal {...props} />);
+    await act(async () => {
+      jest.runAllTimers();
+    });
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('checkbox').length).toBeGreaterThanOrEqual(2);
+    });
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    await act(async () => {
+      fireEvent.click(checkboxes[0]);
+      fireEvent.click(checkboxes[1]);
+      jest.runAllTimers();
+    });
+
+    const saveButton = document.querySelector('.pf-v5-c-button.pf-m-primary') as HTMLElement;
+    await act(async () => {
+      fireEvent.click(saveButton);
+      jest.runAllTimers();
+    });
+
     const updatedColumns = [...props.columns];
-    updatedColumns[0].isSelected = !updatedColumns[0].isSelected;
-    updatedColumns[1].isSelected = !updatedColumns[1].isSelected;
-    wrapper
-      .find('[aria-labelledby="table-column-management-item-0"]')
-      .last()
-      .simulate('change', { target: { id: updatedColumns[0].id } });
-    wrapper
-      .find('[aria-labelledby="table-column-management-item-1"]')
-      .last()
-      .simulate('change', { target: { id: updatedColumns[1].id } });
-    wrapper.find('.pf-v5-c-button.pf-m-primary').at(0).simulate('click');
-    expect(props.setColumns).toHaveBeenNthCalledWith(2, updatedColumns);
+    updatedColumns[0] = { ...updatedColumns[0], isSelected: !updatedColumns[0].isSelected };
+    updatedColumns[1] = { ...updatedColumns[1], isSelected: !updatedColumns[1].isSelected };
+    expect(props.setColumns).toHaveBeenCalledWith(updatedColumns);
   });
 });

@@ -1,3 +1,4 @@
+import { TFunction } from 'i18next';
 import { RawTopologyMetrics, TopologyMetricPeer, TopologyMetrics } from '../../api/loki';
 import { ScopeDefSample } from '../../components/__tests-data__/scopes';
 import { NodeData } from '../../model/topology';
@@ -12,7 +13,8 @@ import {
   parseTopologyMetrics
 } from '../metrics';
 
-const t = (k: string) => k;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const t = (k: string) => k as any;
 
 describe('normalize and computeStats', () => {
   beforeEach(() => {
@@ -409,52 +411,52 @@ describe('parseTopologyMetrics', () => {
 
 describe('getFormattedValue', () => {
   it('should format BPS', () => {
-    expect(getFormattedValue(500, 'Bytes', 'rate', t)).toBe('500 Bps');
-    expect(getFormattedValue(1300, 'Bytes', 'rate', t)).toBe('1.3 kBps');
-    expect(getFormattedValue(10500, 'Bytes', 'rate', t)).toBe('10.5 kBps');
-    expect(getFormattedValue(1500000, 'Bytes', 'rate', t)).toBe('1.5 MBps');
+    expect(getFormattedValue(500, 'Bytes', 'rate', t as TFunction)).toBe('500 Bps');
+    expect(getFormattedValue(1300, 'Bytes', 'rate', t as TFunction)).toBe('1.3 kBps');
+    expect(getFormattedValue(10500, 'Bytes', 'rate', t as TFunction)).toBe('10.5 kBps');
+    expect(getFormattedValue(1500000, 'Bytes', 'rate', t as TFunction)).toBe('1.5 MBps');
   });
 
   it('should format absolute bytes', () => {
-    expect(getFormattedValue(500, 'Bytes', 'sum', t)).toBe('500 B');
-    expect(getFormattedValue(10500, 'Bytes', 'sum', t)).toBe('10.5 kB');
+    expect(getFormattedValue(500, 'Bytes', 'sum', t as TFunction)).toBe('500 B');
+    expect(getFormattedValue(10500, 'Bytes', 'sum', t as TFunction)).toBe('10.5 kB');
   });
 
   it('should format packets rate', () => {
-    expect(getFormattedValue(500, 'Packets', 'rate', t)).toBe('500 Pps');
-    expect(getFormattedValue(1300, 'Packets', 'rate', t)).toBe('1.3 kPps');
-    expect(getFormattedValue(10500, 'Packets', 'rate', t)).toBe('10.5 kPps');
-    expect(getFormattedValue(1500000, 'Packets', 'rate', t)).toBe('1.5 MPps');
+    expect(getFormattedValue(500, 'Packets', 'rate', t as TFunction)).toBe('500 Pps');
+    expect(getFormattedValue(1300, 'Packets', 'rate', t as TFunction)).toBe('1.3 kPps');
+    expect(getFormattedValue(10500, 'Packets', 'rate', t as TFunction)).toBe('10.5 kPps');
+    expect(getFormattedValue(1500000, 'Packets', 'rate', t as TFunction)).toBe('1.5 MPps');
   });
 
   it('should format absolute packets', () => {
-    expect(getFormattedValue(500, 'Packets', 'sum', t)).toBe('500 P');
-    expect(getFormattedValue(10500, 'Packets', 'sum', t)).toBe('10.5 kP');
+    expect(getFormattedValue(500, 'Packets', 'sum', t as TFunction)).toBe('500 P');
+    expect(getFormattedValue(10500, 'Packets', 'sum', t as TFunction)).toBe('10.5 kP');
   });
 
   it('should format DNS latency in milliseconds', () => {
-    expect(getFormattedValue(50, 'DnsLatencyMs', 'avg', t)).toBe('50ms');
-    expect(getFormattedValue(500, 'DnsLatencyMs', 'avg', t)).toBe('500ms');
-    expect(getFormattedValue(900, 'DnsLatencyMs', 'avg', t)).toBe('900ms');
+    expect(getFormattedValue(50, 'DnsLatencyMs', 'avg', t as TFunction)).toBe('50ms');
+    expect(getFormattedValue(500, 'DnsLatencyMs', 'avg', t as TFunction)).toBe('500ms');
+    expect(getFormattedValue(900, 'DnsLatencyMs', 'avg', t as TFunction)).toBe('900ms');
   });
 
   it('should format DNS latency 1-60s with decimal precision', () => {
-    expect(getFormattedValue(1000, 'DnsLatencyMs', 'avg', t)).toBe('1s');
-    expect(getFormattedValue(1500, 'DnsLatencyMs', 'max', t)).toBe('1.5s');
-    expect(getFormattedValue(2000, 'DnsLatencyMs', 'p90', t)).toBe('2s');
-    expect(getFormattedValue(2345, 'DnsLatencyMs', 'p90', t)).toBe('2.35s');
-    expect(getFormattedValue(45230, 'DnsLatencyMs', 'avg', t)).toBe('45.23s');
+    expect(getFormattedValue(1000, 'DnsLatencyMs', 'avg', t as TFunction)).toBe('1s');
+    expect(getFormattedValue(1500, 'DnsLatencyMs', 'max', t as TFunction)).toBe('1.5s');
+    expect(getFormattedValue(2000, 'DnsLatencyMs', 'p90', t as TFunction)).toBe('2s');
+    expect(getFormattedValue(2345, 'DnsLatencyMs', 'p90', t as TFunction)).toBe('2.35s');
+    expect(getFormattedValue(45230, 'DnsLatencyMs', 'avg', t as TFunction)).toBe('45.23s');
   });
 
   it('should format DNS latency above 60s without decimal precision', () => {
-    expect(getFormattedValue(180000, 'DnsLatencyMs', 'avg', t)).toBe('3m');
-    expect(getFormattedValue(200000, 'DnsLatencyMs', 'max', t)).toBe('3m 20s');
+    expect(getFormattedValue(180000, 'DnsLatencyMs', 'avg', t as TFunction)).toBe('3m');
+    expect(getFormattedValue(200000, 'DnsLatencyMs', 'max', t as TFunction)).toBe('3m 20s');
   });
 
   it('should format RTT latency correctly', () => {
-    expect(getFormattedValue(50, 'TimeFlowRttNs', 'avg', t)).toBe('50ms');
-    expect(getFormattedValue(1000, 'TimeFlowRttNs', 'avg', t)).toBe('1s');
-    expect(getFormattedValue(1500, 'TimeFlowRttNs', 'max', t)).toBe('1.5s');
-    expect(getFormattedValue(2500, 'TimeFlowRttNs', 'max', t)).toBe('2.5s');
+    expect(getFormattedValue(50, 'TimeFlowRttNs', 'avg', t as TFunction)).toBe('50ms');
+    expect(getFormattedValue(1000, 'TimeFlowRttNs', 'avg', t as TFunction)).toBe('1s');
+    expect(getFormattedValue(1500, 'TimeFlowRttNs', 'max', t as TFunction)).toBe('1.5s');
+    expect(getFormattedValue(2500, 'TimeFlowRttNs', 'max', t as TFunction)).toBe('2.5s');
   });
 });

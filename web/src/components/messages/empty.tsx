@@ -2,13 +2,13 @@ import {
   Bullseye,
   EmptyState,
   EmptyStateBody,
+  EmptyStateHeader,
   EmptyStateIcon,
   EmptyStateVariant,
   Spinner,
   Text,
   TextContent,
-  TextVariants,
-  Title
+  TextVariants
 } from '@patternfly/react-core';
 import { SearchIcon } from '@patternfly/react-icons';
 import React from 'react';
@@ -71,10 +71,11 @@ export const Empty: React.FC<EmptyProps> = ({ showDetails, resetDefaultFilters, 
 
   return (
     <EmptyState variant={!showDetails ? EmptyStateVariant.sm : undefined} data-test="empty-state">
-      <EmptyStateIcon className={`netobserv-empty-icon${showDetails ? '' : '-small'}`} icon={SearchIcon} />
-      <Title headingLevel="h2" size="lg">
-        {t('No results found')}
-      </Title>
+      <EmptyStateHeader
+        titleText={t('No results found')}
+        headingLevel="h2"
+        icon={<EmptyStateIcon icon={SearchIcon} />}
+      />
       {showDetails && (
         <EmptyStateBody className="empty-body">
           {statusError === undefined && (

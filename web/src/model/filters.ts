@@ -1,5 +1,5 @@
+import { TFunction } from 'i18next';
 import _ from 'lodash';
-import { TFunction } from 'react-i18next';
 import { isEqual } from '../utils/base-compare';
 import { undefinedValue } from '../utils/filter-definitions';
 import { Feature } from './config';

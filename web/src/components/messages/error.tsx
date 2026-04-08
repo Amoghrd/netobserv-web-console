@@ -4,12 +4,12 @@ import {
   ClipboardCopyVariant,
   EmptyState,
   EmptyStateBody,
+  EmptyStateHeader,
   EmptyStateIcon,
   Spinner,
   Text,
   TextContent,
-  TextVariants,
-  Title
+  TextVariants
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons';
 import * as React from 'react';
@@ -135,13 +135,11 @@ export const ErrorComponent: React.FC<ErrorProps> = ({ title, error }) => {
   return (
     <div id="netobserv-error-container">
       <EmptyState data-test="error-state">
-        <EmptyStateIcon
-          className={isCritical ? 'netobserv-error-icon' : ''}
-          icon={isCritical ? ExclamationCircleIcon : ExclamationTriangleIcon}
+        <EmptyStateHeader
+          titleText={title}
+          headingLevel="h2"
+          icon={<EmptyStateIcon icon={isCritical ? ExclamationCircleIcon : ExclamationTriangleIcon} />}
         />
-        <Title headingLevel="h2" size="lg">
-          {title}
-        </Title>
         <EmptyStateBody className="error-body">
           <Text className={isCritical ? 'netobserv-error-message' : ''} component={TextVariants.p}>
             {String(error)}

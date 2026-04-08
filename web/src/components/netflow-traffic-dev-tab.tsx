@@ -26,9 +26,9 @@ export const NetflowTrafficDevTab: React.FC<NetflowTrafficDevTabProps> = props =
   const [containerHeight, setContainerHeight] = React.useState(800);
 
   React.useEffect(() => {
-    const container = document.getElementById('content-scrollable');
-    if (container) {
-      setContainerHeight(container.clientHeight);
+    const containers = document.getElementsByClassName('pf-v5-c-tab-content');
+    if (containers.length > 0) {
+      setContainerHeight(containers[0].clientHeight);
     }
   }, []);
 

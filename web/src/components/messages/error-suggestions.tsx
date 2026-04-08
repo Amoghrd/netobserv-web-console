@@ -2,7 +2,6 @@ import { Button, Text, TextContent, TextList, TextListItem, TextVariants } from 
 import { ExternalLinkSquareAltIcon } from '@patternfly/react-icons';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import {
   LokiClientError,
   LokiResponseError,
@@ -11,6 +10,7 @@ import {
   PromUnsupported,
   StructuredError
 } from '../../utils/errors';
+import { Link } from '../../utils/url';
 import './error-suggestions.css';
 
 export interface ErrorSuggestionsProps {

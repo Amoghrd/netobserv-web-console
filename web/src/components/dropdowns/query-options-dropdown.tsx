@@ -1,4 +1,4 @@
-import { MenuToggle, MenuToggleElement, Select } from '@patternfly/react-core';
+import { Button, Popper } from '@patternfly/react-core';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { DataSource, PacketLoss, RecordType } from '../../model/flow-query';
@@ -25,23 +25,42 @@ export interface QueryOptionsProps {
 
 export const QueryOptionsDropdown: React.FC<QueryOptionsProps> = props => {
   const { t } = useTranslation('plugin__netobserv-plugin');
-  const ref = useOutsideClickEvent(() => setOpen(false));
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const popperRef = React.useRef<HTMLDivElement>(null);
   const [isOpen, setOpen] = React.useState<boolean>(false);
-  return (
-    <div data-test="query-options-dropdown-container" ref={ref}>
-      <Select
-        data-test="query-options-dropdown"
-        id="query-options-dropdown"
-        placeholder={t('Query options')}
-        isOpen={isOpen}
-        toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-          <MenuToggle ref={toggleRef} onClick={() => setOpen(!isOpen)} isExpanded={isOpen}>
-            {t('Query options')}
-          </MenuToggle>
-        )}
-      >
+
+  const ref = useOutsideClickEvent(() => setOpen(false));
+
+  const trigger = React.useCallback(() => {
+    return (
+      <Button ref={triggerRef} variant="link" onClick={() => setOpen(!isOpen)} data-test="query-options-dropdown">
+        {t('Query options')}
+      </Button>
+    );
+  }, [isOpen, t]);
+
+  const popper = React.useCallback(() => {
+    return (
+      <div id="query-options-popper" ref={popperRef} className="pf-v5-c-menu" role="dialog">
         <QueryOptionsPanel {...props} />
-      </Select>
+      </div>
+    );
+  }, [props]);
+
+  return (
+    <div id="query-options-dropdown-container" data-test="query-options-dropdown-container" ref={ref}>
+      <div ref={containerRef}>
+        <Popper
+          trigger={trigger()}
+          triggerRef={triggerRef}
+          popper={popper()}
+          popperRef={popperRef}
+          isVisible={isOpen}
+          enableFlip={true}
+          appendTo={containerRef.current || undefined}
+        />
+      </div>
     </div>
   );
 };

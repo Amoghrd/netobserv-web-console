@@ -1,11 +1,11 @@
-import { mount, shallow } from 'enzyme';
+import { render, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import * as React from 'react';
+
 import { defaultNetflowMetrics, NetflowMetrics } from '../../../api/loki';
-import { waitForRender } from '../../../components/__tests__/common.spec';
 import { Result } from '../../../utils/result';
 import { metrics } from '../../__tests-data__/metrics';
 import { MetricsQuerySummary } from '../metrics-query-summary';
-import { MetricsQuerySummaryContent } from '../metrics-query-summary-content';
 
 describe('<MetricsQuerySummary />', () => {
   const now = new Date();
@@ -22,29 +22,33 @@ describe('<MetricsQuerySummary />', () => {
     lastRefresh: now
   };
 
-  it('should shallow component', async () => {
-    const wrapper = shallow(<MetricsQuerySummary {...mocks} />);
-    await waitForRender(wrapper);
-
-    expect(wrapper.find(MetricsQuerySummaryContent)).toBeTruthy();
-    expect(wrapper.find(MetricsQuerySummaryContent)).toHaveLength(1);
+  it('should render component', async () => {
+    const { container } = render(<MetricsQuerySummary {...mocks} />);
+    await waitFor(() => {
+      expect(container.querySelector('#query-summary-content')).toBeTruthy();
+    });
   });
 
   it('should show summary', async () => {
-    const wrapper = mount(<MetricsQuerySummary {...mocks} />);
-    await waitForRender(wrapper);
+    const { container } = render(<MetricsQuerySummary {...mocks} />);
+    await waitFor(() => {
+      expect(container.querySelector('#bytesCount')).toBeTruthy();
+    });
 
-    expect(wrapper.find('#bytesCount').last().text()).toBe('6.8 MB');
-    expect(wrapper.find('#packetsCount')).toHaveLength(0);
-    expect(wrapper.find('#bytesPerSecondsCount').last().text()).toBe('22.79 kBps');
-    expect(wrapper.find('#lastRefresh').last().text()).toBe(now.toLocaleTimeString());
+    expect(container.querySelector('#bytesCount')?.textContent).toBe('6.8 MB');
+    expect(container.querySelector('#packetsCount')).toBeNull();
+    expect(container.querySelector('#bytesPerSecondsCount')?.textContent).toBe('22.79 kBps');
+    expect(container.querySelector('#lastRefresh')?.textContent).toBe(now.toLocaleTimeString());
   });
 
   it('should toggle panel', async () => {
-    const wrapper = mount(<MetricsQuerySummary {...mocks} />);
-    await waitForRender(wrapper);
+    const user = userEvent.setup();
+    const { container } = render(<MetricsQuerySummary {...mocks} />);
+    await waitFor(() => {
+      expect(container.querySelector('#query-summary-toggle')).toBeTruthy();
+    });
 
-    wrapper.find('#query-summary-toggle').last().simulate('click');
+    await user.click(container.querySelector('#query-summary-toggle')!);
     expect(mocks.toggleQuerySummary).toHaveBeenCalledTimes(1);
   });
 });

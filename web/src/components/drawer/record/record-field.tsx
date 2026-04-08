@@ -3,7 +3,6 @@ import { Button, Flex, FlexItem, Popover, Text, TextContent, TextVariants, Toolt
 import { GlobeAmericasIcon } from '@patternfly/react-icons';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { FlowDirection, getDirectionDisplayString, Record } from '../../../api/ipfix';
 import { Column, ColumnsId, getFullColumnName, isKubeObj, KubeObj } from '../../../utils/columns';
 import { dateFormatter, getFormattedDate, timeMSFormatter, utcDateTimeFormatter } from '../../../utils/datetime';
@@ -15,6 +14,7 @@ import { DropCausesNames, getDropCauseDescription, getDropCauseDocUrl } from '..
 import { formatPort } from '../../../utils/port';
 import { formatProtocol, getProtocolDocUrl } from '../../../utils/protocol';
 import { getFlagsList, getTCPFlagsDocUrl } from '../../../utils/tcp-flags';
+import { Link } from '../../../utils/url';
 import { Size } from '../../dropdowns/table-display-dropdown';
 import { FilterAddIcon, FilterRemoveIcon, FilterToggleOffIcon, FilterToggleOnIcon } from '../../icons';
 import './record-field.css';
@@ -80,11 +80,15 @@ export const RecordField: React.FC<RecordFieldProps> = ({
     if (errorText) {
       return errorTextValue(t('n/a'), errorText);
     }
-    return <Text className="record-field-flex text-muted record-field-value">{t('n/a')}</Text>;
+    return (
+      <Text component="p" className="record-field-flex text-muted record-field-value">
+        {t('n/a')}
+      </Text>
+    );
   };
 
   const moreText = (count: number) => {
-    return <Text className="record-field-flex record-field-value">{`${count} ${t('more')}...`}</Text>;
+    return <Text component="p" className="record-field-flex record-field-value">{`${count} ${t('more')}...`}</Text>;
   };
 
   const emptyDnsErrorText = () => {
@@ -239,12 +243,18 @@ export const RecordField: React.FC<RecordFieldProps> = ({
               const child = c ? c : emptyText();
               if (i > 0 && asChild && childIcon) {
                 const arrow = <span className="child-arrow">{'↪'}</span>;
-                return sideBySideContainer(arrow, child, 'flexNone', 'flex_1', 'nowrap');
+                return (
+                  <React.Fragment key={i}>
+                    {sideBySideContainer(arrow, child, 'flexNone', 'flex_1', 'nowrap')}
+                  </React.Fragment>
+                );
               }
-              return child;
+              return <React.Fragment key={i}>{child}</React.Fragment>;
             })
         ) : (
-          <Text className="text-muted record-field-value">{t('n/a')}</Text>
+          <Text component="p" className="text-muted record-field-value">
+            {t('n/a')}
+          </Text>
         )}
         {truncate && children.length > maxArrayIndex && moreText(children.length - maxArrayIndex)}
       </Flex>
@@ -302,9 +312,11 @@ export const RecordField: React.FC<RecordFieldProps> = ({
           ) : undefined
         }
       >
-        <Button variant="plain" className="record-field-value-popover-button">
-          <Text component={TextVariants.h4}>{text}</Text>
-        </Button>
+        <Button
+          icon={<Text component={TextVariants.h4}>{text}</Text>}
+          variant="plain"
+          className="record-field-value-popover-button"
+        />
       </Popover>
     );
   };

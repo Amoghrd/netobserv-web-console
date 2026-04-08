@@ -5,19 +5,11 @@
 }
 
 
-/* vertical align drag icon*/
+/* vertical align data list items */
 
-.pf-v5-c-data-list__cell {
-    margin-top: auto;
-    margin-bottom: auto;
-}
-
-
-/* vertical align label*/
-
-button.pf-v5-c-data-list__item-draggable-button {
-    margin-top: auto;
-    margin-bottom: auto;
+.netobserv-data-list-control {
+    align-items: center;
+    align-self: center;
 }
 
 label {

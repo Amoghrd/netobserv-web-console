@@ -10,9 +10,8 @@ import { CompressIcon, ExpandIcon } from '@patternfly/react-icons';
 import * as _ from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Config } from '../../model/config';
 import { Filter, FilterCompare, FilterDefinition, Filters } from '../../model/filters';
-import { QuickFilter } from '../../model/quick-filters';
+import { useNetflowContext } from '../../model/netflow-context';
 import { autoCompleteCache } from '../../utils/autocomplete-cache';
 import { findFilter, matcher } from '../../utils/filter-definitions';
 import { Indicator } from '../../utils/filters-helper';
@@ -26,7 +25,6 @@ import { LinksOverflow } from './links-overflow';
 
 export interface FiltersToolbarProps {
   id: string;
-  config: Config;
   filters?: Filters;
   forcedFilters?: Filters | null;
   skipTipsDelay?: boolean;
@@ -34,8 +32,6 @@ export interface FiltersToolbarProps {
   clearFilters: () => void;
   resetFilters: () => void;
   queryOptionsProps: QueryOptionsProps;
-  quickFilters: QuickFilter[];
-  filterDefinitions: FilterDefinition[];
   isFullScreen: boolean;
   setFullScreen: (b: boolean) => void;
 }
@@ -44,20 +40,20 @@ export type Direction = 'source' | 'destination' | undefined;
 
 export const FiltersToolbar: React.FC<FiltersToolbarProps> = ({
   id,
-  config,
   filters,
   forcedFilters,
   skipTipsDelay,
   setFilters,
   clearFilters,
   resetFilters,
-  quickFilters,
-  filterDefinitions,
   isFullScreen,
   setFullScreen,
   ...props
 }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
+  const { caps, config } = useNetflowContext();
+  const quickFilters = caps.quickFilters;
+  const filterDefinitions = caps.filterDefs;
 
   const [message, setMessage] = React.useState<string | undefined>();
   const [indicator, setIndicator] = React.useState<Indicator>(ValidatedOptions.default);

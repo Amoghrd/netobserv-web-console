@@ -12,14 +12,9 @@ th.netobserv-header.column:hover:not(.dragged)::after {
   width: 15px;
 }
 
-th.netobserv-header.dragged:not(.dark) {
+th.netobserv-header.dragged {
   opacity: 0.25;
-  background: #fff;
-}
-
-th.netobserv-header.dragged.dark {
-  opacity: 0.25;
-  background: #1b1d21;
+  background: var(--pf-t--global--background--color--primary--default);
 }
 
 th.netobserv-header.resizing {

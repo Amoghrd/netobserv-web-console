@@ -1,15 +1,10 @@
-import { mount, shallow } from 'enzyme';
+import { act, fireEvent, render } from '@testing-library/react';
 import * as React from 'react';
 
-import { DatePicker, TimePicker } from '@patternfly/react-core';
-import { act } from 'react-dom/test-utils';
-import { actOn } from '../../../components/__tests__/common.spec';
 import { TimeRange } from '../../../utils/datetime';
 import TimeRangeModal, { TimeRangeModalProps } from '../time-range-modal';
 
-describe('<ColumnsModal />', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fakeEvent: any = {};
+describe('<TimeRangeModal />', () => {
   const props: TimeRangeModalProps = {
     isModalOpen: true,
     setModalOpen: jest.fn(),
@@ -18,17 +13,36 @@ describe('<ColumnsModal />', () => {
     id: 'time-range-modal'
   };
 
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
   it('should render component', async () => {
-    const wrapper = shallow(<TimeRangeModal {...props} />);
-    expect(wrapper.find(TimeRangeModal)).toBeTruthy();
+    render(<TimeRangeModal {...props} />);
+    await act(async () => {
+      jest.runAllTimers();
+    });
   });
 
   it('should save once', async () => {
-    const wrapper = mount(<TimeRangeModal {...props} />);
-    const confirmButton = wrapper.find('.pf-v5-c-button.pf-m-primary');
-    expect(confirmButton.length).toEqual(1);
+    render(<TimeRangeModal {...props} />);
+    await act(async () => {
+      jest.runAllTimers();
+    });
 
-    await actOn(() => confirmButton.last().simulate('click'), wrapper);
+    const confirmButton = document.querySelector('.pf-v5-c-button.pf-m-primary') as HTMLElement;
+    expect(confirmButton).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.click(confirmButton);
+      jest.runAllTimers();
+    });
     expect(props.setRange).toHaveBeenCalledTimes(1);
   });
 
@@ -38,35 +52,75 @@ describe('<ColumnsModal />', () => {
       to: new Date().setHours(23, 59, 0, 0) / 1000
     };
 
-    const wrapper = mount(<TimeRangeModal {...props} />);
-    expect(props.setRange).toHaveBeenNthCalledWith(1, nowRange);
+    render(<TimeRangeModal {...props} />);
+    await act(async () => {
+      jest.runAllTimers();
+    });
 
-    const datePickers = wrapper.find(DatePicker);
-    const timePickers = wrapper.find(TimePicker);
-    //set start date & time and press button
-    // Create date in local timezone: year, month (0-indexed), day
-    const startDate = new Date(2021, 11, 1); // December 1, 2021
-    act(() => {
-      datePickers.at(0).props().onChange!(fakeEvent, '2021-12-01', startDate);
-      // set hours minutes and seconds
-      timePickers.at(0).props().onChange!(fakeEvent, '10:15:30');
+    const fromDateInput = document.querySelector('[data-test="from-date-picker"] input') as HTMLInputElement;
+    const fromTimeInput = document.querySelector('[data-test="from-time-picker"] input') as HTMLInputElement;
+    const toDateInput = document.querySelector('[data-test="to-date-picker"] input') as HTMLInputElement;
+    const toTimeInput = document.querySelector('[data-test="to-time-picker"] input') as HTMLInputElement;
+    const saveButton = document.querySelector('[data-test="time-range-save"]') as HTMLElement;
+
+    // Set start date & time and press save
+    await act(async () => {
+      fireEvent.change(fromDateInput, { target: { value: '2021-12-01' } });
+      fireEvent.change(fromTimeInput, { target: { value: '10:15:30' } });
+      jest.runAllTimers();
     });
     nowRange.from = new Date(2021, 11, 1, 10, 15, 30, 0).getTime() / 1000;
 
-    await actOn(() => wrapper.find('.pf-v5-c-button.pf-m-primary').at(0).simulate('click'), wrapper);
-    expect(props.setRange).toHaveBeenNthCalledWith(2, nowRange);
+    await act(async () => {
+      fireEvent.click(saveButton);
+      jest.runAllTimers();
+    });
+    expect(props.setRange).toHaveBeenNthCalledWith(1, nowRange);
 
-    //set end date & time and press button
-    // Create date in local timezone: year, month (0-indexed), day
-    const endDate = new Date(2021, 11, 15); // December 15, 2021
-    act(() => {
-      datePickers.at(1).props().onChange!(fakeEvent, '2021-12-15', endDate);
-      // set only hours and minutes, seconds should be automatically set to 0
-      timePickers.at(1).props().onChange!(fakeEvent, '23:00');
+    // Set end date & time and press save
+    await act(async () => {
+      fireEvent.change(toDateInput, { target: { value: '2021-12-15' } });
+      fireEvent.change(toTimeInput, { target: { value: '23:00:00' } });
+      jest.runAllTimers();
     });
     nowRange.to = new Date(2021, 11, 15, 23, 0, 0, 0).getTime() / 1000;
 
-    await actOn(() => wrapper.find('.pf-v5-c-button.pf-m-primary').at(0).simulate('click'), wrapper);
-    expect(props.setRange).toHaveBeenNthCalledWith(3, nowRange);
+    await act(async () => {
+      fireEvent.click(saveButton);
+      jest.runAllTimers();
+    });
+    expect(props.setRange).toHaveBeenNthCalledWith(2, nowRange);
+  });
+
+  it('should allow same day with different times (NETOBSERV-2665)', async () => {
+    render(<TimeRangeModal {...props} />);
+    await act(async () => {
+      jest.runAllTimers();
+    });
+
+    const fromDateInput = document.querySelector('[data-test="from-date-picker"] input') as HTMLInputElement;
+    const fromTimeInput = document.querySelector('[data-test="from-time-picker"] input') as HTMLInputElement;
+    const toDateInput = document.querySelector('[data-test="to-date-picker"] input') as HTMLInputElement;
+    const toTimeInput = document.querySelector('[data-test="to-time-picker"] input') as HTMLInputElement;
+    const saveButton = document.querySelector('[data-test="time-range-save"]') as HTMLElement;
+
+    await act(async () => {
+      fireEvent.change(fromDateInput, { target: { value: '2026-03-12' } });
+      fireEvent.change(fromTimeInput, { target: { value: '10:00:00' } });
+      fireEvent.change(toDateInput, { target: { value: '2026-03-12' } });
+      fireEvent.change(toTimeInput, { target: { value: '10:30:00' } });
+      jest.runAllTimers();
+    });
+
+    await act(async () => {
+      fireEvent.click(saveButton);
+      jest.runAllTimers();
+    });
+
+    const expectedRange: TimeRange = {
+      from: new Date(2026, 2, 12, 10, 0, 0, 0).getTime() / 1000,
+      to: new Date(2026, 2, 12, 10, 30, 0, 0).getTime() / 1000
+    };
+    expect(props.setRange).toHaveBeenCalledWith(expectedRange);
   });
 });

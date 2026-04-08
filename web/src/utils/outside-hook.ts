@@ -10,7 +10,15 @@ export const useOutsideClickEvent = (onClickOutside: () => void) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function handleClickOutside(event: any) {
       if (ref.current && !ref.current.contains(event.target)) {
-        onClickOutside();
+        // Don't close if clicking on a PatternFly menu/dropdown that's rendered via portal
+        const target = event.target;
+        const isPatternFlyMenu =
+          target instanceof Element &&
+          target.closest('.pf-v5-c-menu, .pf-v5-c-select__menu, .pf-v5-c-menu, .pf-v5-c-select__menu');
+
+        if (!isPatternFlyMenu) {
+          onClickOutside();
+        }
       }
     }
     // Bind the event listener

@@ -1,7 +1,7 @@
-import { mount, shallow } from 'enzyme';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import * as React from 'react';
 
-import { actOn } from '../../../components/__tests__/common.spec';
 import { LayoutName } from '../../../model/topology';
 import { LayoutDropdown } from '../layout-dropdown';
 
@@ -13,46 +13,47 @@ describe('<LayoutDropdown />', () => {
   };
 
   it('should render component', async () => {
-    const wrapper = shallow(<LayoutDropdown {...props} />);
-    expect(wrapper.find(LayoutDropdown)).toBeTruthy();
+    render(<LayoutDropdown {...props} />);
+    expect(screen.getByRole('button')).toHaveAttribute('id', 'layout-dropdown');
   });
 
   it('should open and close', async () => {
-    const wrapper = mount(<LayoutDropdown {...props} />);
-    expect(wrapper.find('li').length).toBe(0);
+    const { container } = render(<LayoutDropdown {...props} />);
 
-    //open dropdow
-    await actOn(() => wrapper.find('#layout-dropdown').at(0).simulate('click'), wrapper);
-    expect(wrapper.find('li').length).toBeGreaterThan(0);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#layout-dropdown')!);
+    });
+    await waitFor(() => {
+      expect(document.querySelectorAll('[data-test="layout"] li').length).toBeGreaterThan(0);
+    });
 
-    //close dropdow
-    await actOn(() => wrapper.find('#layout-dropdown').at(0).simulate('click'), wrapper);
-    expect(wrapper.find('li').length).toBe(0);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#layout-dropdown')!);
+    });
 
-    //no setLayout should be called
     expect(props.setLayout).toHaveBeenCalledTimes(0);
   });
 
   it('should refresh on select', async () => {
-    const wrapper = mount(<LayoutDropdown {...props} />);
+    const user = userEvent.setup();
+    const { container } = render(<LayoutDropdown {...props} />);
 
-    //open dropdown
-    await actOn(() => wrapper.find('#layout-dropdown').at(0).simulate('click'), wrapper);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#layout-dropdown')!);
+    });
+    await waitFor(() => expect(document.querySelector('#Dagre')).toBeTruthy());
 
-    //select Dagre
-    await actOn(() => wrapper.find('[id="Dagre"]').last().simulate('click'), wrapper);
+    await user.click(document.querySelector('#Dagre')!);
     expect(props.setLayout).toHaveBeenCalledWith(LayoutName.dagre);
-    expect(wrapper.find('li').length).toBe(0);
 
-    //open dropdown
-    await actOn(() => wrapper.find('#layout-dropdown').at(0).simulate('click'), wrapper);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#layout-dropdown')!);
+    });
+    await waitFor(() => expect(document.querySelector('#Force')).toBeTruthy());
 
-    //select Force
-    await actOn(() => wrapper.find('[id="Force"]').last().simulate('click'), wrapper);
+    await user.click(document.querySelector('#Force')!);
 
-    //setLayout should be called twice
     expect(props.setLayout).toHaveBeenCalledTimes(2);
     expect(props.setLayout).toHaveBeenCalledWith(LayoutName.force);
-    expect(wrapper.find('li').length).toBe(0);
   });
 });

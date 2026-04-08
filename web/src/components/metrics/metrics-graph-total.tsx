@@ -47,7 +47,6 @@ export interface MetricsGraphWithTotalProps {
   topAsBars?: boolean;
   showLegend?: boolean;
   animate?: boolean;
-  isDark?: boolean;
 }
 
 export const MetricsGraphWithTotal: React.FC<MetricsGraphWithTotalProps> = ({
@@ -68,8 +67,7 @@ export const MetricsGraphWithTotal: React.FC<MetricsGraphWithTotalProps> = ({
   smallerTexts,
   topAsBars,
   showLegend,
-  animate,
-  isDark
+  animate
 }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
 
@@ -122,24 +120,18 @@ export const MetricsGraphWithTotal: React.FC<MetricsGraphWithTotalProps> = ({
     />
   );
 
-  const containerRef = React.createRef<HTMLDivElement>();
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useLocalStorage<Dimensions>(
     `${localStorageOverviewMetricsTotalDimensionKey}${showLegend ? '-legend' : ''}`,
     defaultDimensions
   );
 
   React.useEffect(() => {
-    observeDimensions(containerRef, dimensions, setDimensions);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [containerRef, dimensions]);
+    return observeDimensions(containerRef, dimensions, setDimensions);
+  }, [containerRef, dimensions, setDimensions]);
 
   return (
-    <div
-      id={`chart-${id}`}
-      className={`metrics-content-div ${isDark ? 'dark' : 'light'}`}
-      ref={containerRef}
-      data-test-metrics={topKMetrics.length}
-    >
+    <div id={`chart-${id}`} className="metrics-content-div" ref={containerRef} data-test-metrics={topKMetrics.length}>
       <Chart
         themeColor={ChartThemeColor.multiUnordered}
         containerComponent={

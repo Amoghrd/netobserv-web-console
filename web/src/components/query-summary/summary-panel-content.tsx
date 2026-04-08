@@ -79,8 +79,8 @@ export const SummaryPanelContent: React.FC<SummaryPanelContentProps> = ({
               setExpanded(id);
             }
           }}
-          isExpanded={expanded === id}
           id={id}
+          isExpanded={expanded === id}
         >
           {label}
         </AccordionToggle>
@@ -102,13 +102,12 @@ export const SummaryPanelContent: React.FC<SummaryPanelContentProps> = ({
               {o.names
                 .sort((a, b) => compareStrings(a, b))
                 .map(n => (
-                  <ResourceLink
+                  <div
                     key={`${tc.type}-${n}-${o.namespace}`}
                     className={o.namespace ? 'summary-container-grouped' : ''}
-                    kind={tc.type}
-                    name={n}
-                    namespace={o.namespace}
-                  />
+                  >
+                    <ResourceLink kind={tc.type} name={n} namespace={o.namespace} />
+                  </div>
                 ))}
             </AccordionExpandableContentBody>
           ))}
@@ -127,7 +126,7 @@ export const SummaryPanelContent: React.FC<SummaryPanelContentProps> = ({
       <>
         {sortedStrings.map((v: string) => (
           <AccordionExpandableContentBody key={v}>
-            <Text>{v}</Text>
+            <Text component="p">{v}</Text>
           </AccordionExpandableContentBody>
         ))}
       </>
@@ -138,9 +137,11 @@ export const SummaryPanelContent: React.FC<SummaryPanelContentProps> = ({
     return (
       <TextContent className="summary-text-container">
         <Text component={TextVariants.h3}>{`${t('Configuration')}`}</Text>
-        <Text className="summary-config-item">{`${t('Sampling')}: ${config.sampling}`}</Text>
+        <Text component="p" className="summary-config-item">{`${t('Sampling')}: ${config.sampling}`}</Text>
         {maxChunkAge && (
-          <Text className="summary-config-item">{`${t('Max chunk age')}: ${formatDuration(maxChunkAge)}`}</Text>
+          <Text component="p" className="summary-config-item">{`${t('Max chunk age')}: ${formatDuration(
+            maxChunkAge
+          )}`}</Text>
         )}
       </TextContent>
     );
@@ -150,8 +151,8 @@ export const SummaryPanelContent: React.FC<SummaryPanelContentProps> = ({
     return (
       <TextContent className="summary-text-container">
         <Text component={TextVariants.h3}>{`${t('Version')}`}</Text>
-        <Text className="summary-config-item">{`${t('Number')}: ${config.buildVersion}`}</Text>
-        <Text className="summary-config-item">{`${t('Date')}: ${config.buildDate}`}</Text>
+        <Text component="p" className="summary-config-item">{`${t('Number')}: ${config.buildVersion}`}</Text>
+        <Text component="p" className="summary-config-item">{`${t('Date')}: ${config.buildDate}`}</Text>
       </TextContent>
     );
   };
@@ -336,7 +337,7 @@ export const SummaryPanelContent: React.FC<SummaryPanelContentProps> = ({
       : NaN;
 
     return (
-      <Text className="summary-config-item">{`${t('DNS latency')}: ${
+      <Text component="p" className="summary-config-item">{`${t('DNS latency')}: ${
         isNaN(dnsLatency) ? t('n/a') : formatDurationAboveMillisecond(dnsLatency)
       }`}</Text>
     );
@@ -350,7 +351,7 @@ export const SummaryPanelContent: React.FC<SummaryPanelContentProps> = ({
       : NaN;
 
     return (
-      <Text className="summary-config-item">{`${t('Flow RTT')}: ${
+      <Text component="p" className="summary-config-item">{`${t('Flow RTT')}: ${
         isNaN(rtt) ? t('n/a') : formatDurationAboveNanosecond(rtt)
       }`}</Text>
     );
@@ -372,11 +373,13 @@ export const SummaryPanelContent: React.FC<SummaryPanelContentProps> = ({
     return flows && flows.length ? (
       <TextContent className="summary-text-container">
         <Text component={TextVariants.h3}>{`${t('Average time')}`}</Text>
-        <Text className="summary-config-item">{`${t('Duration')}: ${formatDurationAboveMillisecond(duration)}`}</Text>
-        {showRTTLatency ? rttLatency(filteredFlows) : <></>}
-        <Text className="summary-config-item">{`${t('Collection latency')}: ${formatDurationAboveMillisecond(
-          collectionLatency
+        <Text component="p" className="summary-config-item">{`${t('Duration')}: ${formatDurationAboveMillisecond(
+          duration
         )}`}</Text>
+        {showRTTLatency ? rttLatency(filteredFlows) : <></>}
+        <Text component="p" className="summary-config-item">{`${t(
+          'Collection latency'
+        )}: ${formatDurationAboveMillisecond(collectionLatency)}`}</Text>
         {showDNSLatency ? dnsLatency(filteredFlows) : <></>}
       </TextContent>
     ) : (

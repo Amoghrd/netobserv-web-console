@@ -35,9 +35,8 @@ import {
   swapFilters,
   swapFilterValue
 } from '../../../utils/filters-helper';
-import { getPathWithParams, netflowTrafficPath } from '../../../utils/url';
+import { getPathWithParams, netflowTrafficPath, useNavigate } from '../../../utils/url';
 import { MatchDropdown } from '../../dropdowns/match-dropdown';
-import { navigate } from '../../dynamic-loader/dynamic-loader';
 import { DestinationIcon, EndpointIcon, SourceIcon } from '../../icons';
 import { Direction } from '../filters-toolbar';
 import { LinksOverflow } from '../links-overflow';
@@ -72,6 +71,7 @@ export const FiltersChips: React.FC<FiltersChipsProps> = ({
   setDirection
 }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
+  const navigate = useNavigate();
 
   const [openedDropdown, setOpenedDropdown] = React.useState<string>();
 
@@ -326,13 +326,12 @@ export const FiltersChips: React.FC<FiltersChipsProps> = ({
             </div>
             {!isForced && (
               <Button
+                icon={<TimesCircleIcon />}
                 id="button-remove-filters"
                 data-test="button-remove-filters"
                 variant="plain"
                 onClick={() => setFiltersList(removeFromFilters(filters.list, filter))}
-              >
-                <TimesCircleIcon />
-              </Button>
+              />
             )}
           </div>
         </div>
@@ -416,7 +415,7 @@ export const FiltersChips: React.FC<FiltersChipsProps> = ({
                 {getAndOr(filters.match, index, true)}
                 <div className={`custom-chip-box ${gp.id !== 'common' ? 'custom-chip-peer' : ''}`}>
                   {hasSrcOrDstFilters(gp.filters) && (
-                    <Text>
+                    <Text component="p">
                       {filters.match === 'bidirectional' ? (
                         <EndpointIcon />
                       ) : gp.id === 'src' ? (

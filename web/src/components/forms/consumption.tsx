@@ -85,7 +85,8 @@ export const Consumption: FC<ResourceCalculatorProps> = ({ flowCollector, setSam
       // taken from https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/network_observability/configuring-network-observability-operators#network-observability-total-resource-usage-table_network_observability
 
       // TODO: rely on more than nodes here
-      const nodes = labelsCount('node');
+      const nodesResult = labelsCount('node');
+      const nodes = typeof nodesResult === 'number' ? nodesResult : 0;
       const estimatedCPU = nodes <= 25 ? -0.0096 * sampling + 1.8296 : -0.1347 * sampling + 12.1247;
       const estimatedMemory = nodes <= 25 ? -0.1224 * sampling + 22.1224 : -0.4898 * sampling + 87.4898;
       return {
@@ -99,7 +100,8 @@ export const Consumption: FC<ResourceCalculatorProps> = ({ flowCollector, setSam
   const getRecommendations = React.useCallback(() => {
     // eslint-disable-next-line max-len
     // taken from https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/network_observability/configuring-network-observability-operators
-    const nodes = labelsCount('node');
+    const nodesResult = labelsCount('node');
+    const nodes = typeof nodesResult === 'number' ? nodesResult : 0;
     return [
       {
         cpu: nodes <= 10 ? 4 : 16,

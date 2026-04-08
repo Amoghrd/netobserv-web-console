@@ -24,7 +24,7 @@ describe('Network_Observability networking dashboards tests', { tags: ['Network_
         dashboard.visit()
         cy.visit(`/monitoring/dashboards/grafana-dashboard-ingress-operator`)
 
-        cy.get('[data-test="poll-interval-dropdown"] > .pf-v6-c-menu-toggle').should('exist').then(btn => {
+        cy.get('[data-test="poll-interval-dropdown"] > .pf-v5-c-menu-toggle').should('exist').then(btn => {
             cy.wrap(btn).click().then(drop => {
                 cy.contains('15 seconds').should('exist').click()
             })

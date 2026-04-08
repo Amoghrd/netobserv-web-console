@@ -128,7 +128,7 @@ export const NetworkHealth: React.FC<{}> = ({}) => {
                   />
                 </Tabs>
               </FlexItem>
-              <FlexItem className={`${isDarkTheme ? 'dark' : 'light'}-bottom-border`}>
+              <FlexItem className={'bottom-border'}>
                 <Button
                   data-test="health-scoring-info-button"
                   className="overflow-button"

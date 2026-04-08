@@ -6,7 +6,6 @@ import _ from 'lodash';
 import React, { FC, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { safeYAMLToJS } from '../../utils/yaml';
-import { back } from '../dynamic-loader/dynamic-loader';
 import { SchemaValidator } from './config/validator';
 import { DynamicForm } from './dynamic-form/dynamic-form';
 import { ErrorTemplate } from './dynamic-form/templates';
@@ -59,7 +58,7 @@ export const ResourceForm: FC<ResourceFormProps> = ({ uiSchema }) => {
                 onReload={() => setData(ctx.data)}
                 onChange={setViewType}
                 onSubmit={() => ctx.onSubmit(data)}
-                onCancel={() => back()}
+                onCancel={() => window.history.back()}
                 onDelete={() => setDeleteModalOpen(true)}
                 customChild={
                   ctx.schema ? (

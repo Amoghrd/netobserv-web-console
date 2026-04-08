@@ -3,7 +3,7 @@ import { Button, Text, TextVariants } from '@patternfly/react-core';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import React, { FC } from 'react';
 import { useTranslation } from 'react-i18next';
-import { navigate } from '../dynamic-loader/dynamic-loader';
+import { useNavigate } from '../../utils/url';
 
 export type ResourceStatusProps = {
   group: string;
@@ -23,6 +23,7 @@ export const ResourceStatus: FC<ResourceStatusProps> = ({
   setSelectedTypes
 }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
+  const navigate = useNavigate();
 
   if (!existing) {
     return (

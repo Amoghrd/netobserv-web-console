@@ -150,16 +150,14 @@ export const ElementPanelContent: React.FC<ElementPanelContentProps> = ({
         <Accordion asDefinitionList={false}>
           <div className="record-group-container" key={'source'} data-test-id={'source'}>
             <AccordionItem data-test-id={'source'}>
-              {
-                <AccordionToggle
-                  className="borderless-accordion"
-                  onClick={() => toggle('source')}
-                  isExpanded={!hidden.includes('source')}
-                  id={'source'}
-                >
-                  {filters.match === 'bidirectional' ? t('Endpoint A') : t('Source')}
-                </AccordionToggle>
-              }
+              <AccordionToggle
+                className="borderless-accordion"
+                onClick={() => toggle('source')}
+                id={'source'}
+                isExpanded={!hidden.includes('source')}
+              >
+                {filters.match === 'bidirectional' ? t('Endpoint A') : t('Source')}
+              </AccordionToggle>
               <AccordionContent
                 className="borderless-accordion"
                 id="source-content"
@@ -178,16 +176,14 @@ export const ElementPanelContent: React.FC<ElementPanelContentProps> = ({
           <div className="record-group-container" key={'destination'} data-test-id={'destination'}>
             <Divider />
             <AccordionItem data-test-id={'destination'}>
-              {
-                <AccordionToggle
-                  className="borderless-accordion"
-                  onClick={() => toggle('destination')}
-                  isExpanded={!hidden.includes('destination')}
-                  id={'destination'}
-                >
-                  {filters.match === 'bidirectional' ? t('Endpoint B') : t('Destination')}
-                </AccordionToggle>
-              }
+              <AccordionToggle
+                className="borderless-accordion"
+                onClick={() => toggle('destination')}
+                id={'destination'}
+                isExpanded={!hidden.includes('destination')}
+              >
+                {filters.match === 'bidirectional' ? t('Endpoint B') : t('Destination')}
+              </AccordionToggle>
               <AccordionContent
                 className="borderless-accordion"
                 id="destination-content"

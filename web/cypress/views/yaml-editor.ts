@@ -99,7 +99,7 @@ export const showYAMLSidebar = () => cy.get('[aria-label="Show sidebar"]').click
 export const clickFieldDetailsButton = (fieldName: string) => {
   cy.contains('h5', `${fieldName}`)
     .parents('li')
-    .find('button.pf-v6-c-button')
+    .find('button.pf-v5-c-button')
     .contains('View details')
     .click();
 };

@@ -27,16 +27,15 @@ export const ChipsPopover: React.FC<ChipsPopoverProps> = ({ chipsPopoverMessage,
           <FlexItem flex={{ default: 'flex_1' }}>{t('Some filters have been automatically disabled')}</FlexItem>
           <FlexItem>
             <Button
+              icon={<TimesIcon />}
               variant="plain"
               className="chips-popover-close-button"
               onClick={() => setChipsPopoverMessage(undefined)}
-            >
-              <TimesIcon />
-            </Button>
+            />
           </FlexItem>
         </Flex>
       }
-      bodyContent={<Text> {chipsPopoverMessage}</Text>}
+      bodyContent={<Text component="p"> {chipsPopoverMessage}</Text>}
       triggerRef={() => document.getElementsByClassName('custom-chip-group disabled-group')?.[0] as HTMLElement}
     />
   );

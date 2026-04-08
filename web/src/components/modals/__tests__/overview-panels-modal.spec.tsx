@@ -1,4 +1,4 @@
-import { mount, shallow } from 'enzyme';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import * as React from 'react';
 
 import { RecordType } from '../../../model/flow-query';
@@ -17,36 +17,65 @@ describe('<OverviewPanelsModal />', () => {
     id: 'panels-modal'
   };
 
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
   it('should render component', async () => {
-    const wrapper = shallow(<OverviewPanelsModal {...props} />);
-    expect(wrapper.find(OverviewPanelsModal)).toBeTruthy();
+    render(<OverviewPanelsModal {...props} />);
+    await act(async () => {
+      jest.runAllTimers();
+    });
   });
 
   it('should save once', async () => {
-    const wrapper = mount(<OverviewPanelsModal {...props} />);
-    const confirmButton = wrapper.find('.pf-v5-c-button.pf-m-primary');
-    expect(confirmButton.length).toEqual(1);
+    render(<OverviewPanelsModal {...props} />);
+    await act(async () => {
+      jest.runAllTimers();
+    });
 
-    confirmButton.at(0).simulate('click');
+    const confirmButton = document.querySelector('.pf-v5-c-button.pf-m-primary') as HTMLElement;
+    expect(confirmButton).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.click(confirmButton);
+      jest.runAllTimers();
+    });
     expect(props.setPanels).toHaveBeenCalledTimes(1);
   });
 
   it('should update panels selected on save', async () => {
-    const wrapper = mount(<OverviewPanelsModal {...props} />);
-    expect(props.setPanels).toHaveBeenNthCalledWith(1, props.panels);
-    //unselect first and second panels
-    const updatedpanels = [...props.panels];
-    updatedpanels[0].isSelected = !updatedpanels[0].isSelected;
-    updatedpanels[1].isSelected = !updatedpanels[1].isSelected;
-    wrapper
-      .find('[aria-labelledby="overview-panel-management-item-0"]')
-      .last()
-      .simulate('change', { target: { id: updatedpanels[0].id } });
-    wrapper
-      .find('[aria-labelledby="overview-panel-management-item-1"]')
-      .last()
-      .simulate('change', { target: { id: updatedpanels[1].id } });
-    wrapper.find('.pf-v5-c-button.pf-m-primary').at(0).simulate('click');
-    expect(props.setPanels).toHaveBeenNthCalledWith(2, updatedpanels);
+    render(<OverviewPanelsModal {...props} />);
+    await act(async () => {
+      jest.runAllTimers();
+    });
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('checkbox').length).toBeGreaterThanOrEqual(2);
+    });
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    await act(async () => {
+      fireEvent.click(checkboxes[0]);
+      fireEvent.click(checkboxes[1]);
+      jest.runAllTimers();
+    });
+
+    const saveButton = document.querySelector('.pf-v5-c-button.pf-m-primary') as HTMLElement;
+    await act(async () => {
+      fireEvent.click(saveButton);
+      jest.runAllTimers();
+    });
+
+    const updatedPanels = [...props.panels];
+    updatedPanels[0] = { ...updatedPanels[0], isSelected: !updatedPanels[0].isSelected };
+    updatedPanels[1] = { ...updatedPanels[1], isSelected: !updatedPanels[1].isSelected };
+    expect(props.setPanels).toHaveBeenCalledWith(updatedPanels);
   });
 });

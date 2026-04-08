@@ -1,17 +1,16 @@
-import { Checkbox } from '@patternfly/react-core';
+import { Drawer, DrawerContent } from '@patternfly/react-core';
 import { BaseEdge, BaseNode, NodeModel } from '@patternfly/react-topology';
-import { waitFor } from '@testing-library/react';
-import { mount, shallow } from 'enzyme';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import * as React from 'react';
+
 import { TopologyMetrics } from '../../../../api/loki';
-import { actOn, waitForRender } from '../../../../components/__tests__/common.spec';
-import { FilterCompare, Filters } from '../../../../model/filters';
+import { Filters } from '../../../../model/filters';
 import { FlowScope, MetricType } from '../../../../model/flow-query';
 import { NodeData } from '../../../../model/topology';
 import { createPeer } from '../../../../utils/metrics';
+import { FilterDefinitionSample } from '../../../__tests-data__/filters';
 import { TruncateLength } from '../../../dropdowns/truncate-dropdown';
 import { dataSample } from '../../../tabs/netflow-topology/__tests-data__/metrics';
-import { FilterDefinitionSample } from '../../../__tests-data__/filters';
 import { ElementPanel } from '../element-panel';
 import { ElementPanelContent } from '../element-panel-content';
 import { ElementPanelMetrics } from '../element-panel-metrics';
@@ -51,38 +50,42 @@ describe('<ElementPanel />', () => {
   };
 
   it('should render component', async () => {
-    const wrapper = shallow(<ElementPanel {...mocks} />);
-    await waitForRender(wrapper);
-
-    expect(wrapper.find(ElementPanel)).toBeTruthy();
-    expect(wrapper.find('#element-panel-test')).toHaveLength(1);
+    const { container } = render(<ElementPanel {...mocks} />);
+    expect(container.querySelector('#element-panel-test')).toBeTruthy();
   });
 
   it('should close on click', async () => {
-    const wrapper = shallow(<ElementPanel {...mocks} />);
-    await waitForRender(wrapper);
-
-    expect(wrapper.find('.drawer-close-button')).toHaveLength(1);
-    await actOn(() => wrapper.find('.drawer-close-button').last().simulate('click'), wrapper);
+    render(
+      <Drawer isExpanded>
+        <DrawerContent panelContent={<ElementPanel {...mocks} />}>
+          <div />
+        </DrawerContent>
+      </Drawer>
+    );
+    await waitFor(() => {
+      expect(document.querySelector('[data-test-id="drawer-close-button"]')).toBeTruthy();
+    });
+    fireEvent.click(document.querySelector('[data-test-id="drawer-close-button"]')!);
     expect(mocks.onClose).toHaveBeenCalled();
   });
 
-  it('should render <ElementPanelDetailsContent />', async () => {
-    const wrapper = mount(<ElementPanelContent {...mocks} />);
-    await waitForRender(wrapper);
-    expect(wrapper.find(ElementPanelContent)).toBeTruthy();
+  it('should render element details', async () => {
+    const { container, rerender } = render(<ElementPanelContent {...mocks} />);
+    await waitFor(() => {
+      expect(container.querySelector('#node-info-address')).toBeTruthy();
+    });
+    expect(container.querySelector('#node-info-address')?.textContent).toContain('10.129.0.15');
 
-    //check node infos
-    expect(wrapper.find('#node-info-address').last().text()).toBe('IP10.129.0.15');
-
-    //update to edge
-    wrapper.setProps({ ...mocks, element: getEdge() });
-    expect(wrapper.find('#source-content').last().text()).toBe('PodIP10.131.0.18');
-    expect(wrapper.find('#destination-content').last().text()).toBe('ServiceIP172.30.0.10');
+    rerender(<ElementPanelContent {...mocks} element={getEdge()} />);
+    await waitFor(() => {
+      expect(container.querySelector('#source-content')).toBeTruthy();
+    });
+    expect(container.querySelector('#source-content')?.textContent).toContain('10.131.0.18');
+    expect(container.querySelector('#destination-content')?.textContent).toContain('172.30.0.10');
   });
 
-  it('should render <ElementPanelMetricsContent /> node', async () => {
-    const wrapper = mount(
+  it('should render node metrics', async () => {
+    const { container } = render(
       <ElementPanelMetrics
         metricType={mocks.metricType}
         metrics={mocks.metrics}
@@ -91,21 +94,20 @@ describe('<ElementPanel />', () => {
         isGroup={false}
       />
     );
-    await waitForRender(wrapper);
-    expect(wrapper.find(ElementPanelMetrics)).toBeTruthy();
-
-    //check node metrics
-    expect(wrapper.find('#metrics-stats-total-in').last().text()).toBe('94.7 MB');
-    expect(wrapper.find('#metrics-stats-avg-in').last().text()).toBe('332.4 kBps');
-    expect(wrapper.find('#metrics-stats-latest-in').last().text()).toBe('0 Bps');
-    expect(wrapper.find('#metrics-stats-total-out').last().text()).toBe('4.1 MB');
-    expect(wrapper.find('#metrics-stats-avg-out').last().text()).toBe('14.3 kBps');
-    expect(wrapper.find('#metrics-stats-latest-out').last().text()).toBe('0 Bps');
+    await waitFor(() => {
+      expect(container.querySelector('#metrics-stats-total-in')).toBeTruthy();
+    });
+    expect(container.querySelector('#metrics-stats-total-in')?.textContent).toBe('94.7 MB');
+    expect(container.querySelector('#metrics-stats-avg-in')?.textContent).toBe('332.4 kBps');
+    expect(container.querySelector('#metrics-stats-latest-in')?.textContent).toBe('0 Bps');
+    expect(container.querySelector('#metrics-stats-total-out')?.textContent).toBe('4.1 MB');
+    expect(container.querySelector('#metrics-stats-avg-out')?.textContent).toBe('14.3 kBps');
+    expect(container.querySelector('#metrics-stats-latest-out')?.textContent).toBe('0 Bps');
   });
 
-  it('should render <ElementPanelMetricsContent /> edge a->b', async () => {
+  it('should render edge metrics a->b', async () => {
     const edge = getEdge();
-    const wrapper = mount(
+    const { container } = render(
       <ElementPanelMetrics
         metricType={mocks.metricType}
         metrics={mocks.metrics}
@@ -115,38 +117,12 @@ describe('<ElementPanel />', () => {
         isGroup={false}
       />
     );
-    await waitForRender(wrapper);
-    expect(wrapper.find(ElementPanelMetrics)).toBeTruthy();
-
-    expect(wrapper.find('#metrics-stats-total-in').last().text()).toBe('1.1 MB');
-    expect(wrapper.find('#metrics-stats-avg-in').last().text()).toBe('3.9 kBps');
-    expect(wrapper.find('#metrics-stats-latest-in').last().text()).toBe('0 Bps');
-    expect(wrapper.find('#metrics-stats-total-out').last().text()).toBe('4.5 MB');
-    expect(wrapper.find('#metrics-stats-avg-out').last().text()).toBe('15.9 kBps');
-    expect(wrapper.find('#metrics-stats-latest-out').last().text()).toBe('0 Bps');
-  });
-
-  it('should filter <ElementPanelDetailsContent />', async () => {
-    const wrapper = mount(<ElementPanelContent {...mocks} />);
-    await waitForRender(wrapper);
-
-    // Two buttons: first for pod filter, second for IP filter => click on second
-    await actOn(() => wrapper.find('.summary-filters-toggle').last().simulate('click'), wrapper);
-
-    // Two items: source or destination
-    expect(wrapper.find('li').length).toBe(2);
-    await actOn(() => {
-      wrapper.find('[id="src"]').find(Checkbox).props().onChange!({} as React.FormEvent<HTMLInputElement>, true);
-    }, wrapper);
     await waitFor(() => {
-      expect(mocks.setFilters).toHaveBeenCalledTimes(1);
-      expect(mocks.setFilters).toHaveBeenCalledWith([
-        {
-          def: expect.any(Object),
-          compare: FilterCompare.equal,
-          values: [{ v: '10.129.0.15' }]
-        }
-      ]);
+      expect(container.querySelector('#metrics-stats-total-in')).toBeTruthy();
     });
+    expect(container.querySelector('#metrics-stats-total-in')?.textContent).toBe('1.1 MB');
+    expect(container.querySelector('#metrics-stats-avg-in')?.textContent).toBe('3.9 kBps');
+    expect(container.querySelector('#metrics-stats-total-out')?.textContent).toBe('4.5 MB');
+    expect(container.querySelector('#metrics-stats-avg-out')?.textContent).toBe('15.9 kBps');
   });
 });

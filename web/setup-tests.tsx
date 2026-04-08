@@ -61,6 +61,13 @@ jest.mock('react-router-dom', () => ({
   }
 }));
 
+jest.mock('react-router-dom-v5-compat', () => ({
+  useNavigate: () => jest.fn(),
+  Link: () => {
+    return null;
+  }
+}));
+
 // Mock routes
 jest.mock('./src/api/routes', () => ({
   getPods: jest.fn(async () => ['ABCD']),

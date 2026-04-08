@@ -2,34 +2,33 @@
 import { K8sResourceCondition, K8sResourceKind } from '@openshift-console/dynamic-plugin-sdk';
 
 import {
-  DefaultTaskGroup as taskGroup,
   DEFAULT_EDGE_TYPE as edgeType,
-  DEFAULT_FINALLY_NODE_TYPE as finallyNodeType,
-  DEFAULT_SPACER_NODE_TYPE as spacerNodeType,
-  DEFAULT_TASK_NODE_TYPE as taskNodeType,
-  DEFAULT_WHEN_OFFSET as whenOffset,
   FinallyNode,
+  DEFAULT_FINALLY_NODE_TYPE as finallyNodeType,
   getEdgesFromNodes,
   getSpacerNodes,
   Graph,
   GraphComponent,
-  GRAPH_LAYOUT_END_EVENT as layoutEndEvent,
   Layout,
+  GRAPH_LAYOUT_END_EVENT as layoutEndEvent,
   ModelKind,
   Node,
   PipelineDagreLayout,
   PipelineNodeModel,
   RunStatus,
   SpacerNode,
+  DEFAULT_SPACER_NODE_TYPE as spacerNodeType,
   TaskEdge,
+  DefaultTaskGroup as taskGroup,
   TaskNode,
+  DEFAULT_TASK_NODE_TYPE as taskNodeType,
   Visualization,
   VisualizationProvider,
   VisualizationSurface,
-  WhenDecorator
+  WhenDecorator,
+  DEFAULT_WHEN_OFFSET as whenOffset
 } from '@patternfly/react-topology';
 
-import { getResizeObserver } from '@patternfly/react-core';
 import _ from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -92,7 +91,7 @@ export type FlowCollectorPipelineProps = {
 export const Pipeline: React.FC<FlowCollectorPipelineProps> = ({ existing, selectedTypes, setSelectedTypes }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
 
-  const containerRef = React.createRef<HTMLDivElement>();
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const [controller, setController] = React.useState<Visualization>();
   const [isLayouting, setIsLayouting] = React.useState(false);
 
@@ -271,16 +270,13 @@ export const Pipeline: React.FC<FlowCollectorPipelineProps> = ({ existing, selec
   }, [existing?.spec, getStatus, selectedTypes, setSelectedTypes]);
 
   React.useEffect(() => {
-    if (containerRef.current) {
-      getResizeObserver(
-        containerRef.current,
-        () => {
-          setTimeout(() => fit(), 100); // slight delay to allow for any layout thrashing
-        },
-        true
-      );
-    }
-  }, [containerRef, controller, fit]);
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(() => {
+      setTimeout(() => fit(), 100);
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [controller, fit]);
 
   const { nodes, edges } = React.useMemo(() => {
     const steps = getSteps();

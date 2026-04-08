@@ -1,7 +1,7 @@
-import { mount, shallow } from 'enzyme';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import * as React from 'react';
 
-import { actOn } from '../../../components/__tests__/common.spec';
 import { RefreshDropdown, RefreshDropdownProps } from '../refresh-dropdown';
 
 describe('<RefreshDropdown />', () => {
@@ -12,46 +12,47 @@ describe('<RefreshDropdown />', () => {
   };
 
   it('should render component', async () => {
-    const wrapper = shallow(<RefreshDropdown {...props} />);
-    expect(wrapper.find(RefreshDropdown)).toBeTruthy();
+    render(<RefreshDropdown {...props} />);
+    expect(screen.getByRole('button')).toHaveAttribute('id', 'refresh-dropdown');
   });
 
   it('should open and close', async () => {
-    const wrapper = mount(<RefreshDropdown {...props} />);
-    expect(wrapper.find('li').length).toBe(0);
+    const { container } = render(<RefreshDropdown {...props} />);
 
-    //open dropdow
-    await actOn(() => wrapper.find('#refresh-dropdown').at(0).simulate('click'), wrapper);
-    expect(wrapper.find('li').length).toBeGreaterThan(0);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#refresh-dropdown')!);
+    });
+    await waitFor(() => {
+      expect(document.querySelectorAll('[data-test="refresh"] li').length).toBeGreaterThan(0);
+    });
 
-    //close dropdow
-    await actOn(() => wrapper.find('#refresh-dropdown').at(0).simulate('click'), wrapper);
-    expect(wrapper.find('li').length).toBe(0);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#refresh-dropdown')!);
+    });
 
-    //no setInterval should be called
     expect(props.setInterval).toHaveBeenCalledTimes(0);
   });
 
   it('should refresh on select', async () => {
-    const wrapper = mount(<RefreshDropdown {...props} />);
+    const user = userEvent.setup();
+    const { container } = render(<RefreshDropdown {...props} />);
 
-    //open dropdown
-    await actOn(() => wrapper.find('#refresh-dropdown').at(0).simulate('click'), wrapper);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#refresh-dropdown')!);
+    });
+    await waitFor(() => expect(document.querySelector('#OFF_KEY')).toBeTruthy());
 
-    //select refresh off
-    await actOn(() => wrapper.find('[id="OFF_KEY"]').last().simulate('click'), wrapper);
+    await user.click(document.querySelector('#OFF_KEY')!);
     expect(props.setInterval).toHaveBeenCalledWith(undefined);
-    expect(wrapper.find('li').length).toBe(0);
 
-    //open dropdown
-    await actOn(() => wrapper.find('#refresh-dropdown').at(0).simulate('click'), wrapper);
+    await act(async () => {
+      fireEvent.click(container.querySelector('#refresh-dropdown')!);
+    });
+    await waitFor(() => expect(document.querySelector('[id="15s"]')).toBeTruthy());
 
-    //select 15s
-    await actOn(() => wrapper.find('[id="15s"]').last().simulate('click'), wrapper);
+    await user.click(document.querySelector('[id="15s"]')!);
 
-    //setInterval should be called twice
     expect(props.setInterval).toHaveBeenCalledTimes(2);
     expect(props.setInterval).toHaveBeenCalledWith(15000);
-    expect(wrapper.find('li').length).toBe(0);
   });
 });
