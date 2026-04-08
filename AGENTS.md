@@ -21,8 +21,9 @@ Best practices for AI coding agents on NetObserv Web Console.
 **Key Directories:**
 - `web/src/components/`: React components (forms, tables, topology, etc.)
 - `web/src/api/`: Backend API client
-- `web/src/model/`: Data models and transformations
-- `web/src/utils/`: Utility functions
+- `web/src/model/`: Data models, transformations, and context providers
+- `web/src/utils/`: Utility functions and custom React hooks
+- `web/src/standalone/`: Standalone mode application entry point
 - `pkg/handler/`: HTTP request handlers
 - `pkg/loki/`: Loki client and query builders
 - `pkg/kubernetes/`: Kubernetes API client
@@ -41,6 +42,7 @@ Best practices for AI coding agents on NetObserv Web Console.
 ### 🚨 Node Version Consistency
 - Use Node.js version specified in `Dockerfile.front`
 - npm versions matter - use expected versions to avoid build breaks
+- `.npmrc` contains `legacy-peer-deps=true` for dependency resolution consistency
 - Consider using [nvm](https://github.com/nvm-sh/nvm) for version management
 
 ### 🚨 Dockerfiles
@@ -107,6 +109,11 @@ FlowCollector CRD field changed in operator:
 
 ## Repository-Specific Context
 
+### Frontend Architecture
+- **Custom Hooks**: Logic extracted into focused hooks in `web/src/utils/*-hook.ts` (capabilities, URL sync, fetching, theme, storage, etc.)
+- **Context**: `NetflowContext` in `web/src/model/netflow-context.ts` shares config/capabilities across components
+- **React Router**: Centralized in `web/src/utils/url.ts`, uses `react-router-dom-v5-compat`
+
 ### Plugin vs Standalone Modes
 - **Plugin mode**: Console integration (localhost:9001), requires Console clone for dev
 - **Standalone mode**: Independent app (`make start-standalone` or `make start-standalone-mock`), build with `STANDALONE=true make images`
@@ -144,7 +151,7 @@ Review for:
 2. PatternFly component usage consistency
 3. i18n strings for all user-facing text
 4. Error handling (proper error messages and patterns)
-5. Unit tests (Jest for frontend, Go tests for backend)
+5. Unit tests (React Testing Library for frontend, Go tests for backend)
 6. Loki query efficiency (time ranges, label matchers)
 7. Backward compatibility (schema changes)
 8. Both plugin and standalone mode testing
@@ -155,7 +162,7 @@ Review for:
 
 ## Testing
 
-**Unit Tests**: Go tests in `pkg/loki/*_test.go` (query construction, validation, edge cases), Jest/Enzyme in `web/src/components/tabs/netflow-table/__tests__/`
+**Unit Tests**: Go tests in `pkg/*_test.go`, Jest with React Testing Library in `web/src/**/__tests__/`
 
 **E2E Tests**: Cypress in `web/cypress/e2e/` (dev) and `web/cypress/integration-tests/` (QE). Run: `make cypress` or `cd web && npm run cypress:open`
 
@@ -198,7 +205,7 @@ make image-build image-push     # Build and push image
 
 Before commit:
 1. AI code review
-2. Add unit tests (Jest for frontend, Go tests for backend)
+2. Add unit tests (React Testing Library for frontend, Go tests for backend)
 3. Add Cypress tests for UI features
 4. `make build lint test` (both frontend and backend)
 5. `make i18n` (if UI strings changed)
