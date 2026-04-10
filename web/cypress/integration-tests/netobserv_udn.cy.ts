@@ -19,7 +19,7 @@ describe('(OCP-81751 Network_Observability) UDN test', { tags: ['Network_Observa
     })
 
     it("(OCP-81751, aramesha) should verify default Network Name columns", function () {
-        cy.get('#tabs-container li:nth-child(2)').click()
+        cy.get('#tabs-container').contains('Traffic flows').click()
         cy.byTestID("table-composable").should('exist')
         netflowPage.stopAutoRefresh()
 
@@ -34,7 +34,7 @@ describe('(OCP-81751 Network_Observability) UDN test', { tags: ['Network_Observa
         setupTopologyViewWithNamespaceFilter()
 
         const scope = 'network'
-        topologyPage.selectScopeGroup(scope, null)
+        topologyPage.selectScopeGroup(scope)
         topologyPage.isViewRendered()
 
         // Filter on empty CUDN
@@ -56,7 +56,7 @@ describe('(OCP-81751 Network_Observability) UDN test', { tags: ['Network_Observa
     })
 
     after("all tests", function () {
-        cy.adminCLI('oc delete -f cypress/fixtures/test-udn.yaml')
+        cy.adminCLI('oc delete -f cypress/fixtures/test-udn.yaml --ignore-not-found')
         Operator.deleteFlowCollector()
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })

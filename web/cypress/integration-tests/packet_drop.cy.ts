@@ -46,7 +46,7 @@ describe('(OCP-66141 Network_Observability) PacketDrop test', { tags: ['Network_
     })
 
     it("(OCP-66141, aramesha, Network_Observability) Verify packetDrop Query Options filters", function () {
-        cy.get('#tabs-container li:nth-child(2)').click()
+        cy.get('#tabs-container').contains('Traffic flows').click()
         cy.byTestID("table-composable").should('exist')
 
         // toggle between drops filter

@@ -92,7 +92,7 @@ export const listPage = {
         .contains(resourceName)
         .parents('tr')
         .within(() => {
-          cy.get('[data-test-id="kebab-button"]').click();
+          cy.byLegacyTestID('kebab-button').click();
         });
       cy.byTestActionID(actionName).click();
     },
@@ -113,9 +113,9 @@ export const listPage = {
     shouldExist: (resourceName: string) =>
       cy.get('[data-test-rows="resource-row"]').contains(resourceName),
     clickRowByName: (resourceName: string) =>
-      cy.get(`a[data-test-id="${resourceName}"]`).click({ force: true }), // after applying row filter, resource rows detached from DOM according to cypress, need to force the click
+      cy.byLegacyTestID(resourceName).filter('a').click({ force: true }), // after applying row filter, resource rows detached from DOM according to cypress, need to force the click
     shouldNotExist: (resourceName: string) =>
-      cy.get(`[data-test-id="${resourceName}"]`, { timeout: 90000 }).should('not.exist'),
+      cy.byLegacyTestID(resourceName, { timeout: 90000 }).should('not.exist'),
   },
   dvRows: {
     getFirstElementName: () => cy.get('[data-test^="data-view-cell-"]').first().find('a'),
@@ -136,7 +136,7 @@ export const listPage = {
         .contains(resourceName)
         .parents('tr')
         .within(() => {
-          cy.get('[data-test-id="kebab-button"]').click();
+          cy.byLegacyTestID('kebab-button').click();
         });
       cy.byTestActionID(actionName).click();
     },

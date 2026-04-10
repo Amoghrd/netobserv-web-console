@@ -33,7 +33,7 @@ describe('(OCP-68246 Network_Observability) FlowRTT test', { tags: ['Network_Obs
 
     it("(OCP-68246, aramesha, Network_Observability) Validate flowRTT edge labels and Query Summary stats", function () {
         netflowPage.visit()
-        cy.get('#tabs-container li:nth-child(3)').click()
+        cy.get('#tabs-container').contains('Topology').click()
         cy.get('#drawer').should('not.be.empty')
 
         cy.byTestID("show-view-options-button").should('exist').click().then(views => {
@@ -55,7 +55,7 @@ describe('(OCP-68246 Network_Observability) FlowRTT test', { tags: ['Network_Obs
         // filter on TCP protocol
         cy.get(filterSelectors.filterInput).type("protocol=TCP" + '{enter}').click()
 
-        cy.get('[data-test-id=edge-handler]').each((g) => {
+        cy.byLegacyTestID('edge-handler').each((g) => {
             expect(g.text()).to.match(/\d+\s*ms/);
         });
         netflowPage.clearAllFilters()
@@ -73,7 +73,7 @@ describe('(OCP-68246 Network_Observability) FlowRTT test', { tags: ['Network_Obs
         dashboard.visitDashboard("netobserv-main")
 
         // verify 'TCP latency,p99' panel
-        cy.get('[data-test="tcp-latency,-p99-chart"]').find(graphSelector.graphBody).should('not.have.class', 'graph-empty-state')
+        cy.checkDashboards(['tcp-latency,-p99-chart'])
 
         cy.checkDashboards(flowRTTPanels)
     })

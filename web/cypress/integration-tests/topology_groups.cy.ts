@@ -32,8 +32,8 @@ describe("(OCP-53591 Network_Observability) Netflow Topology groups features", {
 
         // selecting something different first
         // to re-trigger API request on namespace selection
-        topologyPage.selectScopeGroup("owner", null)
-        topologyPage.selectScopeGroup(scope, null)
+        topologyPage.selectScopeGroup("owner")
+        topologyPage.selectScopeGroup(scope)
         cy.wait('@matchedUrl').then(({ response }) => {
             expect(response.statusCode).to.eq(200)
         })
@@ -52,7 +52,7 @@ describe("(OCP-53591 Network_Observability) Netflow Topology groups features", {
         // using slider
         let lastRefresh = Cypress.$("#lastRefresh").text()
         cy.log(`last refresh is ${lastRefresh}`)
-        cy.get('#scope-step-2 >  div:nth-child(2) > button').click().then(slider => {
+        cy.get('#scope-step-2 button').click().then(slider => {
             netflowPage.waitForLokiQuery()
             cy.wait(3000)
             cy.get('#lastRefresh').invoke('text').should('not.eq', lastRefresh)
@@ -70,7 +70,7 @@ describe("(OCP-53591 Network_Observability) Netflow Topology groups features", {
     it("(OCP-53591, memodi) should verify resource scope", function () {
         const scope = 'resource'
         cy.intercept('GET', getTopologyScopeURL(scope), { fixture: 'flowmetrics/resource.json' }).as('matchedUrl')
-        topologyPage.selectScopeGroup(scope, null)
+        topologyPage.selectScopeGroup(scope)
         cy.wait('@matchedUrl').then(({ response }) => {
             expect(response.statusCode).to.eq(200)
         })

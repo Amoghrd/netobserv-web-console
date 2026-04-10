@@ -47,7 +47,7 @@ describe('(OCP-68246 Network_Observability) FlowRTT test', { tags: ['Network_Obs
     })
 
     it("(OCP-68246, aramesha, Network_Observability) Verify default flowRTT column", function () {
-        cy.get('#tabs-container li:nth-child(2)').click()
+        cy.get('#tabs-container').contains('Traffic flows').click()
         cy.byTestID("table-composable").should('exist')
         netflowPage.stopAutoRefresh()
 

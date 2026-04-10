@@ -39,11 +39,10 @@ describe('(OCP-84821 Network_Observability) Network Health test', { tags: ['Netw
         cy.get(networkHealthSelectors.namespace).should('exist')
         cy.get(networkHealthSelectors.workload).should('exist')
 
-        // wait 1min for alert to show up
-        cy.wait(60000)
-        cy.get(networkHealthSelectors.namespace).should('exist').click().then(() => {
-            networkHealth.verifyAlert("dns-traffic")
-        })
+        // Switch to namespace tab and wait for health cards to load
+        cy.get(networkHealthSelectors.namespace).should('exist').click()
+        // verifyAlert will wait up to 60s for the card to appear
+        networkHealth.verifyAlert("dns-traffic")
 
         networkHealth.navigateToAlertPage("dns-traffic")
         // verify Runbooks on the inspect alert page.
@@ -65,8 +64,8 @@ describe('(OCP-84821 Network_Observability) Network Health test', { tags: ['Netw
 
         cy.get(networkHealthSelectors.sidePanel).should('be.visible')
         // click the kebab button
-        cy.get('div.rule-details-row:nth-child(1) button').click().then(() => {
-            cy.get('button[role="menuitem"]').eq(2).click().then(() => {
+        cy.get('div.rule-details-row').first().find('button').click().then(() => {
+            cy.contains('Inspect network traffic').click().then(() => {
                 cy.checkNetflowTraffic()
                 // select Owner group
                 topologyPage.selectGroupWithSlider("Owner")
@@ -74,7 +73,7 @@ describe('(OCP-84821 Network_Observability) Network Health test', { tags: ['Netw
                 // click on the NS and check Health tab in sidebar.
                 cy.get('g[data-kind="node"] > g').eq(1).parent().should('exist').click()
                 cy.get('#elementPanel').should('be.visible')
-                cy.get('#drawer-tabs > ul > li:nth-child(3)').should('exist').click()
+                cy.get('#drawer-tabs').contains('Health').should('exist').click()
                 cy.get('div .rule-details-row').should('exist')
             })
         })

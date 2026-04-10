@@ -36,7 +36,7 @@ describe('(OCP-67087 Network_Observability) DNSTracking test', { tags: ['Network
 
     it("(OCP-67087, aramesha, Network_Observability) Validate DNSLatencies edge label and Query Summary stats", function () {
         netflowPage.visit()
-        cy.get('#tabs-container li:nth-child(3)').click()
+        cy.get('#tabs-container').contains('Topology').click()
         cy.get('#drawer').should('not.be.empty')
         cy.get(filterSelectors.filterInput).type("dns_latency>=0" + '{enter}')
 
@@ -56,7 +56,7 @@ describe('(OCP-67087 Network_Observability) DNSTracking test', { tags: ['Network
         cy.byTestID("scope-dropdown").click().get("#host").click()
         cy.contains('Display options').should('exist').click()
 
-        cy.get('[data-test-id=edge-handler]').should('exist').each((g) => {
+        cy.byLegacyTestID('edge-handler').should('exist').each((g) => {
             expect(g.text()).to.match(/\d+\s*ms/);
         });
 

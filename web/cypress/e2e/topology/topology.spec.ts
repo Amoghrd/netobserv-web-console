@@ -45,11 +45,11 @@ describe('netflow-topology', () => {
     cy.get('#elementPanel-drawer-body').should('exist');
     cy.get('#drawer-tabs').click();
     cy.get('.element-metrics-container').should('exist');
-    cy.get('.element-metrics-container svg').should('exist');
+    cy.get('.pf-v5-c-chart').should('exist');
 
     //close drawer
-    cy.get('[aria-label="Close drawer panel"]').click();
-    cy.get('#elementPanel-drawer-body').should('not.exist');
+    cy.get('.pf-v5-c-drawer__close').click();
+    cy.get('.pf-v5-c-drawer__panel-main').should('not.exist');
   });
 
   it('update options', () => {

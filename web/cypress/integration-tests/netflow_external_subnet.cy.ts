@@ -17,7 +17,7 @@ describe('(OCP-67615, OCP-72874 Network_Observability) Return external traffic a
 
     it("(OCP-67615, aramesha, Network_Observability) External traffic and custom subnet label", function () {
         netflowPage.visit()
-        cy.get('#tabs-container li:nth-child(2)').click()
+        cy.get('#tabs-container').contains('Traffic flows').click()
         cy.byTestID("table-composable").should('exist')
 
         // enable SrcSubnetLabel and DstSubnetLabel columns

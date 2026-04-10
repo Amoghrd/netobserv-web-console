@@ -14,7 +14,7 @@ describe('(OCP-71787 Network_Observability) Conversation tracking test', { tags:
 
     beforeEach('any conversation tracking test', function () {
         netflowPage.visit()
-        cy.get('#tabs-container li:nth-child(2)').click()
+        cy.get('#tabs-container').contains('Traffic flows').click()
         cy.byTestID("table-composable").should('exist')
     })
 

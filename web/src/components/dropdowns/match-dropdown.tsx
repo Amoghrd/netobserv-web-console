@@ -44,6 +44,7 @@ export const MatchDropdown: React.FC<MatchDropdownProps> = ({ allowBidirectional
       data-test={id}
       id={id}
       isOpen={isOpen}
+      onOpenChange={setOpen}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}
@@ -52,7 +53,6 @@ export const MatchDropdown: React.FC<MatchDropdownProps> = ({ allowBidirectional
           className="match-dropdown"
           isExpanded={isOpen}
           onClick={() => setOpen(!isOpen)}
-          onBlur={() => setTimeout(() => setOpen(false), 500)}
         >
           {getMatchDisplay(selected, true)}
         </MenuToggle>

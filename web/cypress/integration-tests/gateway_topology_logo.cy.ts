@@ -24,7 +24,7 @@ describe("(OCP-87215, Network_Observability) Verify Gateway API three-level owne
 
     it("(OCP-87215, kapjain, Network_Observability) should verify Gateway appears as owner-level topology node with logo", function () {
 
-        topologyPage.selectScopeGroup("owner", null)
+        topologyPage.selectScopeGroup("owner")
         topologyPage.isViewRendered()
 
         // Verify topology is rendered

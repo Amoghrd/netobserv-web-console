@@ -15,7 +15,7 @@ export const Pages = {
     cy.switchPerspective('Developer');
     cy.visit(`/project-details/ns/${namespace}/access`);
     guidedTour.close();
-    cy.get('a[data-test-id="horizontal-link-Project access"]').should('be.visible');
+    cy.byLegacyTestID('horizontal-link-Project access').should('be.visible');
   },
   gotoPVCCreationPage: (namespace: string) => {
     cy.visit(`/k8s/ns/${namespace}/core~v1~PersistentVolumeClaim`);
@@ -90,7 +90,7 @@ export const Pages = {
   },
   gotoClusterDetailspage: () => {
     cy.visit('settings/cluster');
-    cy.get('[data-test-id="horizontal-link-Details"]').should('be.visible');
+    cy.byLegacyTestID('horizontal-link-Details').should('be.visible');
   },
   gotoCRDsList: () => {
     cy.visit('/k8s/cluster/apiextensions.k8s.io~v1~CustomResourceDefinition');
@@ -98,7 +98,7 @@ export const Pages = {
   },
   gotoOneCRDDetailsPage: (crdname) => {
     cy.visit(`/k8s/cluster/customresourcedefinitions/${crdname}`);
-    cy.get('[data-test-id="horizontal-link-Details"]').should('be.visible');
+    cy.byLegacyTestID('horizontal-link-Details').should('be.visible');
   },
   gotoOneNetworkPolicyDetails: (namespace: string, npname: string) => {
     cy.visit(`/k8s/ns/${namespace}/networkpolicies/${npname}`);
@@ -120,7 +120,7 @@ export const Pages = {
   },
   gotoNodeOverviewPage: (nodeName: string) => {
     cy.visit(`/k8s/cluster/nodes/${nodeName}/`);
-    cy.get('[data-test-id="dashboard"]').should('be.visible');
+    cy.byLegacyTestID('dashboard').should('be.visible');
   },
   gotoMCPListPage: () => {
     cy.visit("/k8s/cluster/machineconfiguration.openshift.io~v1~MachineConfigPool");
@@ -130,7 +130,7 @@ export const Pages = {
   },
   gotoMachineConfigDetailsPage: (mc_name: string) => {
     cy.visit(`/k8s/cluster/machineconfiguration.openshift.io~v1~MachineConfig/${mc_name}`);
-    cy.get('[data-test-id="resource-summary"]').should('be.visible');
+    cy.byLegacyTestID('resource-summary').should('be.visible');
   },
   gotoCatalogSourcePage: () => {
     cy.visit('/k8s/ns/openshift-marketplace/operators.coreos.com~v1alpha1~CatalogSource/custom-catalogsource');

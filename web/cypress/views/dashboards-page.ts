@@ -36,17 +36,17 @@ export const dashboard = {
 }
 
 export namespace dashboardSelectors {
-    export const flowStatsToggle = '[data-test-id=panel-flowlogs-pipeline-statistics] > div > div > div > button'
-    export const ebpfStatsToggle = '[data-test-id=panel-e-bpf-agent-statistics]> div > div > div > button'
-    export const operatorStatsToggle = '[data-test-id=panel-operator-statistics] > div > div > div > button'
-    export const resourceStatsToggle = '[data-test-id=panel-resource-usage] > div > div > div > button'
-    export const top10PerRouteToggle = '[data-test-id=panel-top-10-per-route] > div > div > div > button'
-    export const top10PerNamespaceToggle = '[data-test-id=panel-top-10-per-namespace] > div > div > div > button'
-    export const top10PerShardToggle = '[data-test-id=panel-top-10-per-shard] > div > div > div > button'
+    export const flowStatsToggle = '[data-test-id=panel-flowlogs-pipeline-statistics] button'
+    export const ebpfStatsToggle = '[data-test-id=panel-e-bpf-agent-statistics] button'
+    export const operatorStatsToggle = '[data-test-id=panel-operator-statistics] button'
+    export const resourceStatsToggle = '[data-test-id=panel-resource-usage] button'
+    export const top10PerRouteToggle = '[data-test-id=panel-top-10-per-route] button'
+    export const top10PerNamespaceToggle = '[data-test-id=panel-top-10-per-namespace] button'
+    export const top10PerShardToggle = '[data-test-id=panel-top-10-per-shard] button'
 }
 
 export const graphSelector = {
-    graphBody: '[role="region"] > div > div'
+    graphBody: '[role="region"]'
 }
 
 export const appsInfra = [

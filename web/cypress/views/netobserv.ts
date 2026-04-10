@@ -132,7 +132,7 @@ export const Operator = {
     },
     createFlowcollector: (parameters?: FlowCollectorParameter) => {
         Operator.visitFlowcollector()
-        cy.get('div.loading-box__loaded:nth-child(2)').should('exist')
+        cy.get('div.loading-box__loaded').should('exist')
         cy.wait(3000)
         cy.get("#yaml-create").should('exist').then(() => {
             if ((Cypress.$('td[role="gridcell"]').length > 0) && (parameters != null)) {
@@ -142,7 +142,7 @@ export const Operator = {
             }
         })
         // don't create flowcollector if already exists
-        cy.get('div.loading-box__loaded:nth-child(2)', { timeout: 60000 }).should('be.visible').then(() => {
+        cy.get('div.loading-box__loaded', { timeout: 60000 }).should('be.visible').then(() => {
             if (Cypress.$('td[role="gridcell"]').length == 0) {
                 cy.log("Deploying flowcollector")
                 switch (parameters) {
@@ -212,7 +212,7 @@ export const Operator = {
         // Overview tab
         cy.get(pluginSelectors.next).should('exist').click()
         // Processing tab
-        cy.get(pluginSelectors.privilegedToggle).should('exist').click()
+        cy.get(pluginSelectors.privilegedToggle).should('exist').click({ force: true })
         // Enable PacketDrop
         cy.get(pluginSelectors.packetDropEnable).should('exist').check()
         cy.get(pluginSelectors.next).should('exist').click()
@@ -221,10 +221,10 @@ export const Operator = {
             cy.get(pluginSelectors.monolithicMode).should('exist').click()
         })
         // Install demoLoki
-        cy.get(pluginSelectors.installDemoLoki).should('exist').click()
+        cy.get(pluginSelectors.installDemoLoki).should('exist').click({ force: true })
         cy.get(pluginSelectors.next).should('exist').click()
-        // Consumption tab
-        cy.get(pluginSelectors.next).should('exist').click()
+        // Consumption tab - final submit
+        cy.contains('button', 'Submit').should('exist').click()
     },
     deleteFlowCollector: () => {
         cy.adminCLI(`oc delete flowcollector cluster --ignore-not-found`)

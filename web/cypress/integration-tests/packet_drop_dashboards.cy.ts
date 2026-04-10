@@ -1,6 +1,6 @@
 import { Operator } from "@views/netobserv"
 import { netflowPage, querySumSelectors, topologySelectors } from "@views/netflow-page"
-import { dashboard, graphSelector } from "@views/dashboards-page"
+import { dashboard } from "@views/dashboards-page"
 
 const metricType = [
     "Bytes",
@@ -30,7 +30,7 @@ describe('(OCP-66141 Network_Observability) PacketDrop dashboards test', { tags:
 
     it("(OCP-66141, aramesha, Network_Observability) Validate PacketDrop edge labels and Query Summary stats", function () {
         netflowPage.visit()
-        cy.get('#tabs-container li:nth-child(3)').click()
+        cy.get('#tabs-container').contains('Topology').click()
         cy.get('#drawer').should('not.be.empty')
 
         cy.byTestID("show-view-options-button").should('exist').click().then(views => {
@@ -85,7 +85,7 @@ describe('(OCP-66141 Network_Observability) PacketDrop dashboards test', { tags:
         dashboard.visitDashboard("netobserv-main")
 
         // verify 'Drops' panel
-        cy.get('[data-test="drops-chart"]').find(graphSelector.graphBody).should('not.have.class', 'graph-empty-state')
+        cy.checkDashboards(['drops-chart'])
 
         cy.get('#content-scrollable').scrollTo('bottom')
 

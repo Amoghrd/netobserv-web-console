@@ -196,7 +196,7 @@ export const operatorHubPage = {
 
 export const operatorHubModal = {
   clickInstall: () => {
-    cy.get('[data-test-id="operator-install-btn"]').click({ force: true });
+    cy.byLegacyTestID('operator-install-btn').click({ force: true });
   },
   selectChannel: (channel) => {
     cy.get('h5').contains('Channel').parent('div').within(() => {

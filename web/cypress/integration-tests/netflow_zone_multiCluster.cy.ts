@@ -21,7 +21,7 @@ describe('Netflow Zone and multiCluster test', { tags: ['Network_Observability']
     })
 
     it("(OCP-71525, aramesha, Network_Observability) should validate zone/multiCluster columns", function () {
-        cy.get('#tabs-container li:nth-child(2)').click()
+        cy.get('#tabs-container').contains('Traffic flows').click()
         cy.byTestID("table-composable").should('exist')
 
         cy.openColumnsModal().then(col => {
@@ -53,7 +53,7 @@ describe('Netflow Zone and multiCluster test', { tags: ['Network_Observability']
             fixture: 'flowmetrics/zone.json'
         }).as('matchedUrl')
 
-        topologyPage.selectScopeGroup(scope, null)
+        topologyPage.selectScopeGroup(scope)
         cy.wait('@matchedUrl').then(({ response }) => {
             expect(response.statusCode).to.eq(200)
         })
@@ -69,7 +69,7 @@ describe('Netflow Zone and multiCluster test', { tags: ['Network_Observability']
             fixture: 'flowmetrics/cluster.json'
         }).as('matchedUrl')
 
-        topologyPage.selectScopeGroup(scope, null)
+        topologyPage.selectScopeGroup(scope)
         cy.wait('@matchedUrl').then(({ response }) => {
             expect(response.statusCode).to.eq(200)
         })

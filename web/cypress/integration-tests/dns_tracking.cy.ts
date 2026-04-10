@@ -48,7 +48,7 @@ describe('(OCP-67087 Network_Observability) DNSTracking test', { tags: ['Network
     })
 
     it("(OCP-67087, aramesha) Validate DNSTracking columns and DNSName", function () {
-        cy.get('#tabs-container li:nth-child(2)').click()
+        cy.get('#tabs-container').contains('Traffic flows').click()
         cy.byTestID("table-composable").should('exist')
         netflowPage.stopAutoRefresh()
 

@@ -18,7 +18,7 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408 Network_Observability) Net
 
     beforeEach('any netflow table test', function () {
         netflowPage.visit()
-        cy.get('#tabs-container li:nth-child(2)').click()
+        cy.get('#tabs-container').contains('Traffic flows').click()
         cy.byTestID("table-composable").should('exist')
     })
 
@@ -125,7 +125,7 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408 Network_Observability) Net
         // Verify DSCP value is Standard for all rows
         cy.get('[data-test-td-column-id=Dscp]').each((td) => {
             expect(td).attr("data-test-td-value").to.contain(0)
-            cy.get('[data-test-td-column-id=Dscp] > div > div').should('contain.text', 'Standard')
+            cy.get('[data-test-td-column-id=Dscp]').should('contain.text', 'Standard')
         })
         netflowPage.clearAllFilters()
     })

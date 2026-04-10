@@ -39,19 +39,20 @@ describe('(OCP-72610 Network_Observability) Export automation', { tags: ['Networ
         cy.byTestID("table-composable").should('exist')
         cy.showAdvancedOptions();
         cy.get('#export-button').should('exist').click()
-        cy.get('[data-test="export-modal-footer"] > [data-test="export-button"]').should('exist').then((exportbtn) => {
-            cy.wrap(exportbtn).click()
-            // wait for download to complete
-            cy.wait(3000)
-            // get the CSV file name
-            cy.exec("ls cypress/downloads").then((response) => {
-                // rename CSV file to export_table.csv
-                cy.wrap(response.stdout).should('not.be.empty')
-                cy.exec(`mv cypress/downloads/${response.stdout} cypress/downloads/export_table.csv`)
-                cy.readFile('cypress/downloads/export_table.csv')
-            })
-            cy.exec('rm cypress/downloads/export_table.csv')
+        cy.byTestID('export-modal').should('be.visible')
+        cy.byTestID('export-modal').within(() => {
+            cy.byTestID('export-button').should('exist').click()
         })
+        // wait for download to complete
+        cy.wait(3000)
+        // get the CSV file name
+        cy.exec("ls cypress/downloads").then((response) => {
+            // rename CSV file to export_table.csv
+            cy.wrap(response.stdout).should('not.be.empty')
+            cy.exec(`mv cypress/downloads/${response.stdout} cypress/downloads/export_table.csv`)
+            cy.readFile('cypress/downloads/export_table.csv')
+        })
+        cy.exec('rm cypress/downloads/export_table.csv')
         netflowPage.clearAllFilters()
     })
 

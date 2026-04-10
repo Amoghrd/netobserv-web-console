@@ -50,6 +50,7 @@ export const RefreshDropdown: React.FC<RefreshDropdownProps> = ({ disabled, id, 
         data-test={id}
         id={id}
         isOpen={isOpen}
+        onOpenChange={setOpen}
         onSelect={() => setOpen(false)}
         toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
           <MenuToggle
@@ -58,7 +59,6 @@ export const RefreshDropdown: React.FC<RefreshDropdownProps> = ({ disabled, id, 
             id={`${id}-dropdown`}
             isDisabled={disabled}
             onClick={() => setOpen(!isOpen)}
-            onBlur={() => setTimeout(() => setOpen(false), 500)}
             isExpanded={isOpen}
           >
             {refreshOptions[selectedKey as keyof typeof refreshOptions]}

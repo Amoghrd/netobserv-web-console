@@ -35,7 +35,7 @@ describe('(OCP-56222 Network_Observability) Quick Filters test', { tags: ['Netwo
 
     beforeEach('any netflow table test', function () {
         netflowPage.visit()
-        cy.get('#tabs-container li:nth-child(2)').click()
+        cy.get('#tabs-container').contains('Traffic flows').click()
         cy.byTestID("table-composable").should('exist')
     })
 

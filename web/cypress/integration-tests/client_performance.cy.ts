@@ -49,7 +49,7 @@ describe("(OCP-67725, memodi) Network_Observability Client Performances", { brow
     })
 
     it("(OCP-67725, memodi, Network_Observability) should measure table page load times", function () {
-        cy.get('#tabs-container li:nth-child(2)').click()
+        cy.get('#tabs-container').contains('Traffic flows').click()
         netflowPage.clearAllFilters()
         const start = performance.now()
         const url = '**/backend/api/flow/metrics*'
@@ -71,7 +71,7 @@ describe("(OCP-67725, memodi) Network_Observability Client Performances", { brow
     })
 
     it("(OCP-67725, memodi, Network_Observability) should measure topology page load times", function () {
-        cy.get('#tabs-container li:nth-child(3)').click()
+        cy.get('#tabs-container').contains('Topology').click()
         netflowPage.clearAllFilters()
         const start = performance.now()
         cy.intercept('GET', getTopologyScopeURL("namespace"), {

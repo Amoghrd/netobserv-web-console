@@ -57,26 +57,26 @@ describe("(OCP-53591 Network_Observability) Netflow Topology edges,labels, badge
 
     it("(OCP-53591, memodi, Network_Observability) should verify edges labels can be displayed/hidden", function () {
         netflowPage.selectSourceNS(project)
-        topologyPage.selectScopeGroup(null, "none")
-        topologyPage.selectScopeGroup("namespace", null)
+        topologyPage.selectScopeGroup(undefined, "none")
+        topologyPage.selectScopeGroup("namespace")
         cy.get('#reset-view').should('exist').click()
-        cy.get('[data-test-id="edge-handler"] g.pf-topology__edge__tag').should("exist")
+        cy.byLegacyTestID('edge-handler').find('g.pf-topology__edge__tag').should("exist")
 
 
         cy.contains('Display options').should('exist').click()
         cy.get(topologySelectors.labelToggle).uncheck()
 
-        cy.get('[data-test-id="edge-handler"] g.pf-topology__edge__tag').should("not.exist")
+        cy.byLegacyTestID('edge-handler').find('g.pf-topology__edge__tag').should("not.exist")
 
         cy.get(topologySelectors.labelToggle).check()
-        cy.get('[data-test-id="edge-handler"] g.pf-topology__edge__tag').should("exist")
+        cy.byLegacyTestID('edge-handler').find('g.pf-topology__edge__tag').should("exist")
         netflowPage.clearAllFilters()
     })
 
     it("(OCP-53591, memodi, Network_Observability) should verify badges display/hidden", function () {
         netflowPage.selectSourceNS(project)
-        topologyPage.selectScopeGroup(null, "none")
-        topologyPage.selectScopeGroup("namespace", null)
+        topologyPage.selectScopeGroup(undefined, "none")
+        topologyPage.selectScopeGroup("namespace")
         cy.get('#reset-view').should('exist').click()
 
         cy.contains('Display options').should('exist').click()
