@@ -46,7 +46,7 @@ export namespace dashboardSelectors {
 }
 
 export const graphSelector = {
-    graphBody: '[role="region"]'
+    graphBody: '[data-test-id] [role="region"]'
 }
 
 export const appsInfra = [
