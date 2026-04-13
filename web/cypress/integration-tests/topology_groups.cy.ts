@@ -1,13 +1,5 @@
-import { netflowPage, topologySelectors, topologyPage, setupTopologyViewWithNamespaceFilter } from "@views/netflow-page"
+import { netflowPage, topologySelectors, topologyPage, setupTopologyViewWithNamespaceFilter, getTopologyScopeURL, getTopologyResourceScopeGroupURL } from "@views/netflow-page"
 import { Operator } from "@views/netobserv"
-
-function getTopologyScopeURL(scope: string): string {
-    return `**/flow/metrics**aggregateBy=${scope}*`
-}
-
-function getTopologyResourceScopeGroupURL(groups: string): string {
-    return `**/flow/metrics**groups=${groups}*`
-}
 
 describe("(OCP-53591 Network_Observability) Netflow Topology groups features", { tags: ['Network_Observability'] }, function () {
 
@@ -35,7 +27,7 @@ describe("(OCP-53591 Network_Observability) Netflow Topology groups features", {
         topologyPage.selectScopeGroup("owner")
         topologyPage.selectScopeGroup(scope)
         cy.wait('@matchedUrl').then(({ response }) => {
-            expect(response.statusCode).to.eq(200)
+            expect(response?.statusCode).to.eq(200)
         })
         topologyPage.isViewRendered()
         // verify number of edges and nodes.
@@ -59,7 +51,7 @@ describe("(OCP-53591 Network_Observability) Netflow Topology groups features", {
         })
 
         cy.wait('@matchedUrl').then(({ response }) => {
-            expect(response.statusCode).to.eq(200)
+            expect(response?.statusCode).to.eq(200)
         })
         topologyPage.isViewRendered()
         // verify number of edges and nodes.
@@ -72,7 +64,7 @@ describe("(OCP-53591 Network_Observability) Netflow Topology groups features", {
         cy.intercept('GET', getTopologyScopeURL(scope), { fixture: 'flowmetrics/resource.json' }).as('matchedUrl')
         topologyPage.selectScopeGroup(scope)
         cy.wait('@matchedUrl').then(({ response }) => {
-            expect(response.statusCode).to.eq(200)
+            expect(response?.statusCode).to.eq(200)
         })
         topologyPage.isViewRendered()
         // verify number of edges and nodes.
@@ -121,7 +113,7 @@ describe("(OCP-53591 Network_Observability) Netflow Topology groups features", {
         netflowPage.resetClearFilters()
     })
 
-    after("after all tests are done", function () {
+    after("after all tests", function () {
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })
 })

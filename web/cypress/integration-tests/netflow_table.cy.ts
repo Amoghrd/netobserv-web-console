@@ -182,7 +182,9 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408 Network_Observability) Net
         cy.visit('/netflow-traffic')
 
         cy.get('#pageHeader').should('exist').then(() => {
-            const settings = JSON.parse(localStorage.getItem('netobserv-plugin-settings')!)
+            const rawSettings = localStorage.getItem('netobserv-plugin-settings')
+            expect(rawSettings, 'netobserv-plugin-settings should exist').to.not.be.null
+            const settings = JSON.parse(rawSettings as string)
             expect(settings['netflow-traffic-refresh']).to.be.equal(15000)
             expect(settings['netflow-traffic-size-size']).to.be.equal('s')
             expect(settings['netflow-traffic-columns']).to.include('StartTime')

@@ -32,9 +32,8 @@ describe('(OCP-74049, OCP-73875 Network_Observability) Prometheus datasource onl
             cy.byTestID('resource').should('not.exist')
         })
     })
-    after("after all tests are done", function () {
-        // Delete flowcollector
-        cy.adminCLI(`oc delete flowcollector cluster`)
+    after("after all tests", function () {
+        Operator.deleteFlowCollector()
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })
 })

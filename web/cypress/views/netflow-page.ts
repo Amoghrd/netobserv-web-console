@@ -18,6 +18,14 @@ declare global {
 
 type Group = 'Node' | 'Namespace' | 'Owner' | 'Resource'
 
+export function getTopologyScopeURL(scope: string): string {
+    return `**/flow/metrics**aggregateBy=${scope}*`
+}
+
+export function getTopologyResourceScopeGroupURL(groups: string): string {
+    return `**/flow/metrics**groups=${groups}*`
+}
+
 export const netflowPage = {
     visit: (clearfilters = true) => {
         cy.clearLocalStorage()
@@ -35,18 +43,16 @@ export const netflowPage = {
         cy.get('#overview-container').should('exist')
     },
     setAutoRefresh: () => {
-        cy.byTestID(genSelectors.refreshDrop).should('exist').then($btn => {
-            // only set refresh if it's OFF
-            if ($btn.text() == "Refresh off") {
-                cy.wrap($btn).click({ force: true })
+        cy.byTestID(genSelectors.refreshDrop).should('exist').invoke('text').then((text) => {
+            if (text === "Refresh off") {
+                cy.byTestID(genSelectors.refreshDrop).click({ force: true })
                 cy.get('[data-test="15s"]').should('exist').click()
             }
         })
     },
     stopAutoRefresh: () => {
-        cy.byTestID(genSelectors.refreshDrop).should('exist').then($btn => {
-            // only stop refresh if it's not already OFF
-            if (!$btn.text().includes("Refresh off")) {
+        cy.byTestID(genSelectors.refreshDrop).should('exist').invoke('text').then((text) => {
+            if (!text.includes("Refresh off")) {
                 cy.byTestID(genSelectors.refreshDrop).click()
                 cy.byTestID('OFF_KEY').click()
             }
@@ -82,6 +88,9 @@ export const topologyPage = {
     },
     isViewRendered: () => {
         cy.get('[data-surface="true"]').should('exist')
+    },
+    getOwnerNode: (resourceType: string, resourceName: string, timeout: number = 60000) => {
+        return cy.get(`g[data-id*="o=${resourceType}.${resourceName}"]`, { timeout })
     },
     selectGroupWithSlider: (group: Group) => {
         let selector
@@ -147,11 +156,11 @@ export namespace pluginSelectors {
     export const openNetworkTraffic = '#open-network-traffic'
     export const editFlowcollector = '#edit-flow-collector'
     export const update = '[data-test-id=update-resource-button]'
-    export const privilegedToggle = '#root_spec_agent_ebpf_privileged'
+    export const privilegedToggle = '[data-test="root_spec_agent_ebpf_privileged"]'
     export const packetDropEnable = '[data-test-id=root_spec_agent_ebpf_features-PacketDrop]'
     export const lokiMode = '#root_spec_loki_mode-toggle'
     export const monolithicMode = '#root_spec_loki_mode-Monolithic'
-    export const installDemoLoki = '#root_spec_loki_monolithic_installDemoLoki'
+    export const installDemoLoki = '[data-test="root_spec_loki_monolithic_installDemoLoki"]'
 }
 
 export namespace genSelectors {
@@ -282,12 +291,12 @@ export const memoryUsage = {
 
 export namespace histogramSelectors {
     export const timeRangeContainer = "#chart-histogram .histogram-range-container"
-    export const zoomin = timeRangeContainer + " button .fa-search-plus"
-    export const zoomout = timeRangeContainer + " button .fa-search-minus"
-    export const singleRightShift = timeRangeContainer + " button .fa-angle-right"
-    export const doubleRightShift = timeRangeContainer + " button .fa-angle-double-right"
-    export const singleLeftShift = timeRangeContainer + " button .fa-angle-left"
-    export const doubleLeftShift = timeRangeContainer + " button .fa-angle-double-left"
+    export const zoomin = '[data-test="histogram-zoom-in"]'
+    export const zoomout = '[data-test="histogram-zoom-out"]'
+    export const singleRightShift = '[data-test="histogram-single-right"]'
+    export const doubleRightShift = '[data-test="histogram-double-right"]'
+    export const singleLeftShift = '[data-test="histogram-single-left"]'
+    export const doubleLeftShift = '[data-test="histogram-double-left"]'
 }
 
 Cypress.Commands.add('checkPanelsNum', (panels = 2) => {

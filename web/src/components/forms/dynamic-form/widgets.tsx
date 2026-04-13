@@ -90,6 +90,7 @@ export const SwitchWidget: React.FC<WidgetProps> = props => {
     <Switch
       id={id || label}
       key={id || label}
+      data-test={id}
       isChecked={_.isNil(value) ? false : value}
       onBlur={onBlur && (event => onBlur(id, event.target.value))}
       onChange={(_event, v) => onChange(v, undefined, id)}

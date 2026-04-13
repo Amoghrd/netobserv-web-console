@@ -41,7 +41,7 @@ describe('(OCP-84156 Network_Observability) StaticPlugin test', { tags: ['Networ
         netflowPage.resetClearFilters()
     })
 
-    after("Delete flowcollector", function () {
+    after("after all tests", function () {
         Operator.deleteFlowCollector()
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })

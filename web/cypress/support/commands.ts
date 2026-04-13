@@ -329,6 +329,22 @@ Cypress.Commands.add('uiLogout', () => {
   })
 });
 
+Cypress.Commands.add("cliLogin", (username?: string, password?: string) => {
+  const kubeconfig = Cypress.env('KUBECONFIG_PATH');
+  const loginUsername = username || Cypress.env('LOGIN_USERNAME');
+  const loginPassword = password || Cypress.env('LOGIN_PASSWORD');
+  cy.exec(`oc whoami --show-server=true --kubeconfig ${kubeconfig}`)
+    .then(result => {
+      const hostapi = result.stdout.trim();
+      cy.log(hostapi);
+      cy.exec(`oc login -u ${loginUsername} -p ${loginPassword} ${hostapi} --insecure-skip-tls-verify=true --kubeconfig ${kubeconfig}`, { failOnNonZeroExit: false })
+        .then(loginresult => {
+          cy.log(loginresult.stderr);
+          cy.log(loginresult.stdout);
+    });
+  });
+});
+
 Cypress.Commands.add('retryTask', (command, expectedOutput, options?) => {
   const { retries, interval } = options || DEFAULT_RETRY_OPTIONS;
   const retryTaskFn = (currentRetries) => {
@@ -381,6 +397,7 @@ declare global {
       adminCLI(command: string, options?: Partial<Cypress.ExecOptions>): Chainable<void>
       uiLogin(provider: string, username: string, password: string): Chainable<void>
       uiLogout(): Chainable<void>
+      cliLogin(username?: string, password?: string): Chainable<void>
       switchPerspective(perspective: string): Chainable<void>
       checkCommandResult(command: string, expectedoutput: string, options?: { retries?: number; interval?: number }): Chainable<void>
       retryTask(condition: string, expectedoutput: string, options?: { retries?: number; interval?: number }): Chainable<void>

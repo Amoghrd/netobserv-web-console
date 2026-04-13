@@ -1,9 +1,5 @@
-import { colSelectors, netflowPage, setupTopologyViewWithNamespaceFilter, topologyPage, topologySelectors } from "@views/netflow-page"
+import { colSelectors, netflowPage, setupTopologyViewWithNamespaceFilter, topologyPage, topologySelectors, getTopologyScopeURL } from "@views/netflow-page"
 import { Operator } from "@views/netobserv"
-
-function getTopologyScopeURL(scope: string): string {
-    return `**/flow/metrics**aggregateBy=${scope}*`
-}
 
 describe('Netflow Zone and multiCluster test', { tags: ['Network_Observability'] }, function () {
 
@@ -55,7 +51,7 @@ describe('Netflow Zone and multiCluster test', { tags: ['Network_Observability']
 
         topologyPage.selectScopeGroup(scope)
         cy.wait('@matchedUrl').then(({ response }) => {
-            expect(response.statusCode).to.eq(200)
+            expect(response?.statusCode).to.eq(200)
         })
         topologyPage.isViewRendered()
 
@@ -71,7 +67,7 @@ describe('Netflow Zone and multiCluster test', { tags: ['Network_Observability']
 
         topologyPage.selectScopeGroup(scope)
         cy.wait('@matchedUrl').then(({ response }) => {
-            expect(response.statusCode).to.eq(200)
+            expect(response?.statusCode).to.eq(200)
         })
         topologyPage.isViewRendered()
 
@@ -84,7 +80,7 @@ describe('Netflow Zone and multiCluster test', { tags: ['Network_Observability']
         netflowPage.resetClearFilters()
     })
 
-    after("delete flowcollector and NetObs Operator", function () {
+    after("all tests", function () {
         Operator.deleteFlowCollector()
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })

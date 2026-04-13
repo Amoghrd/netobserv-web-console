@@ -124,7 +124,7 @@ const RuleCard: React.FC<{
   const direction = React.useMemo(() => getDirection(item.ruleName), [item]);
 
   return (
-    <div className="rule-details-row">
+    <div className="rule-details-row" data-test="rule-details-row">
       <Flex direction={{ default: 'column' }} gap={{ default: 'gapSm' }}>
         {/* Header with summary and actions */}
         <Flex

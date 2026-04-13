@@ -53,7 +53,7 @@ describe('(OCP-71787 Network_Observability) Conversation tracking test', { tags:
         netflowPage.resetClearFilters()
     })
 
-    after("delete flowcollector and NetObs Operator", function () {
+    after("all tests", function () {
         Operator.deleteFlowCollector()
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })

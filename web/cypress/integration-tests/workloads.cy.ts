@@ -23,7 +23,7 @@ describe('(OCP-70972 Network_Observability) Netflow traffic pages on workloads',
             cy.visitNetflowTrafficTab(page)
         })
     })
-    after("after all tests are done", function () {
+    after("after all tests", function () {
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })
 

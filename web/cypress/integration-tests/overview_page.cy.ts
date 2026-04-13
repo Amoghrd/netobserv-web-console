@@ -145,7 +145,7 @@ describe('(OCP-54839 Network_Observability) Netflow Overview page tests', { tags
         netflowPage.resetClearFilters()
     })
 
-    after("after all tests are done", function () {
+    after("after all tests", function () {
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })
 })

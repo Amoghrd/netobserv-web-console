@@ -1,9 +1,5 @@
-import { netflowPage, loadTimes, memoryUsage, overviewSelectors } from "@views/netflow-page"
+import { netflowPage, loadTimes, memoryUsage, overviewSelectors, getTopologyScopeURL } from "@views/netflow-page"
 import { Operator } from "@views/netobserv"
-
-function getTopologyScopeURL(scope: string): string {
-    return `**/flow/metrics?filters=&limit=50&recordType=flowLog&dedup=true&packetLoss=all&timeRange=300&rateInterval=30s&step=15s&type=bytes&aggregateBy=${scope}`
-}
 
 describe("(OCP-67725, memodi) Network_Observability Client Performances", { browser: 'chrome', tags: ['Performance'] }, function () {
     before("tests", function () {
@@ -17,10 +13,10 @@ describe("(OCP-67725, memodi) Network_Observability Client Performances", { brow
 
     beforeEach("test", function () {
         cy.clearLocalStorage()
-        cy.intercept('**/backend/api/flow/metrics*').as('call1')
         cy.visit('/netflow-traffic')
-        // wait for all calls to complete
-        cy.wait('@call1', { timeout: 60000 })
+        // wait for page to be fully loaded
+        cy.get('#overview-container', { timeout: 60000 }).should('exist')
+        cy.byTestID('no-results-found').should('not.exist')
 
     })
 
@@ -37,7 +33,7 @@ describe("(OCP-67725, memodi) Network_Observability Client Performances", { brow
         cy.get('#overview-flex').contains(overviewSelectors.defaultPanels[0]).should('be.visible').then(() => {
             cy.wrap(performance.now()).then(end => {
                 let pageload = Math.round(end - start)
-                let curMemoryUsage = Math.round(window.performance.memory.usedJSHeapSize / 1048576)
+                let curMemoryUsage = Math.round((window.performance as any).memory?.usedJSHeapSize / 1048576)
                 cy.log(`Overview page load took ${pageload} ms.`)
                 cy.log(`Overview page memory consumption ${curMemoryUsage} MB`)
                 let thresPageload = loadTimes.overview + loadTimes.overview * 0.5
@@ -52,14 +48,14 @@ describe("(OCP-67725, memodi) Network_Observability Client Performances", { brow
         cy.get('#tabs-container').contains('Traffic flows').click()
         netflowPage.clearAllFilters()
         const start = performance.now()
-        const url = '**/backend/api/flow/metrics*'
+        const url = '**/api/flow/metrics*'
         cy.intercept('GET', url, {
             fixture: 'perf/netflow_table_perf.json'
         })
         cy.byTestID("table-composable").should('be.visible').then(() => {
             cy.wrap(performance.now()).then(end => {
                 let pageload = Math.round(end - start)
-                let curMemoryUsage = Math.round(window.performance.memory.usedJSHeapSize / 1048576)
+                let curMemoryUsage = Math.round((window.performance as any).memory?.usedJSHeapSize / 1048576)
                 cy.log(`Table view page load took ${pageload} ms.`)
                 cy.log(`Table view memory consumption ${curMemoryUsage} MB`)
                 let thresPageload = loadTimes.table + loadTimes.table * 0.5
@@ -80,7 +76,7 @@ describe("(OCP-67725, memodi) Network_Observability Client Performances", { brow
         cy.get('[data-surface="true"]').should('be.visible').then(() => {
             cy.wrap(performance.now()).then(end => {
                 let pageload = Math.round(end - start)
-                let curMemoryUsage = Math.round(window.performance.memory.usedJSHeapSize / 1048576)
+                let curMemoryUsage = Math.round((window.performance as any).memory?.usedJSHeapSize / 1048576)
                 cy.log(`Topology view page load took ${pageload} ms.`)
                 cy.log(`Topology view memory consumption ${curMemoryUsage} MB`)
                 let thresPageload = loadTimes.topology + loadTimes.topology * 0.5
@@ -94,7 +90,7 @@ describe("(OCP-67725, memodi) Network_Observability Client Performances", { brow
         netflowPage.resetClearFilters()
     })
 
-    after("suite", function () {
+    after("all tests", function () {
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })
 })

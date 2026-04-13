@@ -20,9 +20,7 @@ export const setEditorContent = (text: string) => {
     });
 };
 
-// initially yamlEditor loads with all grey text, finished loading when editor is color coded
-// class='mtk27' is the light green color of property such as 'apiVersion'
-export const isLoaded = () => cy.get("[class='mtk27']").should('exist');
+export const isLoaded = () => cy.get('.monaco-editor .view-lines').should('exist');
 // since yaml editor class mtk27 is a font class it doesn't work on an import page with no text
 // adding a check for the 1st line number, AND providing a wait allowed the load of the full component
 export const isImportLoaded = () => {

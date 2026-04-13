@@ -1,9 +1,5 @@
-import { netflowPage, topologySelectors, topologyPage, setupTopologyViewWithNamespaceFilter } from "@views/netflow-page"
+import { netflowPage, topologySelectors, topologyPage, setupTopologyViewWithNamespaceFilter, getTopologyResourceScopeGroupURL } from "@views/netflow-page"
 import { Operator, project } from "@views/netobserv"
-
-function getTopologyResourceScopeGroupURL(groups: string): string {
-    return `**/flow/metrics**groups=${groups}*`
-}
 
 describe("(OCP-53591 Network_Observability) Netflow Topology edges,labels, badges features", { tags: ['Network_Observability'] }, function () {
 
@@ -95,7 +91,7 @@ describe("(OCP-53591 Network_Observability) Netflow Topology edges,labels, badge
         netflowPage.resetClearFilters()
     })
 
-    after("after all tests are done", function () {
+    after("after all tests", function () {
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })
 })

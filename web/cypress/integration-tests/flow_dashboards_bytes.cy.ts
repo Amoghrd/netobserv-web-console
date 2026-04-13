@@ -48,7 +48,7 @@ describe('Network_Observability flow dashboards tests', { tags: ['Network_Observ
         cy.checkDashboards(trafficRatesPanelsBottom)
     })
 
-    after("delete flowcollector and NetObs Operator", function () {
+    after("all tests", function () {
         Operator.deleteFlowCollector()
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })

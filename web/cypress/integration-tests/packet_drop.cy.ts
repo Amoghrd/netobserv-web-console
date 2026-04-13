@@ -73,7 +73,7 @@ describe('(OCP-66141 Network_Observability) PacketDrop test', { tags: ['Network_
         netflowPage.resetClearFilters()
     })
 
-    after("Delete flowcollector", function () {
+    after("all tests", function () {
         Operator.deleteFlowCollector()
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })

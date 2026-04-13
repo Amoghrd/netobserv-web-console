@@ -62,7 +62,9 @@ describe("(OCP-53591 Network_Observability) Netflow Topology view features", { t
         cy.get('#drawer').should('exist')
 
         cy.get('#pageHeader').should('exist').then(() => {
-            const settings = JSON.parse(localStorage.getItem('netobserv-plugin-settings'))
+            const rawSettings = localStorage.getItem('netobserv-plugin-settings')
+            expect(rawSettings, 'netobserv-plugin-settings should exist').to.not.be.null
+            const settings = JSON.parse(rawSettings as string)
             const topologySettings = settings['netflow-traffic-topology-options']
 
             expect(settings['netflow-traffic-view-id']).to.be.equal('topology')
@@ -93,7 +95,7 @@ describe("(OCP-53591 Network_Observability) Netflow Topology view features", { t
         netflowPage.resetClearFilters()
     })
 
-    after("after all tests are done", function () {
+    after("after all tests", function () {
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })
 })

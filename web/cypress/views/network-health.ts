@@ -4,7 +4,7 @@ export namespace networkHealthSelectors {
     export const namespace = '[id^="pf-tab-per-namespace"]'
     export const workload = '[id^="pf-tab-per-owner"]'
     export const nodeCard = '[data-test^="health-card-"]'
-    export const sidePanel = '.health-gallery-drawer-content'
+    export const sidePanel = '[data-test="health-drawer-content"]'
 }
 
 
@@ -26,10 +26,8 @@ export const networkHealth = {
     navigateToAlertPage: (name: string) => {
         networkHealth.clickOnAlert(name)
         cy.get(networkHealthSelectors.sidePanel).should('be.visible').then(() => {
-            // click the kebab button
-            cy.get('div.rule-details-row').first().find('button').click().then(() => {
+            cy.get('button[aria-label="Kebab toggle"]').first().click().then(() => {
                 cy.contains('Inspect alert').click().then(() => {
-                    // "No Alert found" should not show up.
                     cy.byTestID('empty-box').should('not.exist')
                 })
             })
@@ -38,9 +36,7 @@ export const networkHealth = {
     navigateToNetflowTrafficPage: (name: string) => {
         networkHealth.clickOnAlert(name)
         cy.get(networkHealthSelectors.sidePanel).should('be.visible').then(() => {
-            // click the kebab button
-
-            cy.get('div.rule-details-row').first().find('button').click().then(() => {
+            cy.get('button[aria-label="Kebab toggle"]').first().click().then(() => {
                 cy.contains('Inspect network traffic').click().then(() => {
 
                 })

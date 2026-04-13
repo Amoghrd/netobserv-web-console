@@ -77,7 +77,7 @@ describe('(OCP-68246 Network_Observability) FlowRTT test', { tags: ['Network_Obs
 
         cy.checkDashboards(flowRTTPanels)
     })
-    after("Delete flowcollector", function () {
+    after("all tests", function () {
         Operator.deleteFlowCollector()
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })
