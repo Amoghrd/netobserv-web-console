@@ -43,13 +43,11 @@ describe('(OCP-72610 Network_Observability) Export automation', { tags: ['Networ
         cy.byTestID('export-modal').within(() => {
             cy.byTestID('export-button').should('exist').click()
         })
-        // wait for download to complete
-        cy.wait(3000)
-        // get the CSV file name
-        cy.exec("ls cypress/downloads").then((response) => {
+        // get the CSV file name with retry built into exec
+        cy.exec("ls cypress/downloads", { timeout: 10000 }).then((response) => {
             // rename CSV file to export_table.csv
             cy.wrap(response.stdout).should('not.be.empty')
-            cy.exec(`mv cypress/downloads/${response.stdout} cypress/downloads/export_table.csv`)
+            cy.exec(`mv cypress/downloads/${response.stdout.trim()} cypress/downloads/export_table.csv`)
             cy.readFile('cypress/downloads/export_table.csv')
         })
         cy.exec('rm cypress/downloads/export_table.csv')

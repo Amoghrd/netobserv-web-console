@@ -224,7 +224,7 @@ export const Operator = {
         cy.get(pluginSelectors.installDemoLoki).should('exist').click({ force: true })
         cy.get(pluginSelectors.next).should('exist').click()
         // Consumption tab - final submit
-        cy.contains('button', 'Submit').should('exist').click()
+        cy.get('footer').contains('button', 'Submit').should('exist').click()
     },
     deleteFlowCollector: () => {
         cy.adminCLI(`oc delete flowcollector cluster --ignore-not-found`)

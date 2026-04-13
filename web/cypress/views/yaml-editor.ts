@@ -98,8 +98,8 @@ export const verifyFontSizeInEditor = (size: number) => {
 export const showYAMLSidebar = () => cy.get('[aria-label="Show sidebar"]').click();
 export const clickFieldDetailsButton = (fieldName: string) => {
   cy.contains('h5', `${fieldName}`)
-    .parents('li')
-    .find('button')
-    .contains('View details')
-    .click();
+    .closest('li')
+    .within(() => {
+      cy.contains('button', 'View details').click()
+    })
 };

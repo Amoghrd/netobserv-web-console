@@ -143,7 +143,7 @@ export namespace pluginSelectors {
     export const next = 'footer button[type="submit"]'
     export const save = '[data-test=save-changes]'
     export const del = '[data-test-id=delete-resource-button]'
-    export const confirmDel = '#delete-modal button:has-text("Delete")'
+    export const confirmDel = '[data-test="confirm-action"]'
     export const openNetworkTraffic = '#open-network-traffic'
     export const editFlowcollector = '#edit-flow-collector'
     export const update = '[data-test-id=update-resource-button]'

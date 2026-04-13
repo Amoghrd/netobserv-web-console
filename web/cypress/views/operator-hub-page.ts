@@ -44,7 +44,7 @@ export const installedOperators = {
 
 export const operatorHubPage = {
   getAllTileLabels: () => {
-    return cy.get('[role="status"]')
+    return cy.get('.co-catalog-tile').find('[role="status"]')
   },
   checkCustomCatalog: (name: string) => {
     sourceActions(name, 'view');
