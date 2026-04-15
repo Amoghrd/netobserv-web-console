@@ -196,30 +196,9 @@ export function useK8sWatchResource(req: any) {
                 {
                   "lastTransitionTime": "2025-04-08T09:01:44Z",
                   "message": "4 ready components, 0 with failure, 1 pending",
-                  "reason": "Pending",
-                  "status": "False",
-                  "type": "Ready"
-                },
-                {
-                  "lastTransitionTime": "2025-04-08T09:01:44Z",
-                  "message": "Deployment netobserv-plugin not ready: 1/1 (Deployment does not have minimum availability.)",
-                  "reason": "DeploymentNotReady",
+                  "reason": "Ready,Degraded",
                   "status": "True",
-                  "type": "WaitingFlowCollectorLegacy"
-                },
-                {
-                  "lastTransitionTime": "2025-04-08T09:01:44Z",
-                  "message": "",
-                  "reason": "Ready",
-                  "status": "False",
-                  "type": "WaitingMonitoring"
-                },
-                {
-                  "lastTransitionTime": "2025-04-08T09:01:43Z",
-                  "message": "",
-                  "reason": "Ready",
-                  "status": "False",
-                  "type": "WaitingNetworkPolicy"
+                  "type": "Ready"
                 },
                 {
                   "lastTransitionTime": "2025-04-08T09:01:43Z",
@@ -229,43 +208,85 @@ export function useK8sWatchResource(req: any) {
                   "type": "ConfigurationIssue"
                 },
                 {
-                  "lastTransitionTime": "2026-01-15T15:44:51Z",
+                  "lastTransitionTime": "2025-04-08T09:01:44Z",
+                  "message": "",
+                  "reason": "Ready",
+                  "status": "True",
+                  "type": "AgentReady"
+                },
+                {
+                  "lastTransitionTime": "2025-04-08T09:01:45Z",
+                  "message": "",
+                  "reason": "Ready",
+                  "status": "True",
+                  "type": "ProcessorReady"
+                },
+                {
+                  "lastTransitionTime": "2025-04-08T09:01:44Z",
                   // eslint-disable-next-line max-len
-                  "message": "LokiStack has issues [name: loki, namespace: netobserv]: Warning: The schema configuration does not contain the most recent schema version and needs an update; Degraded: Missing object storage secret",
-                  "reason": "LokiStackIssues",
+                  "message": "Deployment netobserv-plugin not ready: 1/1 (Deployment does not have minimum availability.)",
+                  "reason": "DeploymentNotReady",
                   "status": "False",
-                  "type": "LokiIssue"
+                  "type": "PluginReady"
+                },
+                {
+                  "lastTransitionTime": "2025-04-08T09:01:44Z",
+                  "message": "",
+                  "reason": "Ready",
+                  "status": "True",
+                  "type": "MonitoringReady"
                 },
                 {
                   "lastTransitionTime": "2026-01-15T16:05:26Z",
                   // eslint-disable-next-line max-len
-                  "message": "LokiStack has warnings [name: loki, namespace: netobserv]: Warning: The schema configuration does not contain the most recent schema version and needs an update",
+                  "message": "LokiStack has warnings [name: loki, namespace: netobserv]: Warning: schema needs update",
                   "reason": "LokiStackWarnings",
                   "status": "True",
                   "type": "LokiWarning"
-                },
-                {
-                  "lastTransitionTime": "2025-04-08T09:01:45Z",
-                  "message": "",
-                  "reason": "Ready",
-                  "status": "False",
-                  "type": "WaitingFLPParent"
-                },
-                {
-                  "lastTransitionTime": "2025-04-08T09:01:45Z",
-                  "message": "",
-                  "reason": "Ready",
-                  "status": "False",
-                  "type": "WaitingFLPMonolith"
-                },
-                {
-                  "lastTransitionTime": "2025-04-08T09:01:44Z",
-                  "message": "Transformer only used with Kafka",
-                  "reason": "ComponentUnused",
-                  "status": "Unknown",
-                  "type": "WaitingFLPTransformer"
                 }
-              ]
+              ],
+              "components": {
+                "agent": {
+                  "state": "Ready",
+                  "desiredReplicas": 3,
+                  "readyReplicas": 3
+                },
+                "processor": {
+                  "state": "Ready",
+                  "desiredReplicas": 1,
+                  "readyReplicas": 1
+                },
+                "plugin": {
+                  "state": "InProgress",
+                  "reason": "DeploymentNotReady",
+                  // eslint-disable-next-line max-len
+                  "message": "Deployment netobserv-plugin not ready: 1/1",
+                  "desiredReplicas": 1,
+                  "readyReplicas": 0
+                }
+              },
+              "integrations": {
+                "monitoring": {
+                  "state": "Ready"
+                },
+                "loki": {
+                  "state": "Unused"
+                },
+                "exporters": [
+                  {
+                    "name": "kafka-exporter",
+                    "type": "Kafka",
+                    "state": "Ready",
+                    "reason": "Configured"
+                  },
+                  {
+                    "name": "otel-exporter",
+                    "type": "OpenTelemetry",
+                    "state": "Ready",
+                    "reason": "Configured"
+                  }
+                ]
+              }
             }
             setResource(fc);
             break;
@@ -289,15 +310,19 @@ export function useK8sWatchResource(req: any) {
       // simulate an update
       setTimeout(() => {
         const fc = _.cloneDeep(resource);
-        // 70% chance to update, 30% chance to skip
-        if (Math.random() < 0.7 && fc.status && fc.status.conditions) {
-          const randomIndex = Math.floor(Math.random() * fc.status.conditions.length);
-          const condition = fc.status.conditions[randomIndex];
-          condition.status = condition.status === 'True' ? 'False' : 'True';
-          
-          // Enable/disable Loki based on LokiIssue status
-          if (condition.type === 'LokiIssue' || condition.type === 'LokiWarning') {
-            fc.spec!.loki.enable = condition.status === 'True';
+        if (Math.random() < 0.7 && fc.status) {
+          const states = ['Ready', 'InProgress', 'Degraded', 'Failure'];
+          const r = Math.random();
+          if (r < 0.5 && fc.status.components) {
+            const comps = ['agent', 'processor', 'plugin'];
+            const comp = comps[Math.floor(Math.random() * comps.length)];
+            if (fc.status.components[comp]) {
+              fc.status.components[comp].state = states[Math.floor(Math.random() * states.length)];
+            }
+          } else if (fc.status.integrations) {
+            if (fc.status.integrations.monitoring) {
+              fc.status.integrations.monitoring.state = states[Math.floor(Math.random() * states.length)];
+            }
           }
         }
         setResource(fc);

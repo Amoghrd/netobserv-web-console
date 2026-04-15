@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { K8sResourceCondition, K8sResourceKind } from '@openshift-console/dynamic-plugin-sdk';
+import { K8sResourceKind } from '@openshift-console/dynamic-plugin-sdk';
 
 import {
   DEFAULT_EDGE_TYPE as edgeType,
@@ -33,30 +33,95 @@ import _ from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
+export interface ComponentStatus {
+  state?: string;
+  reason?: string;
+  message?: string;
+  desiredReplicas?: number;
+  readyReplicas?: number;
+  unhealthyPodCount?: number;
+  podIssues?: string;
+}
+
+export interface ExporterStatus {
+  name: string;
+  type: string;
+  state: string;
+  reason?: string;
+  message?: string;
+}
+
 export interface Step {
   id: string;
   type?: string;
   label: string;
   runAfterTasks?: string[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any;
 }
 export interface StepProps {
   element: Node;
 }
 
+const stateToRunStatus = (cs: ComponentStatus | undefined): RunStatus => {
+  if (!cs) {
+    return RunStatus.Pending;
+  }
+  switch (cs.state) {
+    case 'Ready':
+      return cs.unhealthyPodCount ? RunStatus.Cancelled : RunStatus.Succeeded;
+    case 'Degraded':
+      return RunStatus.Cancelled;
+    case 'InProgress':
+      return RunStatus.Pending;
+    case 'Failure':
+      return RunStatus.Failed;
+    case 'Unused':
+      return RunStatus.Skipped;
+    default:
+      return RunStatus.Pending;
+  }
+};
+
+const exporterStateToRunStatus = (state: string): RunStatus => {
+  switch (state) {
+    case 'Ready':
+      return RunStatus.Succeeded;
+    case 'Failure':
+      return RunStatus.Failed;
+    case 'Degraded':
+      return RunStatus.Cancelled;
+    case 'InProgress':
+      return RunStatus.Pending;
+    default:
+      return RunStatus.Skipped;
+  }
+};
+
+const replicaLabel = (cs: ComponentStatus | undefined, baseLabel: string): string => {
+  if (cs?.desiredReplicas != null && cs?.readyReplicas != null) {
+    return `${baseLabel} (${cs.readyReplicas}/${cs.desiredReplicas})`;
+  }
+  return baseLabel;
+};
+
+const EMPTY_EXPORTERS: ExporterStatus[] = [];
+
 export const StepNode: React.FunctionComponent<StepProps> = ({ element }) => {
-  const data = element.getData();
+  try {
+    const data = element.getData();
 
-  const whenDecorator = data?.whenStatus ? (
-    <WhenDecorator element={element} status={data.whenStatus} leftOffset={whenOffset} />
-  ) : null;
+    const whenDecorator = data?.whenStatus ? (
+      <WhenDecorator element={element} status={data.whenStatus} leftOffset={whenOffset} />
+    ) : null;
 
-  return (
-    <TaskNode element={element} selected={data?.selected} status={data?.status} onSelect={() => data?.onSelect?.()}>
-      {whenDecorator}
-    </TaskNode>
-  );
+    return (
+      <TaskNode element={element} selected={data?.selected} status={data?.status} onSelect={() => data?.onSelect?.()}>
+        {whenDecorator}
+      </TaskNode>
+    );
+  } catch {
+    return null;
+  }
 };
 
 const pipelineComponentFactory = (kind: ModelKind, type: string) => {
@@ -98,121 +163,80 @@ export const Pipeline: React.FC<FlowCollectorPipelineProps> = ({ existing, selec
   const fit = React.useCallback(() => {
     if (controller && controller.hasGraph()) {
       controller.getGraph().fit();
-      // Only reveal after fit completes
       requestAnimationFrame(() => {
         setIsLayouting(false);
       });
     }
   }, [controller]);
 
-  const getStatus = React.useCallback(
-    (types: string[], status: string) => {
-      let hasWarning = false;
-      let hasFailure = false;
-
-      for (let i = 0; i < types.length; i++) {
-        const type = types[i];
-        const condition: K8sResourceCondition | null = existing?.status?.conditions?.find(
-          (condition: K8sResourceCondition) => condition.type === type
-        );
-        if (condition?.status !== status && condition?.reason !== 'Unused') {
-          if (condition?.status === 'Unknown') {
-            return RunStatus.Skipped;
-          } else if (condition?.type.startsWith('Waiting') || condition?.reason === 'Pending') {
-            return RunStatus.Pending;
-          }
-          // Check if this is a warning type
-          if (type.toLowerCase().includes('warning')) {
-            hasWarning = true;
-          } else {
-            hasFailure = true;
-          }
-        }
-      }
-      // Failures take priority over warnings
-      if (hasFailure) {
-        return RunStatus.Failed;
-      }
-      if (hasWarning) {
-        // PatternFly topology doesn't have a dedicated Warning status,
-        // but we can use the same color scheme by using RunStatus.Cancelled
-        // which typically shows yellow/orange
-        return RunStatus.Cancelled;
-      }
-      return RunStatus.Succeeded;
-    },
-    [existing?.status?.conditions]
-  );
+  const agentStatus: ComponentStatus | undefined = existing?.status?.components?.agent;
+  const processorStatus: ComponentStatus | undefined = existing?.status?.components?.processor;
+  const pluginStatus: ComponentStatus | undefined = existing?.status?.components?.plugin;
+  const lokiStatus: ComponentStatus | undefined = existing?.status?.integrations?.loki;
+  const monitoringStatus: ComponentStatus | undefined = existing?.status?.integrations?.monitoring;
+  const exporterStatuses: ExporterStatus[] = existing?.status?.integrations?.exporters || EMPTY_EXPORTERS;
 
   const getSteps = React.useCallback(() => {
     const steps: Step[] = [];
 
-    const overallTypes = ['Ready'];
-
-    steps.push({
-      id: 'overall',
-      label: 'Overall',
-      data: {
-        status: getStatus(overallTypes, 'True'),
-        selected: _.some(selectedTypes, t => overallTypes.includes(t)),
-        onSelect: () => setSelectedTypes(overallTypes)
-      }
-    });
-
     if (existing?.spec?.agent?.type === 'eBPF') {
-      const types = ['WaitingEBPFAgents'];
       steps.push({
-        id: 'ebpf',
-        label: 'eBPF agents',
-        runAfterTasks: ['overall'],
+        id: 'agent',
+        label: replicaLabel(agentStatus, t('eBPF agents')),
         data: {
-          status: getStatus(types, 'False'),
-          selected: _.some(selectedTypes, t => types.includes(t)),
-          onSelect: () => setSelectedTypes(types)
+          status: stateToRunStatus(agentStatus),
+          selected: selectedTypes.includes('agent'),
+          onSelect: () => setSelectedTypes(['agent'])
         }
       });
     }
 
-    const flpStatuses = ['WaitingFLPParent', 'WaitingFLPMonolith'];
     if (existing?.spec?.deploymentModel === 'Kafka') {
-      const types = ['WaitingFLPTransformer'];
+      const kafkaCondition = existing?.status?.conditions?.find((c: any) => c.type === 'KafkaReady');
+      let kafkaRunStatus = RunStatus.Pending;
+      if (kafkaCondition) {
+        kafkaRunStatus =
+          kafkaCondition.status === 'True'
+            ? RunStatus.Succeeded
+            : kafkaCondition.status === 'False'
+            ? RunStatus.Failed
+            : RunStatus.Pending;
+      }
       steps.push({
         id: 'kafka',
         label: 'Kafka',
-        runAfterTasks: ['ebpf'],
+        runAfterTasks: ['agent'],
         data: {
-          status: getStatus(types, 'False'),
-          selected: _.some(selectedTypes, t => types.includes(t)),
-          onSelect: () => setSelectedTypes(types)
+          status: kafkaRunStatus,
+          selected: selectedTypes.includes('kafka'),
+          onSelect: () => setSelectedTypes(['kafka'])
         }
       });
-      flpStatuses.push(...types);
     }
 
     if (existing?.spec) {
       steps.push({
-        id: 'flp',
-        label: 'Flowlogs pipeline',
-        runAfterTasks: [_.last(steps)!.id],
+        id: 'processor',
+        label: replicaLabel(processorStatus, t('Flowlogs pipeline')),
+        runAfterTasks: steps.length ? [_.last(steps)!.id] : [],
         data: {
-          status: getStatus(flpStatuses, 'False'),
-          selected: _.some(selectedTypes, t => flpStatuses.includes(t)),
-          onSelect: () => setSelectedTypes(flpStatuses)
+          status: stateToRunStatus(processorStatus),
+          selected: selectedTypes.includes('processor'),
+          onSelect: () => setSelectedTypes(['processor'])
         }
       });
     }
 
     const cpRunAfter: string[] = [];
     if (existing?.spec?.loki?.enable) {
-      const types = ['WaitingLokiStack', 'WaitingDemoLoki'];
       steps.push({
         id: 'loki',
         label: 'Loki',
-        runAfterTasks: ['flp'],
+        runAfterTasks: ['processor'],
         data: {
-          status: getStatus(types, 'False'),
-          selected: _.some(selectedTypes, t => types.includes(t)),
-          onSelect: () => setSelectedTypes(types)
+          status: stateToRunStatus(lokiStatus),
+          selected: selectedTypes.includes('loki'),
+          onSelect: () => setSelectedTypes(['loki'])
         }
       });
       cpRunAfter.push('loki');
@@ -220,39 +244,42 @@ export const Pipeline: React.FC<FlowCollectorPipelineProps> = ({ existing, selec
 
     if (existing?.spec?.prometheus?.querier?.enable) {
       steps.push({
-        id: 'prom',
-        label: 'Prometheus',
-        runAfterTasks: ['flp'],
+        id: 'monitoring',
+        label: t('Monitoring'),
+        runAfterTasks: ['processor'],
         data: {
-          onSelect: () => setSelectedTypes([])
+          status: stateToRunStatus(monitoringStatus),
+          selected: selectedTypes.includes('monitoring'),
+          onSelect: () => setSelectedTypes(['monitoring'])
         }
       });
-      cpRunAfter.push('prom');
+      cpRunAfter.push('monitoring');
     }
 
-    if (existing?.spec?.exporters?.length) {
-      existing.spec.exporters.forEach((exporter: any, i: number) => {
+    if (exporterStatuses.length) {
+      exporterStatuses.forEach((exp: ExporterStatus, i: number) => {
         steps.push({
           id: `exporter-${i}`,
-          label: exporter.type || t('Unknown'),
-          runAfterTasks: ['flp'],
+          label: exp.name || exp.type || t('Unknown'),
+          runAfterTasks: ['processor'],
           data: {
-            onSelect: () => setSelectedTypes([])
+            status: exporterStateToRunStatus(exp.state),
+            selected: selectedTypes.includes(`exporter-${i}`),
+            onSelect: () => setSelectedTypes([`exporter-${i}`])
           }
         });
       });
     }
 
-    if (existing?.spec?.consolePlugin?.enable && cpRunAfter.length) {
-      const types = ['WaitingWebConsole'];
+    if (existing?.spec?.consolePlugin?.enable) {
       steps.push({
         id: 'plugin',
-        label: 'Console plugin',
-        runAfterTasks: cpRunAfter,
+        label: replicaLabel(pluginStatus, t('Console plugin')),
+        runAfterTasks: cpRunAfter.length ? cpRunAfter : ['processor'],
         data: {
-          status: getStatus(types, 'False'),
-          selected: _.some(selectedTypes, t => types.includes(t)),
-          onSelect: () => setSelectedTypes(types)
+          status: stateToRunStatus(pluginStatus),
+          selected: selectedTypes.includes('plugin'),
+          onSelect: () => setSelectedTypes(['plugin'])
         }
       });
     }
@@ -267,7 +294,17 @@ export const Pipeline: React.FC<FlowCollectorPipelineProps> = ({ existing, selec
       ...s
     })) as PipelineNodeModel[];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existing?.spec, getStatus, selectedTypes, setSelectedTypes]);
+  }, [
+    existing?.spec,
+    agentStatus,
+    processorStatus,
+    pluginStatus,
+    lokiStatus,
+    monitoringStatus,
+    exporterStatuses,
+    selectedTypes,
+    setSelectedTypes
+  ]);
 
   React.useEffect(() => {
     if (!containerRef.current) return;
@@ -291,11 +328,8 @@ export const Pipeline: React.FC<FlowCollectorPipelineProps> = ({ existing, selec
       return;
     }
 
-    // Hide graph during layout to prevent visible repositioning
     setIsLayouting(true);
 
-    // Update the model - the layoutEndEvent listener will call fit() when layout completes
-    // This ensures layout and fit happen together without visible intermediate states
     controller.fromModel(
       {
         nodes,
@@ -310,7 +344,6 @@ export const Pipeline: React.FC<FlowCollectorPipelineProps> = ({ existing, selec
     );
   }, [controller, nodes, edges]);
 
-  //create controller on startup and register factories
   React.useEffect(() => {
     const c = new Visualization();
     c.registerComponentFactory(pipelineComponentFactory);
@@ -319,7 +352,6 @@ export const Pipeline: React.FC<FlowCollectorPipelineProps> = ({ existing, selec
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Register layout end event listener separately to avoid stale closure
   React.useEffect(() => {
     if (!controller) return;
 

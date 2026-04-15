@@ -1,12 +1,24 @@
 import React, { FC } from 'react';
 
-import { Alert, AlertVariant, Button, Flex, FlexItem, PageSection, Text, Title } from '@patternfly/react-core';
+import {
+  Alert,
+  AlertVariant,
+  Button,
+  Flex,
+  FlexItem,
+  PageSection,
+  TextContent,
+  Title,
+  Tooltip
+} from '@patternfly/react-core';
 import { useTranslation } from 'react-i18next';
 import { flowCollectorEditPath, flowCollectorNewPath, netflowTrafficPath, useNavigate } from '../../utils/url';
+import { FlowCollectorStatusIcon } from '../status/flowcollector-status-icon';
 import './forms.css';
 import { Pipeline } from './pipeline';
 import { ResourceStatus } from './resource-status';
 import { Consumer, ResourceWatcher } from './resource-watcher';
+import { getFlowCollectorOverallStatus } from './utils';
 
 export type FlowCollectorStatusProps = {};
 
@@ -26,20 +38,48 @@ export const FlowCollectorStatus: FC<FlowCollectorStatusProps> = () => {
     >
       <Consumer>
         {ctx => {
-          // Check if operator is in hold mode
-          const isOnHold = ctx.data?.spec?.execution?.mode === 'OnHold';
+          const status = getFlowCollectorOverallStatus(ctx.data, ctx.loadError);
+          const showTrafficButton = status === 'ready' || status === 'degraded';
+          const configIssue = (
+            (ctx.data?.status?.conditions as Array<{
+              type: string;
+              status: string;
+              reason?: string;
+              message?: string;
+            }>) || []
+          ).find(c => c.type === 'ConfigurationIssue' && c.status === 'True');
 
           return (
             <PageSection id="pageSection">
               <div id="pageHeader">
-                <Title headingLevel="h1" size="2xl">
-                  {t('Network Observability FlowCollector status')}
-                </Title>
+                <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
+                  <FlexItem>
+                    <Title headingLevel="h1" size="2xl">
+                      {t('Network Observability FlowCollector status')}
+                    </Title>
+                  </FlexItem>
+                  <FlexItem>
+                    <Button variant="plain" aria-label={t('FlowCollector status')} style={{ cursor: 'default' }}>
+                      <FlowCollectorStatusIcon status={status} />
+                    </Button>
+                  </FlexItem>
+                </Flex>
               </div>
               {ctx.data && (
                 <Flex className="status-container" direction={{ default: 'column' }}>
+                  {configIssue && (
+                    <FlexItem>
+                      <Alert
+                        variant={configIssue.reason === 'Error' ? AlertVariant.danger : AlertVariant.warning}
+                        isInline
+                        title={configIssue.reason === 'Error' ? t('Configuration error') : t('Configuration warnings')}
+                      >
+                        {configIssue.message}
+                      </Alert>
+                    </FlexItem>
+                  )}
                   <FlexItem flex={{ default: 'flex_1' }}>
-                    {isOnHold ? (
+                    {status === 'onHold' ? (
                       <Alert variant={AlertVariant.info} isInline title={t('Network Observability is on hold')}>
                         {t(
                           // eslint-disable-next-line max-len
@@ -72,18 +112,22 @@ export const FlowCollectorStatus: FC<FlowCollectorStatusProps> = () => {
                           {t('Edit FlowCollector')}
                         </Button>
                       </FlexItem>
-                      {!isOnHold && (
-                        <FlexItem>
+                      <FlexItem>
+                        <Tooltip
+                          content={t('FlowCollector must be ready to open Network Traffic')}
+                          trigger={showTrafficButton ? 'manual' : 'mouseenter focus'}
+                        >
                           <Button
                             id="open-network-traffic"
                             data-test-id="open-network-traffic"
                             variant="link"
-                            onClick={() => navigate(netflowTrafficPath)}
+                            isAriaDisabled={!showTrafficButton}
+                            onClick={() => showTrafficButton && navigate(netflowTrafficPath)}
                           >
                             {t('Open Network Traffic page')}
                           </Button>
-                        </FlexItem>
-                      )}
+                        </Tooltip>
+                      </FlexItem>
                     </Flex>
                   </FlexItem>
                 </Flex>
@@ -91,9 +135,9 @@ export const FlowCollectorStatus: FC<FlowCollectorStatusProps> = () => {
               {ctx.loadError && (
                 <Flex direction={{ default: 'column' }}>
                   <FlexItem>
-                    <Text>
+                    <TextContent>
                       {t('An error occured while retreiving FlowCollector: {{error}}', { error: ctx.loadError })}
-                    </Text>
+                    </TextContent>
                   </FlexItem>
                   <FlexItem alignSelf={{ default: 'alignSelfCenter' }}>
                     <Button id="create-flow-collector" onClick={() => navigate(flowCollectorNewPath)}>

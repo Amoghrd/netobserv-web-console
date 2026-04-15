@@ -23,6 +23,7 @@ import { localStorageHealthRefreshKey, useLocalStorage } from '../../utils/local
 import { usePoll } from '../../utils/poll-hook';
 import { useTheme } from '../../utils/theme-hook';
 import { RefreshDropdown } from '../dropdowns/refresh-dropdown';
+import FlowCollectorStatusIndicator from '../status/flowcollector-status-indicator';
 import { HealthDrawerContainer } from './health-drawer-container';
 import HealthError from './health-error';
 import { fetchNetworkHealth } from './health-fetcher';
@@ -182,7 +183,14 @@ export const NetworkHealth: React.FC<{}> = ({}) => {
                   <FlexItem flex={{ default: 'flex_1' }}>
                     <Flex direction={{ default: 'column' }}>
                       <FlexItem>
-                        <Title headingLevel={TextVariants.h1}>{t('Network Health')}</Title>
+                        <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
+                          <FlexItem>
+                            <Title headingLevel={TextVariants.h1}>{t('Network Health')}</Title>
+                          </FlexItem>
+                          <FlexItem>
+                            <FlowCollectorStatusIndicator />
+                          </FlexItem>
+                        </Flex>
                       </FlexItem>
                       <FlexItem>
                         <HealthSummary rules={rules} stats={health} forceCollapsed={isScoringDrawerOpen} />

@@ -1,8 +1,40 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { K8sResourceKind } from '@openshift-console/dynamic-plugin-sdk';
+import { K8sResourceCondition, K8sResourceKind } from '@openshift-console/dynamic-plugin-sdk';
 import { UiSchema } from '@rjsf/utils';
 import _ from 'lodash';
 import { ClusterServiceVersionKind } from './types';
+
+export type FlowCollectorOverallStatus = 'ready' | 'degraded' | 'pending' | 'error' | 'onHold' | 'loading';
+
+export const getFlowCollectorOverallStatus = (
+  cr: K8sResourceKind | undefined,
+  loadError: unknown
+): FlowCollectorOverallStatus => {
+  if (loadError) {
+    return 'error';
+  }
+  if (!cr) {
+    return 'loading';
+  }
+  if (cr.spec?.execution?.mode === 'OnHold') {
+    return 'onHold';
+  }
+  const conditions = cr.status?.conditions as K8sResourceCondition[] | undefined;
+  if (!conditions) {
+    return 'pending';
+  }
+  const readyCondition = conditions.find(c => c.type === 'Ready');
+  if (readyCondition?.status === 'True') {
+    if (readyCondition.reason === 'Ready,Degraded') {
+      return 'degraded';
+    }
+    return 'ready';
+  }
+  if (readyCondition?.status === 'False') {
+    return readyCondition.reason === 'Pending' ? 'pending' : 'error';
+  }
+  return 'pending';
+};
 
 export const appendRecursive = (obj: any, key: string, value?: string) => {
   if (!obj) {

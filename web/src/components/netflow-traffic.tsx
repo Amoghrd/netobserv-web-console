@@ -78,6 +78,7 @@ import GuidedTourPopover, { GuidedTourHandle } from './guided-tour/guided-tour';
 import Modals from './modals/modals';
 import './netflow-traffic.css';
 import { SearchEvent, SearchHandle } from './search/search';
+import FlowCollectorStatusIndicator from './status/flowcollector-status-indicator';
 import TabsContainer from './tabs/tabs-container';
 import { FiltersToolbar } from './toolbar/filters-toolbar';
 import ChipsPopover from './toolbar/filters/chips-popover';
@@ -454,7 +455,14 @@ export const NetflowTraffic: React.FC<NetflowTrafficProps> = ({
       <div id="pageHeader">
         <Flex direction={{ default: 'row' }}>
           <FlexItem flex={{ default: 'flex_1' }}>
-            <Title headingLevel={TextVariants.h1}>{t('Network Traffic')}</Title>
+            <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
+              <FlexItem>
+                <Title headingLevel={TextVariants.h1}>{t('Network Traffic')}</Title>
+              </FlexItem>
+              <FlexItem>
+                <FlowCollectorStatusIndicator />
+              </FlexItem>
+            </Flex>
           </FlexItem>
           <FlexItem>{actions()}</FlexItem>
         </Flex>

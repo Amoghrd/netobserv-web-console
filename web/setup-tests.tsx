@@ -28,6 +28,7 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
       return null;
     },
     useResolvedExtensions: jest.fn(),
+    useK8sWatchResource: jest.fn(() => [null, false, null]),
     useK8sModels: () => {
       return [{}, false];
     },
