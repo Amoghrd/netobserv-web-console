@@ -1,0 +1,288 @@
+package server
+
+import (
+	"net/http"
+	"testing"
+)
+
+// Overview page query builders
+func getBasicQueries(dataSource string) []string {
+	return []string{
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=namespace&function=rate&type=Bytes",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=app&function=rate&type=Bytes",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=namespace&function=rate&type=Packets",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=app&function=rate&type=Packets",
+	}
+}
+
+func getDNSQueries(dataSource string) []string {
+	return []string{
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=namespace&function=avg&type=DnsLatencyMs",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=app&function=avg&type=DnsLatencyMs",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=namespace&function=p90&type=DnsLatencyMs",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=app&function=p90&type=DnsLatencyMs",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=DnsName&function=count&type=DnsFlows",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=DnsFlagsResponseCode&function=count&type=DnsFlows",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=app&function=count&type=DnsFlows",
+	}
+}
+
+func getRTTQueries(dataSource string) []string {
+	return []string{
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=namespace&function=min&type=TimeFlowRttNs",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=app&function=min&type=TimeFlowRttNs",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=namespace&function=avg&type=TimeFlowRttNs",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=app&function=avg&type=TimeFlowRttNs",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=namespace&function=p90&type=TimeFlowRttNs",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=app&function=p90&type=TimeFlowRttNs",
+	}
+}
+
+func getDroppedQueries(dataSource string) []string {
+	return []string{
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=namespace&function=rate&type=PktDropPackets",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=app&function=rate&type=PktDropPackets",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=namespace&function=rate&type=PktDropBytes",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=app&function=rate&type=PktDropBytes",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=PktDropLatestState&function=rate&type=PktDropPackets",
+		"/api/flow/metrics?dataSource=" + dataSource + "&aggregateBy=PktDropLatestDropCause&function=rate&type=PktDropPackets",
+	}
+}
+
+// Helper to run overview queries
+func runOverviewQueries(b *testing.B, client *http.Client, url string, queries []string) {
+	for _, query := range queries {
+		req, _ := http.NewRequest("GET", url+query, nil)
+		resp, err := client.Do(req)
+		if err != nil {
+			b.Fatalf("Request failed: %v", err)
+		}
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			b.Fatalf("Expected 200, got %d", resp.StatusCode)
+		}
+	}
+}
+
+// BenchmarkOverviewLoki measures Overview Page with Loki data source for all scenarios
+func BenchmarkOverviewLoki(b *testing.B) {
+	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(false)
+	defer lokiSvc.Close()
+	if promSvc != nil {
+		defer promSvc.Close()
+	}
+	defer backendSvc.Close()
+
+	b.Run("Basic", func(b *testing.B) {
+		queries := getBasicQueries("loki")
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			runOverviewQueries(b, client, backendSvc.URL, queries)
+		}
+	})
+
+	b.Run("DNS", func(b *testing.B) {
+		queries := append(getBasicQueries("loki"), getDNSQueries("loki")...)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			runOverviewQueries(b, client, backendSvc.URL, queries)
+		}
+	})
+
+	b.Run("RTT", func(b *testing.B) {
+		queries := append(getBasicQueries("loki"), getRTTQueries("loki")...)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			runOverviewQueries(b, client, backendSvc.URL, queries)
+		}
+	})
+
+	b.Run("Dropped", func(b *testing.B) {
+		queries := append(getBasicQueries("loki"), getDroppedQueries("loki")...)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			runOverviewQueries(b, client, backendSvc.URL, queries)
+		}
+	})
+
+	b.Run("Full", func(b *testing.B) {
+		queries := getBasicQueries("loki")
+		queries = append(queries, getDNSQueries("loki")...)
+		queries = append(queries, getRTTQueries("loki")...)
+		queries = append(queries, getDroppedQueries("loki")...)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			runOverviewQueries(b, client, backendSvc.URL, queries)
+		}
+	})
+}
+
+// BenchmarkOverviewAuto measures Overview Page with Auto data source for all scenarios
+func BenchmarkOverviewAuto(b *testing.B) {
+	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(true)
+	defer lokiSvc.Close()
+	if promSvc != nil {
+		defer promSvc.Close()
+	}
+	defer backendSvc.Close()
+
+	b.Run("Basic", func(b *testing.B) {
+		queries := getBasicQueries("auto")
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			runOverviewQueries(b, client, backendSvc.URL, queries)
+		}
+	})
+
+	b.Run("DNS", func(b *testing.B) {
+		queries := append(getBasicQueries("auto"), getDNSQueries("auto")...)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			runOverviewQueries(b, client, backendSvc.URL, queries)
+		}
+	})
+
+	b.Run("RTT", func(b *testing.B) {
+		queries := append(getBasicQueries("auto"), getRTTQueries("auto")...)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			runOverviewQueries(b, client, backendSvc.URL, queries)
+		}
+	})
+
+	b.Run("Dropped", func(b *testing.B) {
+		queries := append(getBasicQueries("auto"), getDroppedQueries("auto")...)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			runOverviewQueries(b, client, backendSvc.URL, queries)
+		}
+	})
+
+	b.Run("Full", func(b *testing.B) {
+		queries := getBasicQueries("auto")
+		queries = append(queries, getDNSQueries("auto")...)
+		queries = append(queries, getRTTQueries("auto")...)
+		queries = append(queries, getDroppedQueries("auto")...)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			runOverviewQueries(b, client, backendSvc.URL, queries)
+		}
+	})
+}
+
+// BenchmarkFilterHeavyOverview measures overview page performance with complex filter combinations
+func BenchmarkFilterHeavyOverview(b *testing.B) {
+	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(true)
+	defer lokiSvc.Close()
+	if promSvc != nil {
+		defer promSvc.Close()
+	}
+	defer backendSvc.Close()
+
+	tests := []struct {
+		name   string
+		params string
+	}{
+		{
+			"SingleFilter",
+			"dataSource=auto&aggregateBy=namespace&function=rate&type=Bytes&filters=SrcK8S_Namespace%3Ddefault",
+		},
+		{
+			"TwoFilters",
+			"dataSource=auto&aggregateBy=namespace&function=rate&type=Bytes&filters=SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080",
+		},
+		{
+			"FourFilters",
+			"dataSource=auto&aggregateBy=namespace&function=rate&type=Bytes&filters=SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080%2CDstK8S_Namespace%3Dkube-system%2CProto%3D6",
+		},
+		{
+			"EightFilters",
+			"dataSource=auto&aggregateBy=namespace&function=rate&type=Bytes&filters=SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080%2CDstK8S_Namespace%3Dkube-system%2CProto%3D6%2CSrcK8S_Type%3DPod%2CDstK8S_Type%3DService%2CFlowDirection%3D0%2CPackets%3E100",
+		},
+	}
+
+	for _, tt := range tests {
+		b.Run(tt.name, func(b *testing.B) {
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				req, _ := http.NewRequest("GET", backendSvc.URL+"/api/flow/metrics?"+tt.params, nil)
+				resp, err := client.Do(req)
+				if err != nil {
+					b.Fatalf("Request failed: %v", err)
+				}
+				resp.Body.Close()
+				if resp.StatusCode != http.StatusOK {
+					b.Fatalf("Expected 200, got %d", resp.StatusCode)
+				}
+			}
+		})
+	}
+}
+
+// BenchmarkConcurrentOverview measures Overview page performance under concurrent user load
+func BenchmarkConcurrentOverview(b *testing.B) {
+	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(true)
+	defer lokiSvc.Close()
+	if promSvc != nil {
+		defer promSvc.Close()
+	}
+	defer backendSvc.Close()
+
+	queries := getBasicQueries("auto")
+
+	b.RunParallel(func(pb *testing.PB) {
+		i := 0
+		for pb.Next() {
+			query := queries[i%len(queries)]
+			i++
+			req, _ := http.NewRequest("GET", backendSvc.URL+query, nil)
+			resp, err := client.Do(req)
+			if err != nil {
+				b.Fatalf("Request failed: %v", err)
+			}
+			resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				b.Fatalf("Expected 200, got %d", resp.StatusCode)
+			}
+		}
+	})
+}
+
+// BenchmarkOverviewAggregations measures Overview page with different aggregation combinations
+func BenchmarkOverviewAggregations(b *testing.B) {
+	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(true)
+	defer lokiSvc.Close()
+	if promSvc != nil {
+		defer promSvc.Close()
+	}
+	defer backendSvc.Close()
+
+	tests := []struct {
+		name    string
+		queries []string
+	}{
+		{"NamespaceLevel", []string{
+			"/api/flow/metrics?dataSource=auto&aggregateBy=namespace&function=rate&type=Bytes",
+			"/api/flow/metrics?dataSource=auto&aggregateBy=namespace&function=rate&type=Packets",
+		}},
+		{"AppLevel", []string{
+			"/api/flow/metrics?dataSource=auto&aggregateBy=app&function=rate&type=Bytes",
+			"/api/flow/metrics?dataSource=auto&aggregateBy=app&function=rate&type=Packets",
+		}},
+		{"MixedAggregation", []string{
+			"/api/flow/metrics?dataSource=auto&aggregateBy=namespace&function=rate&type=Bytes",
+			"/api/flow/metrics?dataSource=auto&aggregateBy=app&function=rate&type=Bytes",
+			"/api/flow/metrics?dataSource=auto&aggregateBy=namespace&function=rate&type=Packets",
+			"/api/flow/metrics?dataSource=auto&aggregateBy=app&function=rate&type=Packets",
+		}},
+	}
+
+	for _, tt := range tests {
+		b.Run(tt.name, func(b *testing.B) {
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				runOverviewQueries(b, client, backendSvc.URL, tt.queries)
+			}
+		})
+	}
+}

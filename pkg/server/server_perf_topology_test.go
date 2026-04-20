@@ -1,0 +1,202 @@
+package server
+
+import (
+	"net/http"
+	"testing"
+)
+
+// Helper to run a single topology query
+func runTopologyQuery(b *testing.B, client *http.Client, url, query string) {
+	req, _ := http.NewRequest("GET", url+query, nil)
+	resp, err := client.Do(req)
+	if err != nil {
+		b.Fatalf("Request failed: %v", err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		b.Fatalf("Expected 200, got %d", resp.StatusCode)
+	}
+}
+
+// BenchmarkTopologyLoki measures Topology View with Loki data source for all metric types
+func BenchmarkTopologyLoki(b *testing.B) {
+	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(false)
+	defer lokiSvc.Close()
+	if promSvc != nil {
+		defer promSvc.Close()
+	}
+	defer backendSvc.Close()
+
+	tests := []struct {
+		name  string
+		query string
+	}{
+		{"Bytes", "/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=rate&type=Bytes"},
+		{"Packets", "/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=rate&type=Packets"},
+		{"DNSLatency", "/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=avg&type=DnsLatencyMs"},
+		{"RTT", "/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=avg&type=TimeFlowRttNs"},
+		{"Dropped", "/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=rate&type=PktDropPackets"},
+	}
+
+	for _, tt := range tests {
+		b.Run(tt.name, func(b *testing.B) {
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				runTopologyQuery(b, client, backendSvc.URL, tt.query)
+			}
+		})
+	}
+
+	b.Run("BytesWithDrops", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			runTopologyQuery(b, client, backendSvc.URL,
+				"/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=rate&type=Bytes")
+			runTopologyQuery(b, client, backendSvc.URL,
+				"/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=rate&type=PktDropPackets")
+		}
+	})
+}
+
+// BenchmarkTopologyAuto measures Topology View with Auto data source for all metric types
+func BenchmarkTopologyAuto(b *testing.B) {
+	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(true)
+	defer lokiSvc.Close()
+	if promSvc != nil {
+		defer promSvc.Close()
+	}
+	defer backendSvc.Close()
+
+	tests := []struct {
+		name  string
+		query string
+	}{
+		{"Bytes", "/api/flow/metrics?dataSource=auto&aggregateBy=resource&function=rate&type=Bytes"},
+		{"Packets", "/api/flow/metrics?dataSource=auto&aggregateBy=resource&function=rate&type=Packets"},
+		{"DNSLatency", "/api/flow/metrics?dataSource=auto&aggregateBy=resource&function=avg&type=DnsLatencyMs"},
+		{"RTT", "/api/flow/metrics?dataSource=auto&aggregateBy=resource&function=avg&type=TimeFlowRttNs"},
+		{"Dropped", "/api/flow/metrics?dataSource=auto&aggregateBy=resource&function=rate&type=PktDropPackets"},
+	}
+
+	for _, tt := range tests {
+		b.Run(tt.name, func(b *testing.B) {
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				runTopologyQuery(b, client, backendSvc.URL, tt.query)
+			}
+		})
+	}
+
+	b.Run("BytesWithDrops", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			runTopologyQuery(b, client, backendSvc.URL,
+				"/api/flow/metrics?dataSource=auto&aggregateBy=resource&function=rate&type=Bytes")
+			runTopologyQuery(b, client, backendSvc.URL,
+				"/api/flow/metrics?dataSource=auto&aggregateBy=resource&function=rate&type=PktDropPackets")
+		}
+	})
+}
+
+// BenchmarkFilterHeavyTopology measures topology view performance with complex filter combinations
+func BenchmarkFilterHeavyTopology(b *testing.B) {
+	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(true)
+	defer lokiSvc.Close()
+	if promSvc != nil {
+		defer promSvc.Close()
+	}
+	defer backendSvc.Close()
+
+	tests := []struct {
+		name   string
+		params string
+	}{
+		{
+			"SingleFilter",
+			"dataSource=auto&aggregateBy=resource&function=rate&type=Bytes&filters=SrcK8S_Namespace%3Ddefault",
+		},
+		{
+			"TwoFilters",
+			"dataSource=auto&aggregateBy=resource&function=rate&type=Bytes&filters=SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080",
+		},
+		{
+			"FourFilters",
+			"dataSource=auto&aggregateBy=resource&function=rate&type=Bytes&filters=SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080%2CDstK8S_Namespace%3Dkube-system%2CProto%3D6",
+		},
+		{
+			"EightFilters",
+			"dataSource=auto&aggregateBy=resource&function=rate&type=Bytes&filters=SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080%2CDstK8S_Namespace%3Dkube-system%2CProto%3D6%2CSrcK8S_Type%3DPod%2CDstK8S_Type%3DService%2CFlowDirection%3D0%2CPackets%3E100",
+		},
+	}
+
+	for _, tt := range tests {
+		b.Run(tt.name, func(b *testing.B) {
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				req, _ := http.NewRequest("GET", backendSvc.URL+"/api/flow/metrics?"+tt.params, nil)
+				resp, err := client.Do(req)
+				if err != nil {
+					b.Fatalf("Request failed: %v", err)
+				}
+				resp.Body.Close()
+				if resp.StatusCode != http.StatusOK {
+					b.Fatalf("Expected 200, got %d", resp.StatusCode)
+				}
+			}
+		})
+	}
+}
+
+// BenchmarkConcurrentTopology measures Topology view performance under concurrent user load
+func BenchmarkConcurrentTopology(b *testing.B) {
+	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(true)
+	defer lokiSvc.Close()
+	if promSvc != nil {
+		defer promSvc.Close()
+	}
+	defer backendSvc.Close()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			req, _ := http.NewRequest("GET",
+				backendSvc.URL+"/api/flow/metrics?dataSource=auto&aggregateBy=resource&function=rate&type=Bytes", nil)
+			resp, err := client.Do(req)
+			if err != nil {
+				b.Fatalf("Request failed: %v", err)
+			}
+			resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				b.Fatalf("Expected 200, got %d", resp.StatusCode)
+			}
+		}
+	})
+}
+
+// BenchmarkTopologyAggregations measures Topology view with different aggregation levels
+func BenchmarkTopologyAggregations(b *testing.B) {
+	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(true)
+	defer lokiSvc.Close()
+	if promSvc != nil {
+		defer promSvc.Close()
+	}
+	defer backendSvc.Close()
+
+	tests := []struct {
+		name  string
+		query string
+	}{
+		{"ByNamespace", "/api/flow/metrics?dataSource=auto&aggregateBy=namespace&function=rate&type=Bytes"},
+		{"ByApp", "/api/flow/metrics?dataSource=auto&aggregateBy=app&function=rate&type=Bytes"},
+		{"ByResource", "/api/flow/metrics?dataSource=auto&aggregateBy=resource&function=rate&type=Bytes"},
+		{"ByOwner", "/api/flow/metrics?dataSource=auto&aggregateBy=owner&function=rate&type=Bytes"},
+	}
+
+	for _, tt := range tests {
+		b.Run(tt.name, func(b *testing.B) {
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				runTopologyQuery(b, client, backendSvc.URL, tt.query)
+			}
+		})
+	}
+}
