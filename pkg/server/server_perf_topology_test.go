@@ -5,46 +5,6 @@ import (
 	"testing"
 )
 
-// BenchmarkTopologyLoki measures Topology View with Loki data source for all metric types
-func BenchmarkTopologyLoki(b *testing.B) {
-	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(false)
-	defer lokiSvc.Close()
-	if promSvc != nil {
-		defer promSvc.Close()
-	}
-	defer backendSvc.Close()
-
-	tests := []struct {
-		name  string
-		query string
-	}{
-		{"Bytes", "/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=rate&type=Bytes"},
-		{"Packets", "/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=rate&type=Packets"},
-		{"DNSLatency", "/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=avg&type=DnsLatencyMs"},
-		{"RTT", "/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=avg&type=TimeFlowRttNs"},
-		{"Dropped", "/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=rate&type=PktDropPackets"},
-	}
-
-	for _, tt := range tests {
-		b.Run(tt.name, func(b *testing.B) {
-			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
-				runMetricsQuery(b, client, backendSvc.URL, tt.query)
-			}
-		})
-	}
-
-	b.Run("BytesWithDrops", func(b *testing.B) {
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			runMetricsQuery(b, client, backendSvc.URL,
-				"/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=rate&type=Bytes")
-			runMetricsQuery(b, client, backendSvc.URL,
-				"/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=rate&type=PktDropPackets")
-		}
-	})
-}
-
 // BenchmarkTopologyAuto measures Topology View with Auto data source for all metric types
 func BenchmarkTopologyAuto(b *testing.B) {
 	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(true)

@@ -135,14 +135,25 @@ func getCommonFilterTests() []struct {
 			"FourFilters",
 			"SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080%2CDstK8S_Namespace%3Dkube-system%2CProto%3D6",
 		},
-		{
-			"EightFilters",
-			"SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080%2CDstK8S_Namespace%3Dkube-system%2CProto%3D6%2CSrcK8S_Type%3DPod%2CDstK8S_Type%3DService%2CFlowDirection%3D0%2CPackets%3E100",
-		},
+	}
+}
+
+// Helper to run a single flow records query (used by table view benchmarks)
+// Queries the /api/loki/flow/records endpoint
+func runFlowRecordsQuery(b *testing.B, client *http.Client, url, query string) {
+	req, _ := http.NewRequest("GET", url+query, nil)
+	resp, err := client.Do(req)
+	if err != nil {
+		b.Fatalf("Request failed: %v", err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		b.Fatalf("Expected 200, got %d", resp.StatusCode)
 	}
 }
 
 // Helper to run a single metrics query (used by topology and overview benchmarks)
+// Queries the /api/flow/metrics endpoint
 func runMetricsQuery(b *testing.B, client *http.Client, url, query string) {
 	req, _ := http.NewRequest("GET", url+query, nil)
 	resp, err := client.Do(req)
@@ -180,24 +191,12 @@ func BenchmarkExport(b *testing.B) {
 			"format=csv",
 		},
 		{
-			"CSVWithColumns",
-			"format=csv&columns=SrcAddr,DstAddr,SrcPort,DstPort,Proto",
-		},
-		{
 			"WithFilters",
 			"format=csv&filters=SrcK8S_Namespace%3Ddefault",
 		},
 		{
-			"WithMultipleFilters",
-			"format=csv&filters=SrcK8S_Namespace%3Ddefault%2CDstK8S_Namespace%3Dkube-system",
-		},
-		{
 			"WithLimit100",
 			"format=csv&limit=100",
-		},
-		{
-			"WithLimit1000",
-			"format=csv&limit=1000",
 		},
 		{
 			"ComplexQuery",

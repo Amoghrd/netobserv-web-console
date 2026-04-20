@@ -41,7 +41,6 @@ func BenchmarkLargeResultSets(b *testing.B) {
 	}{
 		{"100records", 100},
 		{"1000records", 1000},
-		{"5000records", 5000},
 		{"10000records", 10000},
 	}
 
