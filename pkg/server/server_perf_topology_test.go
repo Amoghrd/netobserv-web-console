@@ -5,19 +5,6 @@ import (
 	"testing"
 )
 
-// Helper to run a single topology query
-func runTopologyQuery(b *testing.B, client *http.Client, url, query string) {
-	req, _ := http.NewRequest("GET", url+query, nil)
-	resp, err := client.Do(req)
-	if err != nil {
-		b.Fatalf("Request failed: %v", err)
-	}
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		b.Fatalf("Expected 200, got %d", resp.StatusCode)
-	}
-}
-
 // BenchmarkTopologyLoki measures Topology View with Loki data source for all metric types
 func BenchmarkTopologyLoki(b *testing.B) {
 	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(false)
@@ -42,7 +29,7 @@ func BenchmarkTopologyLoki(b *testing.B) {
 		b.Run(tt.name, func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				runTopologyQuery(b, client, backendSvc.URL, tt.query)
+				runMetricsQuery(b, client, backendSvc.URL, tt.query)
 			}
 		})
 	}
@@ -50,9 +37,9 @@ func BenchmarkTopologyLoki(b *testing.B) {
 	b.Run("BytesWithDrops", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			runTopologyQuery(b, client, backendSvc.URL,
+			runMetricsQuery(b, client, backendSvc.URL,
 				"/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=rate&type=Bytes")
-			runTopologyQuery(b, client, backendSvc.URL,
+			runMetricsQuery(b, client, backendSvc.URL,
 				"/api/flow/metrics?dataSource=loki&aggregateBy=resource&function=rate&type=PktDropPackets")
 		}
 	})
@@ -82,7 +69,7 @@ func BenchmarkTopologyAuto(b *testing.B) {
 		b.Run(tt.name, func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				runTopologyQuery(b, client, backendSvc.URL, tt.query)
+				runMetricsQuery(b, client, backendSvc.URL, tt.query)
 			}
 		})
 	}
@@ -90,9 +77,9 @@ func BenchmarkTopologyAuto(b *testing.B) {
 	b.Run("BytesWithDrops", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			runTopologyQuery(b, client, backendSvc.URL,
+			runMetricsQuery(b, client, backendSvc.URL,
 				"/api/flow/metrics?dataSource=auto&aggregateBy=resource&function=rate&type=Bytes")
-			runTopologyQuery(b, client, backendSvc.URL,
+			runMetricsQuery(b, client, backendSvc.URL,
 				"/api/flow/metrics?dataSource=auto&aggregateBy=resource&function=rate&type=PktDropPackets")
 		}
 	})
@@ -176,7 +163,7 @@ func BenchmarkTopologyAggregations(b *testing.B) {
 		b.Run(tt.name, func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				runTopologyQuery(b, client, backendSvc.URL, tt.query)
+				runMetricsQuery(b, client, backendSvc.URL, tt.query)
 			}
 		})
 	}

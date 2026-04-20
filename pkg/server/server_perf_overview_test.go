@@ -49,21 +49,6 @@ func getDroppedQueries(dataSource string) []string {
 	}
 }
 
-// Helper to run overview queries
-func runOverviewQueries(b *testing.B, client *http.Client, url string, queries []string) {
-	for _, query := range queries {
-		req, _ := http.NewRequest("GET", url+query, nil)
-		resp, err := client.Do(req)
-		if err != nil {
-			b.Fatalf("Request failed: %v", err)
-		}
-		resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			b.Fatalf("Expected 200, got %d", resp.StatusCode)
-		}
-	}
-}
-
 // BenchmarkOverviewLoki measures Overview Page with Loki data source for all scenarios
 func BenchmarkOverviewLoki(b *testing.B) {
 	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(false)
@@ -77,7 +62,7 @@ func BenchmarkOverviewLoki(b *testing.B) {
 		queries := getBasicQueries("loki")
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			runOverviewQueries(b, client, backendSvc.URL, queries)
+			runMetricsQueries(b, client, backendSvc.URL, queries)
 		}
 	})
 
@@ -85,7 +70,7 @@ func BenchmarkOverviewLoki(b *testing.B) {
 		queries := append(getBasicQueries("loki"), getDNSQueries("loki")...)
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			runOverviewQueries(b, client, backendSvc.URL, queries)
+			runMetricsQueries(b, client, backendSvc.URL, queries)
 		}
 	})
 
@@ -93,7 +78,7 @@ func BenchmarkOverviewLoki(b *testing.B) {
 		queries := append(getBasicQueries("loki"), getRTTQueries("loki")...)
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			runOverviewQueries(b, client, backendSvc.URL, queries)
+			runMetricsQueries(b, client, backendSvc.URL, queries)
 		}
 	})
 
@@ -101,7 +86,7 @@ func BenchmarkOverviewLoki(b *testing.B) {
 		queries := append(getBasicQueries("loki"), getDroppedQueries("loki")...)
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			runOverviewQueries(b, client, backendSvc.URL, queries)
+			runMetricsQueries(b, client, backendSvc.URL, queries)
 		}
 	})
 
@@ -112,7 +97,7 @@ func BenchmarkOverviewLoki(b *testing.B) {
 		queries = append(queries, getDroppedQueries("loki")...)
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			runOverviewQueries(b, client, backendSvc.URL, queries)
+			runMetricsQueries(b, client, backendSvc.URL, queries)
 		}
 	})
 }
@@ -130,7 +115,7 @@ func BenchmarkOverviewAuto(b *testing.B) {
 		queries := getBasicQueries("auto")
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			runOverviewQueries(b, client, backendSvc.URL, queries)
+			runMetricsQueries(b, client, backendSvc.URL, queries)
 		}
 	})
 
@@ -138,7 +123,7 @@ func BenchmarkOverviewAuto(b *testing.B) {
 		queries := append(getBasicQueries("auto"), getDNSQueries("auto")...)
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			runOverviewQueries(b, client, backendSvc.URL, queries)
+			runMetricsQueries(b, client, backendSvc.URL, queries)
 		}
 	})
 
@@ -146,7 +131,7 @@ func BenchmarkOverviewAuto(b *testing.B) {
 		queries := append(getBasicQueries("auto"), getRTTQueries("auto")...)
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			runOverviewQueries(b, client, backendSvc.URL, queries)
+			runMetricsQueries(b, client, backendSvc.URL, queries)
 		}
 	})
 
@@ -154,7 +139,7 @@ func BenchmarkOverviewAuto(b *testing.B) {
 		queries := append(getBasicQueries("auto"), getDroppedQueries("auto")...)
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			runOverviewQueries(b, client, backendSvc.URL, queries)
+			runMetricsQueries(b, client, backendSvc.URL, queries)
 		}
 	})
 
@@ -165,7 +150,7 @@ func BenchmarkOverviewAuto(b *testing.B) {
 		queries = append(queries, getDroppedQueries("auto")...)
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			runOverviewQueries(b, client, backendSvc.URL, queries)
+			runMetricsQueries(b, client, backendSvc.URL, queries)
 		}
 	})
 }
@@ -262,7 +247,7 @@ func BenchmarkOverviewAggregations(b *testing.B) {
 		b.Run(tt.name, func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				runOverviewQueries(b, client, backendSvc.URL, tt.queries)
+				runMetricsQueries(b, client, backendSvc.URL, tt.queries)
 			}
 		})
 	}

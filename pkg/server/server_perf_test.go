@@ -142,6 +142,26 @@ func getCommonFilterTests() []struct {
 	}
 }
 
+// Helper to run a single metrics query (used by topology and overview benchmarks)
+func runMetricsQuery(b *testing.B, client *http.Client, url, query string) {
+	req, _ := http.NewRequest("GET", url+query, nil)
+	resp, err := client.Do(req)
+	if err != nil {
+		b.Fatalf("Request failed: %v", err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		b.Fatalf("Expected 200, got %d", resp.StatusCode)
+	}
+}
+
+// Helper to run multiple metrics queries (used by overview benchmarks)
+func runMetricsQueries(b *testing.B, client *http.Client, url string, queries []string) {
+	for _, query := range queries {
+		runMetricsQuery(b, client, url, query)
+	}
+}
+
 // BenchmarkExport measures Export Flows performance with CSV format across different scenarios
 func BenchmarkExport(b *testing.B) {
 	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(false)
