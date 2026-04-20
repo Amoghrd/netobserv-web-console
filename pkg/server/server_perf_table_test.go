@@ -104,33 +104,13 @@ func BenchmarkFilterHeavyTableView(b *testing.B) {
 	}
 	defer backendSvc.Close()
 
-	tests := []struct {
-		name   string
-		params string
-	}{
-		{
-			"SingleFilter",
-			"filters=SrcK8S_Namespace%3Ddefault",
-		},
-		{
-			"TwoFilters",
-			"filters=SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080",
-		},
-		{
-			"FourFilters",
-			"filters=SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080%2CDstK8S_Namespace%3Dkube-system%2CProto%3D6",
-		},
-		{
-			"EightFilters",
-			"filters=SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080%2CDstK8S_Namespace%3Dkube-system%2CProto%3D6%2CSrcK8S_Type%3DPod%2CDstK8S_Type%3DService%2CFlowDirection%3D0%2CPackets%3E100",
-		},
-	}
+	filterTests := getCommonFilterTests()
 
-	for _, tt := range tests {
+	for _, tt := range filterTests {
 		b.Run(tt.name, func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				req, _ := http.NewRequest("GET", backendSvc.URL+"/api/loki/flow/records?"+tt.params, nil)
+				req, _ := http.NewRequest("GET", backendSvc.URL+"/api/loki/flow/records?filters="+tt.filter, nil)
 				resp, err := client.Do(req)
 				if err != nil {
 					b.Fatalf("Request failed: %v", err)

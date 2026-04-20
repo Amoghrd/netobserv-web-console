@@ -113,7 +113,36 @@ func setupBenchmarkServers(useBothDataSources bool) (*httptest.Server, *httptest
 	return setupBenchmarkServersWithSize(useBothDataSources, 0)
 }
 
-// BenchmarkTable measures Table View performance with and without histogram
+// Common filter test data used across table, topology, and overview benchmarks
+// Returns filter strings in URL-encoded format
+func getCommonFilterTests() []struct {
+	name   string
+	filter string
+} {
+	return []struct {
+		name   string
+		filter string
+	}{
+		{
+			"SingleFilter",
+			"SrcK8S_Namespace%3Ddefault",
+		},
+		{
+			"TwoFilters",
+			"SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080",
+		},
+		{
+			"FourFilters",
+			"SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080%2CDstK8S_Namespace%3Dkube-system%2CProto%3D6",
+		},
+		{
+			"EightFilters",
+			"SrcK8S_Namespace%3Ddefault%2CSrcPort%3D8080%2CDstK8S_Namespace%3Dkube-system%2CProto%3D6%2CSrcK8S_Type%3DPod%2CDstK8S_Type%3DService%2CFlowDirection%3D0%2CPackets%3E100",
+		},
+	}
+}
+
+// BenchmarkExport measures Export Flows performance with CSV format across different scenarios
 func BenchmarkExport(b *testing.B) {
 	lokiSvc, promSvc, backendSvc, client := setupBenchmarkServers(false)
 	defer lokiSvc.Close()
