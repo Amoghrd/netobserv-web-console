@@ -1,7 +1,6 @@
 package server
 
 import (
-	"net/http"
 	"testing"
 )
 
@@ -17,15 +16,7 @@ func BenchmarkTable(b *testing.B) {
 	b.Run("Basic", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			req, _ := http.NewRequest("GET", backendSvc.URL+"/api/loki/flow/records", nil)
-			resp, err := client.Do(req)
-			if err != nil {
-				b.Fatalf("Request failed: %v", err)
-			}
-			resp.Body.Close()
-			if resp.StatusCode != http.StatusOK {
-				b.Fatalf("Expected 200, got %d", resp.StatusCode)
-			}
+			runFlowRecordsQuery(b, client, backendSvc.URL, "/api/loki/flow/records")
 		}
 	})
 
@@ -33,27 +24,11 @@ func BenchmarkTable(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			// Get flow records
-			req1, _ := http.NewRequest("GET", backendSvc.URL+"/api/loki/flow/records", nil)
-			resp1, err := client.Do(req1)
-			if err != nil {
-				b.Fatalf("Flow records request failed: %v", err)
-			}
-			resp1.Body.Close()
-			if resp1.StatusCode != http.StatusOK {
-				b.Fatalf("Expected 200, got %d", resp1.StatusCode)
-			}
+			runFlowRecordsQuery(b, client, backendSvc.URL, "/api/loki/flow/records")
 
 			// Get histogram data
-			req2, _ := http.NewRequest("GET",
-				backendSvc.URL+"/api/flow/metrics?dataSource=auto&function=count&aggregateBy=app&type=Flows", nil)
-			resp2, err := client.Do(req2)
-			if err != nil {
-				b.Fatalf("Histogram metrics request failed: %v", err)
-			}
-			resp2.Body.Close()
-			if resp2.StatusCode != http.StatusOK {
-				b.Fatalf("Expected 200, got %d", resp2.StatusCode)
-			}
+			runMetricsQuery(b, client, backendSvc.URL,
+				"/api/flow/metrics?dataSource=auto&function=count&aggregateBy=app&type=Flows")
 		}
 	})
 }
@@ -81,15 +56,7 @@ func BenchmarkLargeResultSets(b *testing.B) {
 
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				req, _ := http.NewRequest("GET", backendSvc.URL+"/api/loki/flow/records", nil)
-				resp, err := client.Do(req)
-				if err != nil {
-					b.Fatalf("Request failed: %v", err)
-				}
-				resp.Body.Close()
-				if resp.StatusCode != http.StatusOK {
-					b.Fatalf("Expected 200, got %d", resp.StatusCode)
-				}
+				runFlowRecordsQuery(b, client, backendSvc.URL, "/api/loki/flow/records")
 			}
 		})
 	}
@@ -110,15 +77,7 @@ func BenchmarkFilterHeavyTableView(b *testing.B) {
 		b.Run(tt.name, func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				req, _ := http.NewRequest("GET", backendSvc.URL+"/api/loki/flow/records?filters="+tt.filter, nil)
-				resp, err := client.Do(req)
-				if err != nil {
-					b.Fatalf("Request failed: %v", err)
-				}
-				resp.Body.Close()
-				if resp.StatusCode != http.StatusOK {
-					b.Fatalf("Expected 200, got %d", resp.StatusCode)
-				}
+				runFlowRecordsQuery(b, client, backendSvc.URL, "/api/loki/flow/records?filters="+tt.filter)
 			}
 		})
 	}
@@ -135,15 +94,7 @@ func BenchmarkConcurrentTableView(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			req, _ := http.NewRequest("GET", backendSvc.URL+"/api/loki/flow/records", nil)
-			resp, err := client.Do(req)
-			if err != nil {
-				b.Fatalf("Request failed: %v", err)
-			}
-			resp.Body.Close()
-			if resp.StatusCode != http.StatusOK {
-				b.Fatalf("Expected 200, got %d", resp.StatusCode)
-			}
+			runFlowRecordsQuery(b, client, backendSvc.URL, "/api/loki/flow/records")
 		}
 	})
 }
