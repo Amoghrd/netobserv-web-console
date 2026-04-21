@@ -3,10 +3,10 @@
 }
 
 .selected-decorator>circle {
-  fill: #06c !important;
+  fill: var(--pf-t--global--color--brand--default) !important;
 }
 
-.pf-v5-c-form-control:has(#topology-search-result-count) {
+.pf-v6-c-form-control:has(#topology-search-result-count) {
   width: 5em;
   align-items: center;
 }
@@ -67,15 +67,11 @@ g.netobserv.topology.pf-topology__edge.edge-has-drops.dark>.pf-topology-connecto
 }
 
 g.netobserv.topology>g>.pf-topology__node__background {
-  fill: #FFFFFF;
-}
-
-g.netobserv.topology.dark>g>.pf-topology__node__background {
-  fill: #26292D;
+  fill: var(--pf-t--global--background--color--primary--default);
 }
 
 g.netobserv.topology.node-highlighted>g>.pf-topology__node__background {
-  stroke: #0066CC;
+  stroke: var(--pf-t--global--color--brand--default);
   stroke-width: 2px;
 }
 
@@ -83,22 +79,22 @@ g.netobserv.topology.pf-topology__edge.edge-highlighted>.pf-topology__edge__link
 g.netobserv.topology.pf-topology__edge.edge-highlighted>.pf-topology-connector-arrow,
 g.netobserv.topology.pf-topology__edge.edge-highlighted.dark>.pf-topology__edge__link,
 g.netobserv.topology.pf-topology__edge.edge-highlighted.dark>.pf-topology-connector-arrow {
-  stroke: #0066CC;
-  fill: #002952;
+  stroke: var(--pf-t--global--color--brand--default);
+  fill: var(--pf-t--global--color--brand--clicked);
 }
 
 g.netobserv.pf-topology__group>.pf-topology__group__background {
-  fill: #D2D2D2;
+  fill: var(--pf-t--global--border--color--default);
   fill-opacity: 0.5;
 }
 
-g.netobserv.pf-topology__group.pf-v5-m-hover>.pf-topology__group__background {
+g.netobserv.pf-topology__group.pf-m-hover>.pf-topology__group__background {
   stroke: #4F5255;
 }
 
-g.netobserv.pf-topology__group.pf-v5-m-selected>.pf-topology__group__background {
-  stroke: #0066CC;
-  fill: #A5C4E2;
+g.netobserv.pf-topology__group.pf-m-selected>.pf-topology__group__background {
+  stroke: var(--pf-t--global--color--brand--default);
+  fill: var(--pf-t--global--color--brand--hover);
 }
 
 .topology-icon {

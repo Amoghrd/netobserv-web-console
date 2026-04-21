@@ -1,5 +1,6 @@
 import { Bullseye, PageSection, Spinner } from '@patternfly/react-core';
 import * as React from 'react';
+import { useFillViewportBelow } from '../utils/use-fill-viewport-below';
 import NetflowTrafficParent from './netflow-traffic-parent';
 
 interface NetflowTrafficDevTabProps {
@@ -22,20 +23,11 @@ interface NetflowTrafficDevTabProps {
 }
 
 export const NetflowTrafficDevTab: React.FC<NetflowTrafficDevTabProps> = props => {
-  //default to 800 to allow content to be rendered in tests
-  const [containerHeight, setContainerHeight] = React.useState(800);
-
-  React.useEffect(() => {
-    const containers = document.getElementsByClassName('pf-v5-c-tab-content');
-    if (containers.length > 0) {
-      setContainerHeight(containers[0].clientHeight);
-    }
-  }, []);
-
   const namespace = props.params?.ns || props.match?.params?.ns;
+  const tabFillRef = useFillViewportBelow(!!namespace);
   if (!namespace) {
     return (
-      <PageSection id="pageSection">
+      <PageSection hasBodyWrapper={false} id="pageSection">
         <Bullseye data-test="loading-tab">
           <Spinner size="xl" />
         </Bullseye>
@@ -43,7 +35,7 @@ export const NetflowTrafficDevTab: React.FC<NetflowTrafficDevTabProps> = props =
     );
   }
   return (
-    <div className="netobserv-tab-container" style={{ height: containerHeight - 200 }}>
+    <div ref={tabFillRef} className="netobserv-tab-container">
       <NetflowTrafficParent
         forcedFilters={null}
         isTab={true}

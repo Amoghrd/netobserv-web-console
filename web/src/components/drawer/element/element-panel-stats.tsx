@@ -1,4 +1,4 @@
-import { Flex, FlexItem, Text, TextVariants } from '@patternfly/react-core';
+import { Content, ContentVariants, Flex, FlexItem } from '@patternfly/react-core';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { TopologyMetrics } from '../../../api/loki';
@@ -42,29 +42,29 @@ export const ElementPanelStats: React.FC<ElementPanelStatsProps> = ({
       <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsNone' }}>
         <FlexItem>
           <FlexItem>
-            <Text className="element-stats-title" component={TextVariants.h4} />
+            <Content className="element-stats-title" component={ContentVariants.h4} />
           </FlexItem>
         </FlexItem>
         <FlexItem>
           <FlexItem>
-            <Text className="element-stats-title" component={TextVariants.h4}>
+            <Content className="element-stats-title" component={ContentVariants.h4}>
               {isTime ? t('Average time') : t('Average rate')}
-            </Text>
+            </Content>
           </FlexItem>
         </FlexItem>
         <FlexItem>
           <FlexItem>
-            <Text className="element-stats-title" component={TextVariants.h4}>
+            <Content className="element-stats-title" component={ContentVariants.h4}>
               {isTime ? t('Latest time') : t('Latest rate')}
-            </Text>
+            </Content>
           </FlexItem>
         </FlexItem>
         {!isTime ? (
           <FlexItem>
             <FlexItem>
-              <Text className="element-stats-title" component={TextVariants.h4}>
+              <Content className="element-stats-title" component={ContentVariants.h4}>
                 {t('Total')}
-              </Text>
+              </Content>
             </FlexItem>
           </FlexItem>
         ) : (
@@ -73,25 +73,25 @@ export const ElementPanelStats: React.FC<ElementPanelStatsProps> = ({
       </Flex>
       <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsNone' }}>
         <FlexItem>
-          <Text component="p" id="metrics-stats-in">
+          <Content component="p" id="metrics-stats-in">
             {isEdge ? t('A -> B') : t('In')}
-          </Text>
+          </Content>
         </FlexItem>
         <FlexItem>
-          <Text component="p" id="metrics-stats-avg-in">
+          <Content component="p" id="metrics-stats-avg-in">
             {getFormattedValue(averageIn, metricType, isTime ? 'avg' : 'rate', t)}
-          </Text>
+          </Content>
         </FlexItem>
         <FlexItem>
-          <Text component="p" id="metrics-stats-latest-in">
+          <Content component="p" id="metrics-stats-latest-in">
             {getFormattedValue(latestIn, metricType, isTime ? 'avg' : 'rate', t)}
-          </Text>
+          </Content>
         </FlexItem>
         {!isTime ? (
           <FlexItem>
-            <Text component="p" id="metrics-stats-total-in">
+            <Content component="p" id="metrics-stats-total-in">
               {getFormattedValue(totalIn, metricType, 'sum', t)}
-            </Text>
+            </Content>
           </FlexItem>
         ) : (
           <></>
@@ -99,25 +99,25 @@ export const ElementPanelStats: React.FC<ElementPanelStatsProps> = ({
       </Flex>
       <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsNone' }}>
         <FlexItem>
-          <Text component="p" id="metrics-stats-out">
+          <Content component="p" id="metrics-stats-out">
             {isEdge ? t('B -> A') : t('Out')}
-          </Text>
+          </Content>
         </FlexItem>
         <FlexItem>
-          <Text component="p" id="metrics-stats-avg-out">
+          <Content component="p" id="metrics-stats-avg-out">
             {getFormattedValue(averageOut, metricType, isTime ? 'avg' : 'rate', t)}
-          </Text>
+          </Content>
         </FlexItem>
         <FlexItem>
-          <Text component="p" id="metrics-stats-latest-out">
+          <Content component="p" id="metrics-stats-latest-out">
             {getFormattedValue(latestOut, metricType, isTime ? 'avg' : 'rate', t)}
-          </Text>
+          </Content>
         </FlexItem>
         {!isTime ? (
           <FlexItem>
-            <Text component="p" id="metrics-stats-total-out">
+            <Content component="p" id="metrics-stats-total-out">
               {getFormattedValue(totalOut, metricType, 'sum', t)}
-            </Text>
+            </Content>
           </FlexItem>
         ) : (
           <></>
@@ -125,26 +125,26 @@ export const ElementPanelStats: React.FC<ElementPanelStatsProps> = ({
       </Flex>
       <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsNone' }}>
         <FlexItem>
-          <Text component="p" id="metrics-stats-both">
+          <Content component="p" id="metrics-stats-both">
             {t('Both')}
-          </Text>
+          </Content>
         </FlexItem>
 
         <FlexItem>
-          <Text component="p" id="metrics-stats-avg-both">
+          <Content component="p" id="metrics-stats-avg-both">
             {getFormattedValue(averageBoth, metricType, isTime ? 'avg' : 'rate', t)}
-          </Text>
+          </Content>
         </FlexItem>
         <FlexItem>
-          <Text component="p" id="metrics-stats-latest-both">
+          <Content component="p" id="metrics-stats-latest-both">
             {getFormattedValue(latestBoth, metricType, isTime ? 'avg' : 'rate', t)}
-          </Text>
+          </Content>
         </FlexItem>
         {!isTime ? (
           <FlexItem>
-            <Text component="p" id="metrics-stats-total-both">
+            <Content component="p" id="metrics-stats-total-both">
               {getFormattedValue(totalBoth, metricType, 'sum', t)}
-            </Text>
+            </Content>
           </FlexItem>
         ) : (
           <></>

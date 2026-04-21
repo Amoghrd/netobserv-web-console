@@ -54,7 +54,6 @@ Cypress.Commands.add('checkDashboards', (names) => {
             cy.get(graphSelector.graphBody, { timeout: 120000 }).should($body => {
                 const hasEmptyState = $body.find('[data-test="empty-state"]').length > 0
                 if (hasEmptyState) {
-                    // Force a retry by throwing an error
                     throw new Error('Dashboard panel still showing empty state, retrying...')
                 }
             })

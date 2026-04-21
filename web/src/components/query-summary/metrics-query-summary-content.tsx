@@ -1,4 +1,4 @@
-import { Flex, FlexItem, Text, TextVariants, Tooltip } from '@patternfly/react-core';
+import { Content, ContentVariants, Flex, FlexItem, Tooltip } from '@patternfly/react-core';
 import { DomainIcon, OutlinedClockIcon, TachometerAltIcon } from '@patternfly/react-icons';
 import _ from 'lodash';
 import * as React from 'react';
@@ -119,26 +119,30 @@ export const MetricsQuerySummaryContent: React.FC<MetricsQuerySummaryContentProp
             : valueFormat(avgSum, 2, t('Bps'));
           return [
             <FlexItem key={`${metricType}Count`}>
-              <Tooltip content={<Text component={TextVariants.p}>{textAbs}</Text>}>
+              <Tooltip content={<Content component={ContentVariants.p}>{textAbs}</Content>}>
                 <div className="stats-query-summary-container-with-icon">
                   <BytesIcon />
-                  <Text id={`${_.lowerFirst(metricType)}Count`} component={TextVariants.p} style={{ color: textColor }}>
+                  <Content
+                    id={`${_.lowerFirst(metricType)}Count`}
+                    component={ContentVariants.p}
+                    style={{ color: textColor }}
+                  >
                     {valAbs}
-                  </Text>
+                  </Content>
                 </div>
               </Tooltip>
             </FlexItem>,
             <FlexItem key={`${metricType}PerSecondsCount`}>
-              <Tooltip content={<Text component={TextVariants.p}>{textRate}</Text>}>
+              <Tooltip content={<Content component={ContentVariants.p}>{textRate}</Content>}>
                 <div className="stats-query-summary-container-with-icon">
                   <TachometerAltIcon />
-                  <Text
+                  <Content
                     id={`${_.lowerFirst(metricType)}PerSecondsCount`}
-                    component={TextVariants.p}
+                    component={ContentVariants.p}
                     style={{ color: textColor }}
                   >
                     {valRate}
-                  </Text>
+                  </Content>
                 </div>
               </Tooltip>
             </FlexItem>
@@ -155,12 +159,16 @@ export const MetricsQuerySummaryContent: React.FC<MetricsQuerySummaryContentProp
             (appMetrics ? `${absTotal} / ${appMetrics.stats.total}` : String(absTotal)) + ' ' + t('Packets');
           return [
             <FlexItem key={`${metricType}Count`}>
-              <Tooltip content={<Text component={TextVariants.p}>{textAbs}</Text>}>
+              <Tooltip content={<Content component={ContentVariants.p}>{textAbs}</Content>}>
                 <div className="stats-query-summary-container-with-icon">
                   <PacketsIcon />
-                  <Text id={`${_.lowerFirst(metricType)}Count`} component={TextVariants.p} style={{ color: textColor }}>
+                  <Content
+                    id={`${_.lowerFirst(metricType)}Count`}
+                    component={ContentVariants.p}
+                    style={{ color: textColor }}
+                  >
                     {valAbs}
-                  </Text>
+                  </Content>
                 </div>
               </Tooltip>
             </FlexItem>
@@ -175,12 +183,12 @@ export const MetricsQuerySummaryContent: React.FC<MetricsQuerySummaryContentProp
             : String(valueFormat(avgSum / metrics.length, 2, t('ms')));
           return [
             <FlexItem key="dnsAvg">
-              <Tooltip content={<Text component={TextVariants.p}>{textAvg}</Text>}>
+              <Tooltip content={<Content component={ContentVariants.p}>{textAvg}</Content>}>
                 <div className="stats-query-summary-container-with-icon">
                   <DomainIcon />
-                  <Text id="dnsAvg" component={TextVariants.p}>
+                  <Content id="dnsAvg" component={ContentVariants.p}>
                     {valAvg}
-                  </Text>
+                  </Content>
                 </div>
               </Tooltip>
             </FlexItem>
@@ -193,12 +201,12 @@ export const MetricsQuerySummaryContent: React.FC<MetricsQuerySummaryContentProp
             : String(valueFormat(avgSum / metrics.length, 2, t('ms')));
           return [
             <FlexItem key="rttAvg">
-              <Tooltip content={<Text component={TextVariants.p}>{textAvg}</Text>}>
+              <Tooltip content={<Content component={ContentVariants.p}>{textAvg}</Content>}>
                 <div className="stats-query-summary-container-with-icon">
                   <OutlinedClockIcon />
-                  <Text id="rttAvg" component={TextVariants.p}>
+                  <Content id="rttAvg" component={ContentVariants.p}>
                     {valAvg}
-                  </Text>
+                  </Content>
                 </div>
               </Tooltip>
             </FlexItem>
@@ -231,9 +239,9 @@ export const MetricsQuerySummaryContent: React.FC<MetricsQuerySummaryContentProp
     >
       {direction === 'row' && (
         <FlexItem key="title">
-          <Text id="query-summary-title" component={TextVariants.h4}>
+          <Content id="query-summary-title" component={ContentVariants.h4}>
             {t('Summary')}
-          </Text>
+          </Content>
         </FlexItem>
       )}
       <FlexItem key="stats">
@@ -250,9 +258,9 @@ export const MetricsQuerySummaryContent: React.FC<MetricsQuerySummaryContentProp
       {metricsToShow()}
       {direction === 'row' && toggleQuerySummary && (
         <FlexItem key="toggle">
-          <Text id="query-summary-toggle" component={TextVariants.a} onClick={toggleQuerySummary}>
+          <Content id="query-summary-toggle" component={ContentVariants.a} onClick={toggleQuerySummary}>
             {isShowQuerySummary ? t('See less') : t('See more')}
-          </Text>
+          </Content>
         </FlexItem>
       )}
     </Flex>

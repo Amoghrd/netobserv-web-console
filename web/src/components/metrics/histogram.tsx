@@ -1,17 +1,23 @@
-import { Chart, ChartAxis, ChartBar, ChartStack, ChartThemeColor, createContainer } from '@patternfly/react-charts';
+import {
+  Chart,
+  ChartAxis,
+  ChartBar,
+  ChartStack,
+  ChartThemeColor,
+  createContainer
+} from '@patternfly/react-charts/victory';
 import {
   Bullseye,
   Button,
+  Content,
   EmptyState,
   EmptyStateBody,
-  EmptyStateHeader,
   EmptyStateVariant,
   Flex,
   FlexItem,
   PopoverPosition,
   Spinner,
-  Text,
-  TextVariants,
+  Title,
   Tooltip
 } from '@patternfly/react-core';
 import {
@@ -257,7 +263,7 @@ export const Histogram: React.FC<HistogramProps> = ({
     >
       <Flex className="histogram-range-container" direction={{ default: 'row' }}>
         <FlexItem flex={{ default: 'flex_1' }}>
-          <Text component={TextVariants.p}>{t('Number of logs over time')}</Text>
+          <Content component="p">{t('Number of logs over time')}</Content>
         </FlexItem>
         <FlexItem>
           <Tooltip
@@ -290,7 +296,7 @@ export const Histogram: React.FC<HistogramProps> = ({
           </Tooltip>
         </FlexItem>
         <FlexItem>
-          <Text component={TextVariants.p}>{getDomainDisplayText(displayedRange || range || defaultRange)}</Text>
+          <Content component="p">{getDomainDisplayText(displayedRange || range || defaultRange)}</Content>
         </FlexItem>
         <FlexItem>
           <Tooltip
@@ -486,8 +492,11 @@ export const HistogramContainer: React.FC<{
     </Bullseye>
   ) : (
     <Bullseye data-test="no-datapoints-found">
-      <EmptyState variant={EmptyStateVariant.full} isFullHeight>
-        <EmptyStateHeader titleText={t('No datapoints found in the selected time range')} headingLevel="h6" />
+      <EmptyState
+        titleText={<Title headingLevel="h6">{t('No datapoints found in the selected time range')}</Title>}
+        variant={EmptyStateVariant.full}
+        isFullHeight
+      >
         <EmptyStateBody>{t('Reset time range and try again.')}</EmptyStateBody>
         <Button id="reset-timerange-button" data-test="reset-timerange-button" variant="link" onClick={resetRange}>
           {t('Reset time range')}

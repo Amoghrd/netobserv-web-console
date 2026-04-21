@@ -1,14 +1,11 @@
 import {
   Bullseye,
+  Content,
+  ContentVariants,
   EmptyState,
   EmptyStateBody,
-  EmptyStateHeader,
-  EmptyStateIcon,
   EmptyStateVariant,
-  Spinner,
-  Text,
-  TextContent,
-  TextVariants
+  Spinner
 } from '@patternfly/react-core';
 import { SearchIcon } from '@patternfly/react-icons';
 import React from 'react';
@@ -70,34 +67,35 @@ export const Empty: React.FC<EmptyProps> = ({ showDetails, resetDefaultFilters, 
   }, [showDetails]);
 
   return (
-    <EmptyState variant={!showDetails ? EmptyStateVariant.sm : undefined} data-test="empty-state">
-      <EmptyStateHeader
-        titleText={t('No results found')}
-        headingLevel="h2"
-        icon={<EmptyStateIcon icon={SearchIcon} />}
-      />
+    <EmptyState
+      titleText={t('No results found')}
+      headingLevel="h2"
+      icon={SearchIcon}
+      variant={!showDetails ? EmptyStateVariant.sm : undefined}
+      data-test="empty-state"
+    >
       {showDetails && (
         <EmptyStateBody className="empty-body">
           {statusError === undefined && (
-            <Text className="netobserv-empty-message" component={TextVariants.p}>
+            <Content className="netobserv-empty-message" component={ContentVariants.p}>
               {t('Clear or reset filters and try again.')}
-            </Text>
+            </Content>
           )}
           {statusError !== undefined && (
-            <Text className="netobserv-error-message" component={TextVariants.p}>
+            <Content className="netobserv-error-message" component={ContentVariants.p}>
               {t('Check for errors in health dashboard. Status endpoint is returning: {{statusError}}', {
                 statusError
               })}
-            </Text>
+            </Content>
           )}
-          <TextContent className="empty-text-content">
+          <Content className="empty-text-content">
             {namespacesLoading && (
               <Bullseye data-test="loading-empty">
                 <Spinner size="xl" />
               </Bullseye>
             )}
             {status && <StatusTexts status={status} />}
-          </TextContent>
+          </Content>
         </EmptyStateBody>
       )}
       {showDetails && <SecondaryAction resetDefaultFilters={resetDefaultFilters} clearFilters={clearFilters} />}

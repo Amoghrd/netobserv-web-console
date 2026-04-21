@@ -36,7 +36,7 @@ class NetflowTrafficParent extends React.Component<Props, State> {
   render() {
     if (!this.state.role) {
       return (
-        <PageSection id="pageSection">
+        <PageSection hasBodyWrapper={false} id="pageSection">
           <Bullseye data-test="loading-role">
             <Spinner size="xl" />
           </Bullseye>

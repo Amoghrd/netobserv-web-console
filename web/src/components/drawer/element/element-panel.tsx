@@ -1,4 +1,6 @@
 import {
+  Content,
+  ContentVariants,
   Divider,
   DrawerActions,
   DrawerCloseButton,
@@ -7,9 +9,7 @@ import {
   DrawerPanelContent,
   Tab,
   Tabs,
-  TabTitleText,
-  Text,
-  TextVariants
+  TabTitleText
 } from '@patternfly/react-core';
 import { BaseEdge } from '@patternfly/react-topology';
 import _ from 'lodash';
@@ -93,12 +93,12 @@ export const ElementPanel: React.FC<ElementPanelProps> = ({
 
   const titleContent = React.useCallback(() => {
     if (element instanceof BaseEdge) {
-      return <Text component={TextVariants.h2}>{t('Edge')}</Text>;
+      return <Content component={ContentVariants.h2}>{t('Edge')}</Content>;
     } else {
       if (data && elementName) {
         return <PeerResourceLink peer={data.peer} />;
       }
-      return <Text component={TextVariants.h2}>{t('Unknown')}</Text>;
+      return <Content component={ContentVariants.h2}>{t('Unknown')}</Content>;
     }
   }, [element, elementName, data, t]);
 
@@ -175,7 +175,7 @@ export const ElementPanel: React.FC<ElementPanelProps> = ({
             <Tab className="drawer-tab" eventKey={'health'} title={<TabTitleText>{t('Health')}</TabTitleText>}>
               <>
                 <HealthCard
-                  key={`card-${data.health.name}`}
+                  key={`card-${alert.name}`}
                   resourceHealth={data.health}
                   name={data.health.name}
                   k8sKind={data.health.k8sKind}

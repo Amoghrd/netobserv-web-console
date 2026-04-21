@@ -86,7 +86,7 @@ describe('<FiltersToolbar />', () => {
 
   it('should render component', async () => {
     const { container } = render(withContext(<FiltersToolbar {...props} />));
-    expect(container.querySelector('.pf-v5-c-toolbar')).toBeTruthy();
+    expect(container.querySelector('.pf-v6-c-toolbar')).toBeTruthy();
   });
 
   it('should open and close search popper', async () => {

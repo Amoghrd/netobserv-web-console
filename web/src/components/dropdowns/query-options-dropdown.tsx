@@ -42,7 +42,7 @@ export const QueryOptionsDropdown: React.FC<QueryOptionsProps> = props => {
 
   const popper = React.useCallback(() => {
     return (
-      <div id="query-options-popper" ref={popperRef} className="pf-v5-c-menu" role="dialog">
+      <div id="query-options-popper" ref={popperRef} className="pf-v6-c-menu" role="dialog">
         <QueryOptionsPanel {...props} />
       </div>
     );

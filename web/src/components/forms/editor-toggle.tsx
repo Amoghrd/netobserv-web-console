@@ -84,7 +84,7 @@ export const EditorToggle: FC<EditorToggleProps> = ({
               {t('Click reload to see the new version.')}
             </Alert>
           )}
-          <ActionGroup className="pf-v5-c-form">
+          <ActionGroup className="pf-v6-c-form">
             <Button
               id={isUpdate ? 'update-resource-button' : 'create-resource-button'}
               data-test-id={isUpdate ? 'update-resource-button' : 'create-resource-button'}

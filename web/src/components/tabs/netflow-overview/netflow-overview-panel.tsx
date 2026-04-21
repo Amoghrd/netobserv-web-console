@@ -1,4 +1,4 @@
-import { Button, Card, Flex, FlexItem, Text, TextVariants, Tooltip } from '@patternfly/react-core';
+import { Button, Card, Content, ContentVariants, Flex, FlexItem, Tooltip } from '@patternfly/react-core';
 import { CompressIcon, ExpandIcon, InfoAltIcon } from '@patternfly/react-icons';
 import * as React from 'react';
 
@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import './netflow-overview-panel.css';
 
 export interface NetflowOverviewPanelProps {
+  children?: React.ReactNode;
   doubleWidth: boolean;
   bodyClassName: string;
   title: string;
@@ -39,27 +40,28 @@ export const NetflowOverviewPanel: React.FC<NetflowOverviewPanelProps> = ({
           <FlexItem>
             <Flex direction={{ default: 'row' }}>
               <FlexItem flex={{ default: 'flex_1' }} className="overview-title">
-                <Text component={TextVariants.h3}>
+                <Content component={ContentVariants.h3}>
                   {title}
                   {titleTooltip && (
                     <Tooltip content={titleTooltip}>
                       <InfoAltIcon />
                     </Tooltip>
                   )}
-                </Text>
+                </Content>
               </FlexItem>
               {focusOn !== undefined && (
                 <FlexItem className="overview-expand-button-container">
                   <Tooltip
                     content={
-                      <Text component={TextVariants.p}>
+                      <Content component={ContentVariants.p}>
                         {isFocus ? t('Show all graphs') : t('Focus on this graph')}
-                      </Text>
+                      </Content>
                     }
                   >
                     <Button
                       variant="plain"
                       className="overview-expand-button"
+                      data-test={`netflow-overview-focus-${id}`}
                       icon={isFocus ? <CompressIcon /> : <ExpandIcon />}
                       onClick={() => focusOn(id)}
                     />

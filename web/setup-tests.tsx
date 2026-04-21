@@ -50,20 +50,10 @@ jest.mock('react', () => ({
 // SpyOn localStorage setItem
 jest.spyOn(window.localStorage.__proto__, 'setItem');
 
-// Mock react-router-dom
-jest.mock('react-router-dom', () => ({
-  useHistory: () => ({
-    push: jest.fn(),
-  }),
-  // navigate replace history in v6
+// Mock react-router
+jest.mock('react-router', () => ({
   useNavigate: () => jest.fn(),
-  Link: () => {
-    return null;
-  }
-}));
-
-jest.mock('react-router-dom-v5-compat', () => ({
-  useNavigate: () => jest.fn(),
+  useParams: () => ({}),
   Link: () => {
     return null;
   }

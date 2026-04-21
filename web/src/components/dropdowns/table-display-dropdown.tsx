@@ -45,7 +45,7 @@ export const TableDisplayDropdown: React.FC<TableDisplayDropdownProps> = ({
 
   const popper = React.useCallback(() => {
     return (
-      <div id="table-display-popper" ref={popperRef} className="pf-v5-c-menu" role="dialog">
+      <div id="table-display-popper" ref={popperRef} className="pf-v6-c-menu" role="dialog">
         <TableDisplayOptions
           size={size}
           setSize={setSize}

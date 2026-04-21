@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 const isDark = (el: HTMLElement) =>
-  el.classList.contains('pf-v5-theme-dark') || el.classList.contains('pf-v5-theme-dark');
+  el.classList.contains('pf-v5-theme-dark') || el.classList.contains('pf-v6-theme-dark');
 
 export function useTheme(): boolean {
   const [isDarkTheme, setDarkTheme] = React.useState<boolean>(() => isDark(document.documentElement));

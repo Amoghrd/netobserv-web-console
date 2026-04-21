@@ -54,7 +54,7 @@ export const OverviewDisplayDropdown: React.FC<OverviewDisplayDropdownProps> = (
 
   const popper = React.useCallback(() => {
     return (
-      <div id="overview-display-popper" ref={popperRef} className="pf-v5-c-menu" role="dialog">
+      <div id="overview-display-popper" ref={popperRef} className="pf-v6-c-menu" role="dialog">
         <OverviewDisplayOptions
           metricScope={metricScope}
           setMetricScope={setMetricScope}

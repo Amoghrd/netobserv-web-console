@@ -4,10 +4,10 @@ import {
   Alert,
   AlertVariant,
   Button,
+  Content,
   Flex,
   FlexItem,
   PageSection,
-  TextContent,
   Title,
   Tooltip
 } from '@patternfly/react-core';
@@ -50,7 +50,7 @@ export const FlowCollectorStatus: FC<FlowCollectorStatusProps> = () => {
           ).find(c => c.type === 'ConfigurationIssue' && c.status === 'True');
 
           return (
-            <PageSection id="pageSection">
+            <PageSection hasBodyWrapper={false} id="pageSection">
               <div id="pageHeader">
                 <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
                   <FlexItem>
@@ -135,12 +135,16 @@ export const FlowCollectorStatus: FC<FlowCollectorStatusProps> = () => {
               {ctx.loadError && (
                 <Flex direction={{ default: 'column' }}>
                   <FlexItem>
-                    <TextContent>
+                    <Content>
                       {t('An error occured while retreiving FlowCollector: {{error}}', { error: ctx.loadError })}
-                    </TextContent>
+                    </Content>
                   </FlexItem>
                   <FlexItem alignSelf={{ default: 'alignSelfCenter' }}>
-                    <Button id="create-flow-collector" onClick={() => navigate(flowCollectorNewPath)}>
+                    <Button
+                      id="create-flow-collector"
+                      data-test-id="create-flow-collector"
+                      onClick={() => navigate(flowCollectorNewPath)}
+                    >
                       {t('Create FlowCollector')}
                     </Button>
                   </FlexItem>

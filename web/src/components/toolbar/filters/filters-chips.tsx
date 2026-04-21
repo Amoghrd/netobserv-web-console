@@ -1,12 +1,12 @@
 import {
   Button,
+  Content,
+  ContentVariants,
   Dropdown,
   DropdownItem,
   DropdownList,
   MenuToggle,
   MenuToggleElement,
-  Text,
-  TextVariants,
   ToolbarItem,
   Tooltip
 } from '@patternfly/react-core';
@@ -174,9 +174,9 @@ export const FiltersChips: React.FC<FiltersChipsProps> = ({
             <Tooltip
               content={`${someEnabled ? t('Disable') : t('Enable')} '${getFullName(filter)}' ${t('group filter')}`}
             >
-              <Text
+              <Content
                 className="custom-chip-text"
-                component={TextVariants.p}
+                component={ContentVariants.p}
                 onClick={() => {
                   //switch all values if no remaining
                   filter.values.forEach(fv => {
@@ -186,7 +186,7 @@ export const FiltersChips: React.FC<FiltersChipsProps> = ({
                 }}
               >
                 {getFullName(filter)}
-              </Text>
+              </Content>
             </Tooltip>
             <div className="filtervalues">
               {filter.values.map((filterValue, fvIndex) => {
@@ -200,15 +200,15 @@ export const FiltersChips: React.FC<FiltersChipsProps> = ({
                             filterValue.display || filterValue.v
                           }' ${t('filter')}`}
                         >
-                          <Text
-                            component={TextVariants.p}
+                          <Content
+                            component={ContentVariants.p}
                             onClick={() => {
                               filterValue.disabled = !filterValue.disabled;
                               setFilters(_.cloneDeep(filters));
                             }}
                           >
                             {filterValue.display ? filterValue.display : filterValue.v}
-                          </Text>
+                          </Content>
                         </Tooltip>
                       </div>
                     </div>
@@ -376,9 +376,9 @@ export const FiltersChips: React.FC<FiltersChipsProps> = ({
         >
           <div className="match-dropdown-container">
             {match === 'values' && (
-              <Text className="and-or-text" component="p">
+              <Content className="and-or-text" component="p">
                 {t('OR')}
-              </Text>
+              </Content>
             )}
             {match !== 'values' && (
               <MatchDropdown
@@ -415,7 +415,7 @@ export const FiltersChips: React.FC<FiltersChipsProps> = ({
                 {getAndOr(filters.match, index, true)}
                 <div className={`custom-chip-box ${gp.id !== 'common' ? 'custom-chip-peer' : ''}`}>
                   {hasSrcOrDstFilters(gp.filters) && (
-                    <Text component="p">
+                    <Content component="p">
                       {filters.match === 'bidirectional' ? (
                         <EndpointIcon />
                       ) : gp.id === 'src' ? (
@@ -424,7 +424,7 @@ export const FiltersChips: React.FC<FiltersChipsProps> = ({
                         <DestinationIcon />
                       ) : null}
                       &nbsp;{getGroupName(gp.id)}&nbsp;
-                    </Text>
+                    </Content>
                   )}
                   <div className="flex-block">{gp.filters.map(getFilterDisplay)}</div>
                 </div>

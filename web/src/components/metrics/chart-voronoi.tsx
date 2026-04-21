@@ -1,4 +1,4 @@
-import { ChartLegendTooltip, createContainer } from '@patternfly/react-charts';
+import { ChartLegendTooltip, createContainer } from '@patternfly/react-charts/victory';
 import React from 'react';
 import { ChartDataPoint, LegendDataItem } from '../../utils/metrics-helper';
 
@@ -25,8 +25,7 @@ export const chartVoronoi = (legendData: LegendDataItem[], f: (v: number) => str
       labelComponent={
         <ChartLegendTooltip
           legendData={tooltipData}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          title={(cb: any) => cb.datum?.date}
+          title={((datum: { date?: string }) => datum.date ?? '') as unknown as string}
           flyoutWidth={flyoutWidth}
         />
       }

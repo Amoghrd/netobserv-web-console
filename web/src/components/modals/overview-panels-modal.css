@@ -7,12 +7,20 @@
 
 /* vertical align data list items */
 
-.netobserv-data-list-control {
-    align-items: center;
-    align-self: center;
+#overview-panels-modal .pf-v6-c-data-list__cell {
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
-label {
+
+/* vertical align label*/
+
+#overview-panels-modal button.pf-v6-c-data-list__item-draggable-button {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+#overview-panels-modal label {
     margin-top: auto;
     margin-bottom: auto;
     padding: inherit;
@@ -28,4 +36,8 @@ label {
 
 .flex-gap {
     gap: 0.5rem;
+}
+
+.custom-chip.pointer {
+    cursor: pointer;
 }

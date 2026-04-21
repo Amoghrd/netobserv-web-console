@@ -2,6 +2,7 @@ import { ErrorBoundaryFallbackProps } from '@openshift-console/dynamic-plugin-sd
 import * as React from 'react';
 
 export type ErrorBoundaryProps = {
+  children?: React.ReactNode;
   fallbackComponent?: React.ComponentType<ErrorBoundaryFallbackProps>;
 };
 

@@ -7,12 +7,20 @@
 
 /* vertical align data list items */
 
-.netobserv-data-list-control {
-    align-items: center;
-    align-self: center;
+#columns-modal .pf-v6-c-data-list__cell {
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
-label {
+
+/* vertical align label*/
+
+#columns-modal button.pf-v6-c-data-list__item-draggable-button {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+#columns-modal label {
     margin-top: auto;
     margin-bottom: auto;
     padding: inherit;

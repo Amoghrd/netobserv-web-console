@@ -92,7 +92,7 @@ export const FlowMetricWizard: FC<FlowMetricWizardProps> = props => {
             setData(ctx.data);
           }
           return (
-            <PageSection id="pageSection">
+            <PageSection hasBodyWrapper={false} id="pageSection">
               <div id="pageHeader">
                 <Title headingLevel="h1" size="2xl">
                   {t('Network Observability FlowMetric setup')}

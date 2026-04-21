@@ -1,29 +1,15 @@
 /**
  * URL utilities and navigation helpers
  *
- * MIGRATION NOTE: React Router 7 Support
- * ======================================
- * Using react-router-dom-v5-compat as recommended by Console team.
- *
- * Current state (React Router 7 via v5-compat):
+ * All router imports centralized here.
  * - Wrap useNavigate to provide stable reference across renders
  * - Components use navigate(path) instead of history.push(path)
  * - Components use navigate(-1) instead of history.goBack()
- * - All router imports centralized here for easy future migration
- *
- * Migration path (when Console updates):
- * - Simply change the import from 'react-router-dom-v5-compat' to 'react-router'
- * - No component changes needed!
  */
 import _ from 'lodash';
 import { useCallback, useRef } from 'react';
-import {
-  Link as RouterLink,
-  useNavigate as useRouterNavigate,
-  useParams as useRouterParams
-} from 'react-router-dom-v5-compat';
+import { Link as RouterLink, useNavigate as useRouterNavigate, useParams as useRouterParams } from 'react-router';
 
-// Re-export Link component from v5-compat for consistency
 export { RouterLink as Link };
 
 /**

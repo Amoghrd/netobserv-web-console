@@ -40,7 +40,7 @@ describe('<OverviewPanelsModal />', () => {
       jest.runAllTimers();
     });
 
-    const confirmButton = document.querySelector('.pf-v5-c-button.pf-m-primary') as HTMLElement;
+    const confirmButton = document.querySelector('.pf-v6-c-button.pf-m-primary') as HTMLElement;
     expect(confirmButton).toBeTruthy();
 
     await act(async () => {
@@ -67,7 +67,7 @@ describe('<OverviewPanelsModal />', () => {
       jest.runAllTimers();
     });
 
-    const saveButton = document.querySelector('.pf-v5-c-button.pf-m-primary') as HTMLElement;
+    const saveButton = document.querySelector('.pf-v6-c-button.pf-m-primary') as HTMLElement;
     await act(async () => {
       fireEvent.click(saveButton);
       jest.runAllTimers();

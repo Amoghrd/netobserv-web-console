@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { K8sResourceCondition, K8sResourceKind } from '@openshift-console/dynamic-plugin-sdk';
-import { Button, Label, Text, TextVariants, Title } from '@patternfly/react-core';
+import { Button, Content, ContentVariants, Label, Title } from '@patternfly/react-core';
 import {
   BanIcon,
   CheckCircleIcon,
@@ -160,7 +160,7 @@ export const ResourceStatus: FC<ResourceStatusProps> = ({
   if (!existing) {
     return (
       <>
-        <Text component={TextVariants.p}>{t("{{kind}} resource doesn't exists yet.", { kind })}</Text>
+        <Content component={ContentVariants.p}>{t("{{kind}} resource doesn't exists yet.", { kind })}</Content>
         <Button
           onClick={() => {
             navigate(`/k8s/cluster/${group}~${version}~${kind}/~new/form`);

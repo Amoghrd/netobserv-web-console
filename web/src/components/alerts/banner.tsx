@@ -1,12 +1,5 @@
 import { Rule } from '@openshift-console/dynamic-plugin-sdk';
-import {
-  Alert,
-  AlertActionCloseButton,
-  AlertActionLink,
-  Text,
-  TextContent,
-  TextVariants
-} from '@patternfly/react-core';
+import { Alert, AlertActionCloseButton, AlertActionLink, Content, ContentVariants } from '@patternfly/react-core';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { flowCollectorStatusPath, useNavigate } from '../../utils/url';
@@ -47,9 +40,11 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ rule, onDelete }) => {
           </React.Fragment>
         }
       >
-        <TextContent>
-          <Text component={TextVariants.p}>{!!rule.annotations.description ? rule.annotations.description : ''}</Text>
-        </TextContent>
+        <Content>
+          <Content component={ContentVariants.p}>
+            {!!rule.annotations.description ? rule.annotations.description : ''}
+          </Content>
+        </Content>
       </Alert>
     </div>
   );

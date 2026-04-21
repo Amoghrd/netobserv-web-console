@@ -1,5 +1,5 @@
 import { K8sResourceKind } from '@openshift-console/dynamic-plugin-sdk';
-import { Button, Text, TextContent, TextVariants } from '@patternfly/react-core';
+import { Button, Content, ContentVariants } from '@patternfly/react-core';
 import React, { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../modals/modal';
@@ -63,13 +63,13 @@ export const ResourceDeleteModal: FC<ResourceDeleteModalProps> = ({ kind, data, 
         </div>
       }
     >
-      <TextContent>
-        <Text component={TextVariants.p}>
+      <Content>
+        <Content component={ContentVariants.p}>
           {t('This action cannot be undone.')}
           <br />
           {additionalInfo}
-        </Text>
-      </TextContent>
+        </Content>
+      </Content>
     </Modal>
   );
 };

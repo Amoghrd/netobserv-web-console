@@ -101,10 +101,15 @@ export const getFilteredUISchema = (ui: UiSchema, paths: string[]) => {
 };
 
 export const getUpdatedCR = (data: any, updatedData: any) => {
-  // only update metadata and spec
-  data.metadata = updatedData.metadata;
-  data.spec = updatedData.spec;
-  return data;
+  // Only merge metadata and spec from the form event. Return a new object so parent
+  // setState always sees a new reference; in-place mutation + same ref skips React
+  // re-renders, which breaks ui:dependency fields (e.g. Loki monolithic) until some
+  // unrelated update (e.g. a K8s watch) forces a redraw.
+  return {
+    ...(data ?? {}),
+    metadata: updatedData.metadata,
+    spec: updatedData.spec
+  };
 };
 
 export const exampleForModel = (csv: ClusterServiceVersionKind, group: string, version: string, kind: string) => {

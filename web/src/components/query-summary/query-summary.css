@@ -3,7 +3,7 @@
 }
 
 .query-summary-warning {
-  color: #2B9AF3;
+  color: var(--pf-t--global--color--brand--default);
 }
 
 #query-summary-title {

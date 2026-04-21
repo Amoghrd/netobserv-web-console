@@ -4,7 +4,7 @@ import {
   PrometheusResponse,
   usePrometheusPoll
 } from '@openshift-console/dynamic-plugin-sdk';
-import { Flex, FlexItem, Slider, Spinner, Text, TextVariants } from '@patternfly/react-core';
+import { Content, ContentVariants, Flex, FlexItem, Slider, Spinner } from '@patternfly/react-core';
 import { InfoAltIcon, WarningTriangleIcon } from '@patternfly/react-icons';
 import { Table, TableVariant, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import _ from 'lodash';
@@ -115,7 +115,7 @@ export const Consumption: FC<ResourceCalculatorProps> = ({ flowCollector, setSam
   return (
     <Flex direction={{ default: 'column' }}>
       <FlexItem className="calculator-item">
-        <Text component={TextVariants.h2}>{t('Cluster metrics')}</Text>
+        <Content component={ContentVariants.h2}>{t('Cluster metrics')}</Content>
         <Table variant={TableVariant.compact}>
           <Thead>
             <Tr>
@@ -142,7 +142,7 @@ export const Consumption: FC<ResourceCalculatorProps> = ({ flowCollector, setSam
         </Table>
       </FlexItem>
       <FlexItem className="calculator-item">
-        <Text component={TextVariants.h2}>{t('Recommendations')}</Text>
+        <Content component={ContentVariants.h2}>{t('Recommendations')}</Content>
         <span className="co-pre-line">
           {t(
             // eslint-disable-next-line max-len
@@ -173,7 +173,7 @@ export const Consumption: FC<ResourceCalculatorProps> = ({ flowCollector, setSam
         </Table>
       </FlexItem>
       <FlexItem>
-        <Text component={TextVariants.h2}>{t('Performance tuning and estimation')}</Text>
+        <Content component={ContentVariants.h2}>{t('Performance tuning and estimation')}</Content>
         <span className="co-pre-line">
           {t(
             // eslint-disable-next-line max-len
@@ -183,6 +183,7 @@ export const Consumption: FC<ResourceCalculatorProps> = ({ flowCollector, setSam
           {t('Use the slider below to configure the desired sampling interval.')}
         </span>
         <Slider
+          data-test-id="flowcollector-consumption-sampling-slider"
           value={getSamplingIndex()}
           customSteps={getSamplings().map((s, i) => ({ value: i, label: String(s) }))}
           max={getSamplings().length - 1}

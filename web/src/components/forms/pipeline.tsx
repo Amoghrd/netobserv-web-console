@@ -2,6 +2,7 @@
 import { K8sResourceKind } from '@openshift-console/dynamic-plugin-sdk';
 
 import {
+  Dimensions,
   DEFAULT_EDGE_TYPE as edgeType,
   FinallyNode,
   DEFAULT_FINALLY_NODE_TYPE as finallyNodeType,
@@ -159,15 +160,69 @@ export const Pipeline: React.FC<FlowCollectorPipelineProps> = ({ existing, selec
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [controller, setController] = React.useState<Visualization>();
   const [isLayouting, setIsLayouting] = React.useState(false);
+  const pendingFitRafRef = React.useRef<number>();
+  const fitDeferralsRef = React.useRef(0);
+  const isMountedRef = React.useRef(true);
 
   const fit = React.useCallback(() => {
-    if (controller && controller.hasGraph()) {
-      controller.getGraph().fit();
-      requestAnimationFrame(() => {
-        setIsLayouting(false);
-      });
+    if (!controller?.hasGraph()) {
+      return;
     }
+
+    const cancelPendingFit = () => {
+      if (pendingFitRafRef.current != null) {
+        cancelAnimationFrame(pendingFitRafRef.current);
+        pendingFitRafRef.current = undefined;
+      }
+    };
+
+    // Match VisualizationSurface sizing (same node as measureRef) so fit() never runs with 0×0 graph dimensions.
+    const surfaceEl =
+      containerRef.current?.querySelector<HTMLElement>('[data-test-id="topology"]') ?? containerRef.current;
+    const w = surfaceEl?.clientWidth ?? 0;
+    const h = surfaceEl?.clientHeight ?? 0;
+
+    if (w < 2 || h < 2) {
+      if (fitDeferralsRef.current > 120) {
+        fitDeferralsRef.current = 0;
+        if (isMountedRef.current) {
+          setIsLayouting(false);
+        }
+        return;
+      }
+      fitDeferralsRef.current += 1;
+      cancelPendingFit();
+      pendingFitRafRef.current = requestAnimationFrame(() => {
+        pendingFitRafRef.current = undefined;
+        fit();
+      });
+      return;
+    }
+
+    fitDeferralsRef.current = 0;
+    cancelPendingFit();
+
+    const graph = controller.getGraph();
+    graph.setDimensions(new Dimensions(w, h));
+    graph.fit();
+
+    requestAnimationFrame(() => {
+      if (isMountedRef.current) {
+        setIsLayouting(false);
+      }
+    });
   }, [controller]);
+
+  React.useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (pendingFitRafRef.current != null) {
+        cancelAnimationFrame(pendingFitRafRef.current);
+        pendingFitRafRef.current = undefined;
+      }
+    };
+  }, []);
 
   const agentStatus: ComponentStatus | undefined = existing?.status?.components?.agent;
   const processorStatus: ComponentStatus | undefined = existing?.status?.components?.processor;
@@ -284,15 +339,19 @@ export const Pipeline: React.FC<FlowCollectorPipelineProps> = ({ existing, selec
       });
     }
 
-    return steps.map(s => ({
-      type: s.type || taskNodeType,
-      width: 180,
-      height: 32,
-      style: {
-        padding: [45, 15]
-      },
-      ...s
-    })) as PipelineNodeModel[];
+    // Spread step fields first so width, height, and style are never overridden by ...s.
+    return steps.map(
+      s =>
+        ({
+          ...s,
+          type: s.type || taskNodeType,
+          width: 180,
+          height: 32,
+          style: {
+            padding: [45, 15]
+          }
+        } as PipelineNodeModel)
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     existing?.spec,
@@ -328,6 +387,7 @@ export const Pipeline: React.FC<FlowCollectorPipelineProps> = ({ existing, selec
       return;
     }
 
+    fitDeferralsRef.current = 0;
     setIsLayouting(true);
 
     controller.fromModel(

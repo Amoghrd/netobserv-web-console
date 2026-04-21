@@ -50,6 +50,6 @@ describe('<NetflowTopology />', () => {
 
   it('should render loading', async () => {
     const { container } = render(<NetflowTopology {...mocks} loading={true} />);
-    expect(container.querySelector('.pf-v5-c-spinner')).toBeTruthy();
+    expect(container.querySelector('.pf-v6-c-spinner')).toBeTruthy();
   });
 });

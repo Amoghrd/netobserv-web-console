@@ -56,7 +56,7 @@ const getCellColors = (value: number, rangeFrom: number, rangeTo: number, colorM
   const g = Math.floor((colorHigh.g - colorLow.g) * remains + colorLow.g);
   const b = Math.floor((colorHigh.b - colorLow.b) * remains + colorLow.b);
   const brightness = 0.21 * r + 0.72 * g + 0.07 * b; // https://www.johndcook.com/blog/2009/08/24/algorithms-convert-color-grayscale/
-  const textColor = brightness > 128 ? 'var(--pf-global--palette--black-1000)' : 'var(--pf-global--palette--black-100)';
+  const textColor = brightness > 128 ? '#000' : '#fff';
   return {
     color: textColor,
     backgroundColor: `rgb(${r},${g},${b})`

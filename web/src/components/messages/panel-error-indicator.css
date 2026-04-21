@@ -6,7 +6,7 @@
   overflow-y: auto;
 }
 
-.panel-error-indicator .pf-v5-c-empty-state {
+.panel-error-indicator .pf-v6-c-empty-state {
   max-height: 100%;
   max-width: 100%;
   display: block;
@@ -17,7 +17,7 @@
 }
 
 .panel-error-message {
-  color: var(--pf-v5-global--Color--200);
+  color: var(--pf-t--global--text--color--subtle);
   margin-top: 0.5rem;
   word-break: break-word;
 }
@@ -35,5 +35,5 @@
 }
 
 .panel-error-indicator .error-suggestions blockquote {
-  font-size: var(--pf-v5-global--FontSize--sm);
+  font-size: var(--pf-t--global--font--size--sm);
 }

@@ -1,4 +1,4 @@
-import { Checkbox, Radio, Text, TextVariants, Tooltip } from '@patternfly/react-core';
+import { Checkbox, Content, ContentVariants, Radio, Tooltip } from '@patternfly/react-core';
 import { InfoAltIcon } from '@patternfly/react-icons';
 import * as _ from 'lodash';
 import * as React from 'react';
@@ -29,18 +29,18 @@ export const TableDisplayOptions: React.FC<TableDisplayOptionsProps> = ({
 
   return (
     <>
-      <div className="pf-v5-c-menu__group">
+      <div className="pf-v6-c-menu__group">
         <Tooltip content={t('Force table rows to specific sizing.')}>
-          <div className="pf-v5-c-menu__group-title">
-            <Text component={TextVariants.p}>
+          <div className="pf-v6-c-menu__group-title">
+            <Content component={ContentVariants.p}>
               {t('Row size')} <InfoAltIcon />
-            </Text>
+            </Content>
           </div>
         </Tooltip>
         {_.map(sizeOptions, (name, key) => {
           return (
             <div key={`size-${key}`}>
-              <label className="display-dropdown-padding pf-v5-c-menu__menu-item">
+              <label className="display-dropdown-padding pf-v6-c-menu__menu-item">
                 <Radio
                   isChecked={key === size}
                   name={`size-${key}`}
@@ -55,20 +55,20 @@ export const TableDisplayOptions: React.FC<TableDisplayOptionsProps> = ({
           );
         })}
       </div>
-      <div className="pf-v5-c-menu__group">
+      <div className="pf-v6-c-menu__group">
         <Tooltip
           content={t(
             // eslint-disable-next-line max-len
             'A flow might be reported from both source and destination nodes, making it appear several times. By default, duplicates are merged, but you can show them in order to get more granular data.'
           )}
         >
-          <div className="pf-v5-c-menu__group-title">
-            <Text component={TextVariants.p}>
+          <div className="pf-v6-c-menu__group-title">
+            <Content component={ContentVariants.p}>
               {t('Duplicated flows')} <InfoAltIcon />
-            </Text>
+            </Content>
           </div>
         </Tooltip>
-        <label className="display-dropdown-padding pf-v5-c-menu__menu-item">
+        <label className="display-dropdown-padding pf-v6-c-menu__menu-item">
           <Checkbox
             isChecked={showDuplicates}
             name={'show-duplicates'}

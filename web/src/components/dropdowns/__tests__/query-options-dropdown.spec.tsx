@@ -52,8 +52,8 @@ describe('<QueryOptionsPanel />', () => {
 
   it('should render component', async () => {
     const { container } = render(<QueryOptionsPanel {...props} />);
-    expect(container.querySelectorAll('.pf-v5-c-menu__group').length).toBe(4);
-    expect(container.querySelectorAll('.pf-v5-c-menu__group-title').length).toBe(4);
+    expect(container.querySelectorAll('.pf-v6-c-menu__group').length).toBe(4);
+    expect(container.querySelectorAll('.pf-v6-c-menu__group-title').length).toBe(4);
     expect(container.querySelectorAll('input[type="radio"]')).toHaveLength(13);
 
     expect(props.setLimit).toHaveBeenCalledTimes(0);
