@@ -43,13 +43,7 @@ describe('(OCP-68246 Network_Observability) FlowRTT test', { tags: ['Network_Obs
 
         // verify Query Summary stats for flowRTT
         // Wait for flows to be collected and metrics to be non-zero (retry up to 120s)
-        cy.get(querySumSelectors.avgRTT, { timeout: 120000 }).should('exist').should(($metric) => {
-            const text = $metric.text()
-            // Handle both normal format "123 ms" and warning format "123+ ms"
-            const metricStr = text.includes('+') ? text.split('+ ')[0] : text.split(' ')[0]
-            const num = metricStr.includes('k') ? Number(metricStr.split('k')[0]) : Number(metricStr)
-            expect(num, 'Flow RTT metric should be greater than 0 (waiting for flows to be collected)').to.be.greaterThan(0)
-        }).then(avgRTT => {
+        cy.get(querySumSelectors.avgRTT, { timeout: 120000 }).should('exist').then(avgRTT => {
             cy.checkQuerySummary(avgRTT)
         })
     })

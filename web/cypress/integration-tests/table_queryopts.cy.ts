@@ -52,42 +52,19 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408 Network_Observability) Net
         })
 
         cy.get(querySumSelectors.flowsCount).should('exist').then(flowsCnt => {
-            let nflows = 0
-            if (warningExists) {
-                nflows = Number(flowsCnt.text().split('+ Flows')[0])
-            }
-            else {
-                nflows = Number(flowsCnt.text().split(' ')[0])
-            }
+            // parseFloat handles formats: "123 Flows", "123+ Flows", "1.5k Flows", "1.5k+ Flows"
+            const nflows = parseFloat(flowsCnt.text())
             cy.wait(10)
             expect(nflows).to.be.greaterThan(0)
         })
 
         cy.get(querySumSelectors.bytesCount).should('exist').then(bytesCnt => {
-            let nbytes = 0
-            if (warningExists) {
-                nbytes = Number(bytesCnt.text().split('+ ')[0])
-            }
-            else {
-                nbytes = Number(bytesCnt.text().split(' ')[0])
-            }
+            const nbytes = parseFloat(bytesCnt.text())
             expect(nbytes).to.be.greaterThan(0)
         })
 
         cy.get(querySumSelectors.packetsCount).should('exist').then(pktsCnt => {
-            let npkts = 0
-            if (warningExists) {
-                let npktsStr = pktsCnt.text().split('+ ')[0]
-                if (npktsStr.includes('k')) {
-                    npkts = Number(npktsStr.split('k')[0])
-                }
-                else {
-                    npkts = Number(npktsStr)
-                }
-            }
-            else {
-                npkts = Number(pktsCnt.text().split(' ')[0])
-            }
+            const npkts = parseFloat(pktsCnt.text())
             expect(npkts).to.be.greaterThan(0)
         })
         cy.get('#query-summary-toggle').should('exist').click()

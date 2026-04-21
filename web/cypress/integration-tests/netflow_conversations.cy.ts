@@ -37,13 +37,8 @@ describe('(OCP-71787 Network_Observability) Conversation tracking test', { tags:
         })
 
         cy.get(querySumSelectors.flowsCount).should('exist').then(ConversationsCnt => {
-            let nflows = 0
-            if (warningExists) {
-                nflows = Number(ConversationsCnt.text().split('+ Ended conversations')[0])
-            }
-            else {
-                nflows = Number(ConversationsCnt.text().split(' ')[0])
-            }
+            // parseFloat handles formats: "123 Ended conversations", "123+ Ended conversations"
+            const nflows = parseFloat(ConversationsCnt.text())
             cy.wait(10)
             expect(nflows).to.be.gte(0)
         })

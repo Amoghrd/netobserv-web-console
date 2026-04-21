@@ -24,8 +24,7 @@ describe("(OCP-87215, Network_Observability) Verify Gateway API three-level owne
         topologyPage.selectScopeGroup("owner")
         topologyPage.isViewRendered()
 
-        cy.wait(5000)
-        cy.get(topologySelectors.node, { timeout: 60000 }).should('have.length.greaterThan', 0)
+        cy.get(topologySelectors.node, { timeout: 80000 }).should('have.length.greaterThan', 0)
 
         cy.byTestID('search-topology-element-input').should('exist').clear().type(gatewayName)
 

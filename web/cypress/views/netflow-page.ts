@@ -26,6 +26,10 @@ export function getTopologyResourceScopeGroupURL(groups: string): string {
     return `**/flow/metrics**groups=${groups}*`
 }
 
+export function getMemoryUsageMB(): number {
+    return Math.round((window.performance as any).memory?.usedJSHeapSize / 1048576)
+}
+
 export const netflowPage = {
     visit: (clearfilters = true) => {
         cy.clearLocalStorage()
@@ -329,27 +333,8 @@ Cypress.Commands.add('openColumnsModal', () => {
 });
 
 Cypress.Commands.add('checkQuerySummary', (metric) => {
-    let warningExists = false
-    let num = 0
-    let metricStr: string
-
-    cy.get(querySumSelectors.queryStatsPanel).should('exist').then(() => {
-        if (Cypress.$(querySumSelectors.queryStatsPanel + ' svg.query-summary-warning').length > 0) {
-            warningExists = true
-        }
-    })
-
-    if (warningExists) {
-        metricStr = metric.text().split('+ ')[0]
-        if (metricStr.includes('k')) {
-            num = Number(metricStr.split('k')[0])
-        } else {
-            num = Number(metricStr)
-        }
-    } else {
-        num = Number(metric.text().split(' ')[0])
-    }
-
+    // parseFloat handles formats: "123 ms", "123+ ms", "1.5k ms", "1.5k+ ms"
+    const num = parseFloat(metric.text())
     expect(num).to.be.greaterThan(0)
 });
 

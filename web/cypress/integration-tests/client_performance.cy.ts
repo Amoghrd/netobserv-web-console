@@ -1,4 +1,4 @@
-import { netflowPage, loadTimes, memoryUsage, overviewSelectors, getTopologyScopeURL } from "@views/netflow-page"
+import { netflowPage, loadTimes, memoryUsage, overviewSelectors, getTopologyScopeURL, getMemoryUsageMB } from "@views/netflow-page"
 import { Operator } from "@views/netobserv"
 
 describe("(OCP-67725, memodi) Network_Observability Client Performances", { browser: 'chrome', tags: ['Performance'] }, function () {
@@ -33,7 +33,7 @@ describe("(OCP-67725, memodi) Network_Observability Client Performances", { brow
         cy.get('#overview-flex').contains(overviewSelectors.defaultPanels[0]).should('be.visible').then(() => {
             cy.wrap(performance.now()).then(end => {
                 let pageload = Math.round(end - start)
-                let curMemoryUsage = Math.round((window.performance as any).memory?.usedJSHeapSize / 1048576)
+                let curMemoryUsage = getMemoryUsageMB()
                 cy.log(`Overview page load took ${pageload} ms.`)
                 cy.log(`Overview page memory consumption ${curMemoryUsage} MB`)
                 let thresPageload = loadTimes.overview + loadTimes.overview * 0.5
@@ -55,7 +55,7 @@ describe("(OCP-67725, memodi) Network_Observability Client Performances", { brow
         cy.byTestID("table-composable").should('be.visible').then(() => {
             cy.wrap(performance.now()).then(end => {
                 let pageload = Math.round(end - start)
-                let curMemoryUsage = Math.round((window.performance as any).memory?.usedJSHeapSize / 1048576)
+                let curMemoryUsage = getMemoryUsageMB()
                 cy.log(`Table view page load took ${pageload} ms.`)
                 cy.log(`Table view memory consumption ${curMemoryUsage} MB`)
                 let thresPageload = loadTimes.table + loadTimes.table * 0.5
@@ -76,7 +76,7 @@ describe("(OCP-67725, memodi) Network_Observability Client Performances", { brow
         cy.get('[data-surface="true"]').should('be.visible').then(() => {
             cy.wrap(performance.now()).then(end => {
                 let pageload = Math.round(end - start)
-                let curMemoryUsage = Math.round((window.performance as any).memory?.usedJSHeapSize / 1048576)
+                let curMemoryUsage = getMemoryUsageMB()
                 cy.log(`Topology view page load took ${pageload} ms.`)
                 cy.log(`Topology view memory consumption ${curMemoryUsage} MB`)
                 let thresPageload = loadTimes.topology + loadTimes.topology * 0.5
