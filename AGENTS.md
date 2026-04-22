@@ -6,17 +6,18 @@ Best practices for AI coding agents on NetObserv Web Console.
 
 ## Project Context
 
-**NetObserv Web Console** - a network observability console that can be deployed either as:
-- OpenShift console plugin: Integrates into OpenShift Console with extended views
-- Standalone console: Single-page application showing Netflow Traffic and Network Health
+**NetObserv Web Console** - network observability console deployable as OpenShift console plugin or standalone app.
 
-**Components:**
-- **Frontend**: TypeScript/React with PatternFly components (uses OpenShift Console dynamic plugin SDK for plugin mode)
-- **Backend**: Go HTTP server providing API endpoints for Loki queries, Kubernetes resources, and Prometheus metrics
+**Stack:**
+- **Frontend**: TypeScript, React 18, PatternFly 6, React Router 7, i18next 25
+- **Plugin SDK**: `@openshift-console/dynamic-plugin-sdk` 4.22+ (plugin mode only)
+- **Backend**: Go HTTP server for Loki queries, Kubernetes resources, Prometheus metrics
 
 **Deployment Modes:**
-- **Plugin mode**: Integrated into OpenShift Console
-- **Standalone mode**: Independent web application
+- **Plugin**: Integrated into OpenShift Console (OCP 4.22+)
+- **Standalone**: Independent web application
+
+> **Note**: Main branch uses PF6 for OCP 4.22+. For older OCP versions, see `main-pf5` (OCP 4.15-4.21) or `main-pf4` (OCP ≤4.14).
 
 **Key Directories:**
 - `web/src/components/`: React components (forms, tables, topology, etc.)
@@ -39,11 +40,10 @@ Best practices for AI coding agents on NetObserv Web Console.
 - Standalone mode uses the same codebase but without Console integration
 - Test both plugin and standalone modes
 
-### 🚨 Node Version Consistency
-- Use Node.js version specified in `Dockerfile.front`
-- npm versions matter - use expected versions to avoid build breaks
-- `.npmrc` contains `legacy-peer-deps=true` for dependency resolution consistency
-- Consider using [nvm](https://github.com/nvm-sh/nvm) for version management
+### 🚨 Node Version
+- Node.js 24 (source of truth: `Dockerfile.front`)
+- `.npmrc` contains `legacy-peer-deps=true` for dependency resolution
+- Use [nvm](https://github.com/nvm-sh/nvm) for version management
 
 ### 🚨 Dockerfiles
 - `Dockerfile`: Production multi-stage build (frontend + backend)
@@ -112,7 +112,7 @@ FlowCollector CRD field changed in operator:
 ### Frontend Architecture
 - **Custom Hooks**: Logic extracted into focused hooks in `web/src/utils/*-hook.ts` (capabilities, URL sync, fetching, theme, storage, etc.)
 - **Context**: `NetflowContext` in `web/src/model/netflow-context.ts` shares config/capabilities across components
-- **React Router**: Centralized in `web/src/utils/url.ts`, uses `react-router-dom-v5-compat`
+- **React Router**: v7, centralized in `web/src/utils/url.ts`
 
 ### Plugin vs Standalone Modes
 - **Plugin mode**: Console integration (localhost:9001), requires Console clone for dev
@@ -125,23 +125,19 @@ FlowCollector CRD field changed in operator:
 - Mock mode: `make start-standalone-mock` or `make serve-mock`
 
 ### Frontend Configuration
-Two types:
-- **Dynamic (Operator-Generated)**: Runtime configuration from FlowCollector CR
-  - Operator generates ConfigMap with columns, filters, scopes, features, port naming, quick filters
-  - Generated from [static-frontend-config.yaml](https://github.com/netobserv/netobserv-operator/blob/main/internal/controller/consoleplugin/config/static-frontend-config.yaml) (operator repo) + FlowCollector spec
-  - **Important**: Changes to `config/sample-config.yaml` frontend section must be synced to operator's `static-frontend-config.yaml`
-  - Fetched via `/api/frontend-config`
-- **Static (Development)**: Local configuration for development
-  - `config/sample-config.yaml` for local development
-  - Not used in production (operator generates config instead)
+- **Operator-Generated (Production)**: ConfigMap from FlowCollector CR, fetched via `/api/frontend-config`
+  - Source: [static-frontend-config.yaml](https://github.com/netobserv/netobserv-operator/blob/main/internal/controller/consoleplugin/config/static-frontend-config.yaml) (operator repo) + FlowCollector spec
+  - **Critical**: Changes to `config/sample-config.yaml` frontend section MUST be synced to operator's `static-frontend-config.yaml`
+- **Development**: `config/sample-config.yaml` for local testing only
 
 ### PatternFly Components
-- Version: v5.x (see `web/package.json`)
-- Follow PatternFly patterns, test light/dark themes (`pf-v5-theme-dark`)
-- Docs: [patternfly.org](https://www.patternfly.org/)
+- Version: v6.4+ (see `web/package.json`)
+- Follow PatternFly patterns, test light/dark themes
+- Docs: [patternfly.org/v6](https://www.patternfly.org/)
 
 ### Multi-Architecture
-Support: amd64, arm64, ppc64le, s390x. Frontend built once, backend per arch. Build: `MULTIARCH_TARGETS="amd64 arm64" make images`
+Support: amd64, arm64, ppc64le, s390x. Frontend built once, backend per arch.
+Build: `MULTIARCH_TARGETS="amd64 arm64" make images`
 
 ## Code Review Checklist
 
@@ -162,9 +158,9 @@ Review for:
 
 ## Testing
 
-**Unit Tests**: Go tests in `pkg/*_test.go`, Jest with React Testing Library in `web/src/**/__tests__/`
-
-**E2E Tests**: Cypress in `web/cypress/e2e/` (dev) and `web/cypress/integration-tests/` (QE). Run: `make cypress` or `cd web && npm run cypress:open`
+- **Unit**: Jest 30 + React Testing Library 16 (`web/src/**/__tests__/`), Go tests (`pkg/*_test.go`)
+- **E2E**: Cypress 15 - dev tests (`web/cypress/e2e/`), QE tests (`web/cypress/integration-tests/`)
+- **Run**: `make cypress` or `cd web && npm run cypress:open`
 
 ## Quick Reference
 
@@ -219,3 +215,4 @@ Before commit:
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 
 **Remember**: AI agents need clear context. Always review generated code, test thoroughly in both plugin and standalone modes, and follow project conventions.
+
