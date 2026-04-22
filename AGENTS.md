@@ -6,7 +6,7 @@ Best practices for AI coding agents on NetObserv Web Console.
 
 ## Project Context
 
-**NetObserv Web Console** - network observability console deployable as OpenShift console plugin or standalone app.
+**NetObserv Web Console** - OpenShift Console dynamic plugin for network observability visualization (also deployable as standalone app).
 
 **Stack:**
 - **Frontend**: TypeScript, React 18, PatternFly 6, React Router 7, i18next 25
@@ -17,7 +17,13 @@ Best practices for AI coding agents on NetObserv Web Console.
 - **Plugin**: Integrated into OpenShift Console (OCP 4.22+)
 - **Standalone**: Independent web application
 
-> **Note**: Main branch uses PF6 for OCP 4.22+. For older OCP versions, see `main-pf5` (OCP 4.15-4.21) or `main-pf4` (OCP ≤4.14).
+**PatternFly Version Support Matrix:**
+| OCP Version | Branch | PatternFly |
+|-------------|--------|------------|
+| ≥ 4.22 | `main` | PF6 |
+| 4.19-4.21 | `main` or `main-pf5` | PF6 or PF5 |
+| 4.15-4.18 | `main-pf5` | PF5 |
+| ≤ 4.14 | `main-pf4` | PF4 |
 
 **Key Directories:**
 - `web/src/components/`: React components (forms, tables, topology, etc.)
@@ -29,8 +35,8 @@ Best practices for AI coding agents on NetObserv Web Console.
 - `pkg/loki/`: Loki client and query builders
 - `pkg/kubernetes/`: Kubernetes API client
 - `pkg/prometheus/`: Prometheus client
-- `web/cypress/e2e/`: Cypress E2E tests (developer tests)
-- `web/cypress/integration-tests/`: QE integration tests
+- `web/cypress/e2e/`: Cypress E2E tests on mock data
+- `web/cypress/integration-tests/`: Integration tests with OpenShift
 
 ## Critical Constraints
 
@@ -159,8 +165,9 @@ Review for:
 ## Testing
 
 - **Unit**: Jest 30 + React Testing Library 16 (`web/src/**/__tests__/`), Go tests (`pkg/*_test.go`)
-- **E2E**: Cypress 15 - dev tests (`web/cypress/e2e/`), QE tests (`web/cypress/integration-tests/`)
-- **Run**: `make cypress` or `cd web && npm run cypress:open`
+- **E2E**: `web/cypress/e2e/` - runs on mock data
+- **Integration**: `web/cypress/integration-tests/` - requires OpenShift cluster (main branch: OCP 4.19+)
+- **Run Cypress**: `make cypress` or `cd web && npm run cypress:open`
 
 ## Quick Reference
 
