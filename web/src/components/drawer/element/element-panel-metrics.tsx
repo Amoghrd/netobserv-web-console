@@ -1,4 +1,4 @@
-import { Flex, FlexItem, Radio, Text, TextVariants } from '@patternfly/react-core';
+import { Content, ContentVariants, Flex, FlexItem, Radio } from '@patternfly/react-core';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { TopologyMetrics } from '../../../api/loki';
@@ -77,9 +77,9 @@ export const ElementPanelMetrics: React.FC<ElementPanelMetricsProps> = ({
   return (
     <div className="element-metrics-container">
       <FlexItem>
-        <Text id="metrics-stats-title" component={TextVariants.h4}>
+        <Content id="metrics-stats-title" component={ContentVariants.h4}>
           {titleStats}
-        </Text>
+        </Content>
         <ElementPanelStats
           metricType={metricType}
           metricsIn={metricsIn}
@@ -89,9 +89,9 @@ export const ElementPanelMetrics: React.FC<ElementPanelMetricsProps> = ({
         />
       </FlexItem>
       <FlexItem>
-        <Text id="metrics-chart-title" component={TextVariants.h4}>
+        <Content id="metrics-chart-title" component={ContentVariants.h4}>
           {getChartTitle()}
-        </Text>
+        </Content>
         <Flex className="metrics-justify-content">
           <FlexItem>
             <Radio

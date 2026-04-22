@@ -39,7 +39,7 @@ export const ResourceForm: FC<ResourceFormProps> = ({ uiSchema }) => {
           setData(ctx.data);
         }
         return (
-          <PageSection id="pageSection">
+          <PageSection hasBodyWrapper={false} id="pageSection">
             <div id="pageHeader">
               <Title headingLevel="h1" size="2xl">
                 {ctx.isUpdate ? t('Update {{kind}}', { kind: ctx.kind }) : t('Create {{kind}}', { kind: ctx.kind })}

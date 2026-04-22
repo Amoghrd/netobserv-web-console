@@ -1,18 +1,16 @@
 import { ResourceLink } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Bullseye,
+  Content,
+  ContentVariants,
   Drawer,
   DrawerContent,
   DrawerContentBody,
   DrawerHead,
   DrawerPanelContent,
   EmptyState,
-  EmptyStateHeader,
-  EmptyStateIcon,
   Gallery,
-  Text,
-  TextContent,
-  TextVariants
+  Title
 } from '@patternfly/react-core';
 import { CheckCircleIcon } from '@patternfly/react-icons';
 import * as React from 'react';
@@ -63,7 +61,7 @@ export const HealthDrawerContainer: React.FC<HealthDrawerContainerProps> = ({ ti
                 </span>
               </DrawerHead>
               {selectedItem && (
-                <div className="health-gallery-drawer-content">
+                <div className="health-gallery-drawer-content" data-test="health-drawer-content">
                   <RuleDetails kind={kind} resourceHealth={selectedItem} />
                 </div>
               )}
@@ -71,18 +69,15 @@ export const HealthDrawerContainer: React.FC<HealthDrawerContainerProps> = ({ ti
           }
         >
           <DrawerContentBody>
-            <TextContent>
-              <Text component={TextVariants.h3}>{title}</Text>
-            </TextContent>
+            <Content>
+              <Content component={ContentVariants.h3}>{title}</Content>
+            </Content>
             {!hasAnyViolations && (
               <Bullseye>
-                <EmptyState>
-                  <EmptyStateHeader
-                    titleText={t('No violations found')}
-                    headingLevel="h2"
-                    icon={<EmptyStateIcon icon={CheckCircleIcon} />}
-                  />
-                </EmptyState>
+                <EmptyState
+                  titleText={<Title headingLevel="h2">{t('No violations found')}</Title>}
+                  icon={CheckCircleIcon}
+                ></EmptyState>
               </Bullseye>
             )}
             {hasAnyViolations && (

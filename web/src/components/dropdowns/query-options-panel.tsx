@@ -1,4 +1,4 @@
-import { Radio, Text, TextVariants, Tooltip } from '@patternfly/react-core';
+import { Content, ContentVariants, Radio, Tooltip } from '@patternfly/react-core';
 import { InfoAltIcon } from '@patternfly/react-icons';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -31,66 +31,48 @@ export const QueryOptionsPanel: React.FC<QueryOptionsProps> = ({
 }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
 
-  const recordTypeOptions: RecordTypeOption[] = [
-    {
-      label: t('Conversation'),
-      value: 'allConnections'
-    },
-    {
-      label: t('Flow'),
-      value: 'flowLog'
-    }
-  ];
+  const recordTypeOptions: RecordTypeOption[] = React.useMemo(
+    () => [
+      { label: t('Conversation'), value: 'allConnections' },
+      { label: t('Flow'), value: 'flowLog' }
+    ],
+    [t]
+  );
 
-  const dataSourceOptions: DataSourceOption[] = [
-    {
-      label: t('Loki'),
-      value: 'loki'
-    },
-    {
-      label: t('Prometheus'),
-      value: 'prom'
-    },
-    {
-      label: t('Auto'),
-      value: 'auto'
-    }
-  ];
+  const dataSourceOptions: DataSourceOption[] = React.useMemo(
+    () => [
+      { label: t('Loki'), value: 'loki' },
+      { label: t('Prometheus'), value: 'prom' },
+      { label: t('Auto'), value: 'auto' }
+    ],
+    [t]
+  );
 
-  const packetLossOptions: PacketLossOption[] = [
-    {
-      label: t('Fully dropped'),
-      value: 'dropped'
-    },
-    {
-      label: t('Containing drops'),
-      value: 'hasDrops'
-    },
-    {
-      label: t('Without drops'),
-      value: 'sent'
-    },
-    {
-      label: t('All'),
-      value: 'all'
-    }
-  ];
+  const packetLossOptions: PacketLossOption[] = React.useMemo(
+    () => [
+      { label: t('Fully dropped'), value: 'dropped' },
+      { label: t('Containing drops'), value: 'hasDrops' },
+      { label: t('Without drops'), value: 'sent' },
+      { label: t('All'), value: 'all' }
+    ],
+    [t]
+  );
 
   const values = useTopK ? topValues : limitValues;
 
   return (
     <>
-      <div className="pf-v5-c-menu__group">
+      <div className="pf-v6-c-menu__group">
         <Tooltip
           content={t(
             // eslint-disable-next-line max-len
             'Log type to query. A conversation is an aggregation of flows between same peers. Only ended conversations will appear in Overview and Topology tabs.'
           )}
         >
-          <div className="pf-v5-c-menu__group-title">
-            <Text component={TextVariants.p}>
+          <div className="pf-v6-c-menu__group-title">
+            <Content component={ContentVariants.p}>
               {t('Log type')} <InfoAltIcon />
-            </Text>
+            </Content>
           </div>
         </Tooltip>
         {recordTypeOptions.map(opt => {
@@ -98,7 +80,7 @@ export const QueryOptionsPanel: React.FC<QueryOptionsProps> = ({
             (!allowFlow && opt.value === 'flowLog') || (!allowConnection && opt.value === 'allConnections');
           return (
             <div key={`recordType-${opt.value}`}>
-              <label className="display-dropdown-padding pf-v5-c-menu__menu-item">
+              <label className="display-dropdown-padding pf-v6-c-menu__menu-item">
                 <Tooltip
                   trigger={disabled ? 'mouseenter focus' : ''}
                   content={
@@ -131,24 +113,24 @@ export const QueryOptionsPanel: React.FC<QueryOptionsProps> = ({
           );
         })}
       </div>
-      <div className="pf-v5-c-menu__group">
+      <div className="pf-v6-c-menu__group">
         <Tooltip
           content={t(
             // eslint-disable-next-line max-len
             'Which datasource to query from console plugin pod. Prometheus holds a subset of metrics compared to Loki with better performances. Select "Auto" to pick the best datasource automatically.'
           )}
         >
-          <div className="pf-v5-c-menu__group-title">
-            <Text component={TextVariants.p}>
+          <div className="pf-v6-c-menu__group-title">
+            <Content component={ContentVariants.p}>
               {t('Datasource')} <InfoAltIcon />
-            </Text>
+            </Content>
           </div>
         </Tooltip>
         {dataSourceOptions.map(opt => {
           const disabled = (!allowProm && opt.value === 'prom') || (!allowLoki && opt.value === 'loki');
           return (
             <div key={`dataSource-${opt.value}`}>
-              <label className="display-dropdown-padding pf-v5-c-menu__menu-item">
+              <label className="display-dropdown-padding pf-v6-c-menu__menu-item">
                 <Tooltip
                   trigger={disabled ? 'mouseenter focus' : ''}
                   content={
@@ -183,7 +165,7 @@ export const QueryOptionsPanel: React.FC<QueryOptionsProps> = ({
           );
         })}
       </div>
-      <div className="pf-v5-c-menu__group">
+      <div className="pf-v6-c-menu__group">
         <Tooltip
           content={
             <div>
@@ -199,17 +181,17 @@ export const QueryOptionsPanel: React.FC<QueryOptionsProps> = ({
             </div>
           }
         >
-          <div className="pf-v5-c-menu__group-title">
-            <Text component={TextVariants.p}>
+          <div className="pf-v6-c-menu__group-title">
+            <Content component={ContentVariants.p}>
               {t('Drops filter')} <InfoAltIcon />
-            </Text>
+            </Content>
           </div>
         </Tooltip>
         {packetLossOptions.map(opt => {
           const disabled = !allowPktDrops && opt.value !== 'all';
           return (
             <div key={`packet-loss-${opt.value}`}>
-              <label className="display-dropdown-padding pf-v5-c-menu__menu-item">
+              <label className="display-dropdown-padding pf-v6-c-menu__menu-item">
                 <Tooltip
                   trigger={disabled ? 'mouseenter focus' : ''}
                   content={
@@ -237,7 +219,7 @@ export const QueryOptionsPanel: React.FC<QueryOptionsProps> = ({
           );
         })}
       </div>
-      <div className="pf-v5-c-menu__group">
+      <div className="pf-v6-c-menu__group">
         <Tooltip
           content={
             (useTopK ? t('Top items for internal backend queries.') : t('Limit for internal backend queries.')) +
@@ -248,15 +230,15 @@ export const QueryOptionsPanel: React.FC<QueryOptionsProps> = ({
             )
           }
         >
-          <div className="pf-v5-c-menu__group-title">
-            <Text component={TextVariants.p}>
+          <div className="pf-v6-c-menu__group-title">
+            <Content component={ContentVariants.p}>
               {useTopK ? t('Top / Bottom') : t('Limit')} <InfoAltIcon />
-            </Text>
+            </Content>
           </div>
         </Tooltip>
         {values.map(l => (
           <div key={'limit-' + l}>
-            <label className="display-dropdown-padding pf-v5-c-menu__menu-item">
+            <label className="display-dropdown-padding pf-v6-c-menu__menu-item">
               <Radio
                 data-test={'limit-' + l}
                 id={'limit-' + l}

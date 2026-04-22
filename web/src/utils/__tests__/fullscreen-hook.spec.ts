@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react';
 import { useFullScreen } from '../fullscreen-hook';
 
 describe('useFullScreen', () => {
@@ -16,7 +16,7 @@ describe('useFullScreen', () => {
     document.body.appendChild(sidebar);
 
     masthead = document.createElement('div');
-    masthead.classList.add('pf-v5-c-masthead');
+    masthead.classList.add('pf-v6-c-masthead');
     document.body.appendChild(masthead);
   });
 
@@ -58,18 +58,36 @@ describe('useFullScreen', () => {
     expect(masthead.classList.contains('hidden')).toBe(false);
   });
 
-  it('should click nav-toggle when sidebar is expanded', () => {
+  it('should click nav-toggle when page sidebar is open (aria-hidden=false)', () => {
     const navToggle = document.createElement('button');
     navToggle.id = 'nav-toggle';
     const clickSpy = jest.spyOn(navToggle, 'click');
     document.body.appendChild(navToggle);
 
-    sidebar.classList.add('pf-v5-c-page__sidebar', 'pf-m-expanded');
+    sidebar.classList.add('pf-v6-c-page__sidebar');
+    sidebar.setAttribute('aria-hidden', 'false');
 
     const { result } = renderHook(() => useFullScreen());
 
     act(() => result.current[1](true));
     expect(clickSpy).toHaveBeenCalled();
+
+    navToggle.remove();
+  });
+
+  it('should not click nav-toggle when page sidebar is closed (aria-hidden=true)', () => {
+    const navToggle = document.createElement('button');
+    navToggle.id = 'nav-toggle';
+    const clickSpy = jest.spyOn(navToggle, 'click');
+    document.body.appendChild(navToggle);
+
+    sidebar.classList.add('pf-v6-c-page__sidebar');
+    sidebar.setAttribute('aria-hidden', 'true');
+
+    const { result } = renderHook(() => useFullScreen());
+
+    act(() => result.current[1](true));
+    expect(clickSpy).not.toHaveBeenCalled();
 
     navToggle.remove();
   });

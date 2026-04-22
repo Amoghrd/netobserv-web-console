@@ -10,7 +10,6 @@ import {
   Bullseye,
   EmptyState,
   EmptyStateBody,
-  EmptyStateHeader,
   EmptyStateVariant,
   PageSection,
   Spinner
@@ -24,6 +23,7 @@ import { loadConfig } from '../utils/config';
 import { ConfigLoadError } from '../utils/errors';
 import { findFilter, getFilterDefinitions } from '../utils/filter-definitions';
 import { usePrevious } from '../utils/previous-hook';
+import { useFillViewportBelow } from '../utils/use-fill-viewport-below';
 import Error from './messages/error';
 import NetflowTrafficParent from './netflow-traffic-parent';
 
@@ -60,8 +60,6 @@ type HPAProps = K8sResourceCommon & {
 export const NetflowTrafficTab: React.FC<NetflowTrafficTabProps> = ({ match, obj, params }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
 
-  //default to 800 to allow content to be rendered in tests
-  const [containerHeight, setContainerHeight] = React.useState(800);
   const initState = React.useRef<
     Array<'initDone' | 'configLoading' | 'configLoaded' | 'configLoadError' | 'forcedFiltersLoaded'>
   >([]);
@@ -70,6 +68,7 @@ export const NetflowTrafficTab: React.FC<NetflowTrafficTabProps> = ({ match, obj
   const [forcedFilters, setForcedFilters] = React.useState<Filters>();
   const [gatewayInfo, setGatewayInfo] = React.useState<{ name: string; namespace: string } | undefined>();
   const previous = usePrevious({ obj });
+  const tabFillRef = useFillViewportBelow(!!forcedFilters);
 
   React.useEffect(() => {
     // init function will be triggered only once
@@ -89,12 +88,6 @@ export const NetflowTrafficTab: React.FC<NetflowTrafficTabProps> = ({ match, obj
         });
       }
     }
-
-    const containers = document.getElementsByClassName('pf-v5-c-tab-content');
-    if (containers.length > 0) {
-      setContainerHeight(containers[0].clientHeight);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
@@ -251,7 +244,7 @@ export const NetflowTrafficTab: React.FC<NetflowTrafficTabProps> = ({ match, obj
     );
   } else if (forcedFilters) {
     return (
-      <div className="netobserv-tab-container" style={{ height: containerHeight - 190 }}>
+      <div ref={tabFillRef} className="netobserv-tab-container">
         {gatewayInfo && (
           <Alert
             variant="info"
@@ -287,9 +280,13 @@ export const NetflowTrafficTab: React.FC<NetflowTrafficTabProps> = ({ match, obj
     );
   } else {
     return (
-      <PageSection id="pageSection" data-test="tab-page-section">
-        <EmptyState data-test="error-state" variant={EmptyStateVariant.sm}>
-          <EmptyStateHeader titleText={t('Kind not managed')} headingLevel="h2" />
+      <PageSection hasBodyWrapper={false} id="pageSection" data-test="tab-page-section">
+        <EmptyState
+          titleText={t('Kind not managed')}
+          headingLevel="h2"
+          data-test="error-state"
+          variant={EmptyStateVariant.sm}
+        >
           <EmptyStateBody>{obj?.kind}</EmptyStateBody>
         </EmptyState>
       </PageSection>

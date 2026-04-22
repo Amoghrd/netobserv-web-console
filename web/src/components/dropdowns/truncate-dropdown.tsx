@@ -43,6 +43,7 @@ export const TruncateDropdown: React.FC<TruncateDropdownProps> = ({ selected, se
       data-test={id}
       id={id}
       isOpen={isOpen}
+      onOpenChange={setOpen}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}
@@ -50,7 +51,6 @@ export const TruncateDropdown: React.FC<TruncateDropdownProps> = ({ selected, se
           id={`${id}-dropdown`}
           isExpanded={isOpen}
           onClick={() => setOpen(!isOpen)}
-          onBlur={() => setTimeout(() => setOpen(false), 500)}
         >
           {getTruncateDisplay(selected)}
         </MenuToggle>

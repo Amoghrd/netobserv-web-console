@@ -1,6 +1,8 @@
 import { Rule } from '@openshift-console/dynamic-plugin-sdk';
 import {
   Button,
+  Content,
+  ContentVariants,
   Drawer,
   DrawerContent,
   DrawerContentBody,
@@ -9,8 +11,6 @@ import {
   PageSection,
   Tab,
   Tabs,
-  Text,
-  TextVariants,
   Title
 } from '@patternfly/react-core';
 import { QuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons';
@@ -23,6 +23,7 @@ import { localStorageHealthRefreshKey, useLocalStorage } from '../../utils/local
 import { usePoll } from '../../utils/poll-hook';
 import { useTheme } from '../../utils/theme-hook';
 import { RefreshDropdown } from '../dropdowns/refresh-dropdown';
+import FlowCollectorStatusIndicator from '../status/flowcollector-status-indicator';
 import { HealthDrawerContainer } from './health-drawer-container';
 import HealthError from './health-error';
 import { fetchNetworkHealth } from './health-fetcher';
@@ -172,7 +173,7 @@ export const NetworkHealth: React.FC<{}> = ({}) => {
   };
 
   return (
-    <PageSection id="health-page" className={`${isDarkTheme ? 'dark' : 'light'}`}>
+    <PageSection hasBodyWrapper={false} id="health-page" className={`${isDarkTheme ? 'dark' : 'light'}`}>
       <Drawer id="health-drawer" isInline isExpanded={isScoringDrawerOpen}>
         <DrawerContent id="healthDrawerContent" panelContent={panelContent()}>
           <DrawerContentBody id="healthDrawerBody">
@@ -182,7 +183,14 @@ export const NetworkHealth: React.FC<{}> = ({}) => {
                   <FlexItem flex={{ default: 'flex_1' }}>
                     <Flex direction={{ default: 'column' }}>
                       <FlexItem>
-                        <Title headingLevel={TextVariants.h1}>{t('Network Health')}</Title>
+                        <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
+                          <FlexItem>
+                            <Title headingLevel={ContentVariants.h1}>{t('Network Health')}</Title>
+                          </FlexItem>
+                          <FlexItem>
+                            <FlowCollectorStatusIndicator />
+                          </FlexItem>
+                        </Flex>
                       </FlexItem>
                       <FlexItem>
                         <HealthSummary rules={rules} stats={health} forceCollapsed={isScoringDrawerOpen} />
@@ -194,7 +202,7 @@ export const NetworkHealth: React.FC<{}> = ({}) => {
                       <FlexItem className="netobserv-refresh-interval-container">
                         <Flex direction={{ default: 'column' }}>
                           <FlexItem className="netobserv-action-title">
-                            <Text component={TextVariants.h4}>{t('Refresh interval')}</Text>
+                            <Content component={ContentVariants.h4}>{t('Refresh interval')}</Content>
                           </FlexItem>
                           <FlexItem flex={{ default: 'flex_1' }}>
                             <RefreshDropdown

@@ -52,7 +52,7 @@ describe("(OCP-53591 Network_Observability) Netflow Topology groups features", {
         // using slider
         let lastRefresh = Cypress.$("#lastRefresh").text()
         cy.log(`last refresh is ${lastRefresh}`)
-        cy.get('.pf-v5-c-progress-stepper').get('#scope-step-2 >  div:nth-child(2) > button').click().then(slider => {
+        cy.get('.pf-v6-c-progress-stepper').get('#scope-step-2 >  div:nth-child(2) > button').click().then(slider => {
             netflowPage.waitForLokiQuery()
             cy.wait(3000)
             cy.get('#lastRefresh').invoke('text').should('not.eq', lastRefresh)

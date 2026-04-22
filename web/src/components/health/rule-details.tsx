@@ -1,4 +1,4 @@
-import { Flex, FlexItem, Label, Text, TextVariants, Tooltip } from '@patternfly/react-core';
+import { Content, ContentVariants, Flex, FlexItem, Label, Tooltip } from '@patternfly/react-core';
 import { InfoCircleIcon } from '@patternfly/react-icons';
 import { ActionsColumn, Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { TFunction } from 'i18next';
@@ -34,14 +34,14 @@ const VerticalField: React.FC<{ label: string; children: React.ReactNode }> = ({
   <FlexItem>
     <Flex direction={{ default: 'column' }} gap={{ default: 'gapXs' }}>
       <FlexItem>
-        <Text
-          component={TextVariants.small}
+        <Content
+          component={ContentVariants.small}
           style={{
             color: 'var(--pf-t--global--text--color--subtle)'
           }}
         >
           {label}
-        </Text>
+        </Content>
       </FlexItem>
       <FlexItem>{children}</FlexItem>
     </Flex>
@@ -103,6 +103,7 @@ const RuleTableRow: React.FC<{
       <Td dataLabel={t('Description')}>{item.description}</Td>
       <Td noPadding>
         <ActionsColumn
+          data-test="rule-details-actions"
           isDisabled={links.length === 0}
           items={links.map(l => ({ title: <a href={l.url}>{l.name}</a> }))}
         />
@@ -124,7 +125,7 @@ const RuleCard: React.FC<{
   const direction = React.useMemo(() => getDirection(item.ruleName), [item]);
 
   return (
-    <div className="rule-details-row">
+    <div className="rule-details-row" data-test="rule-details-row">
       <Flex direction={{ default: 'column' }} gap={{ default: 'gapSm' }}>
         {/* Header with summary and actions */}
         <Flex
@@ -153,6 +154,7 @@ const RuleCard: React.FC<{
             </FlexItem>
             <FlexItem>
               <ActionsColumn
+                data-test="rule-details-actions"
                 isDisabled={links.length === 0}
                 items={links.map(l => ({ title: <a href={l.url}>{l.name}</a> }))}
               />

@@ -82,6 +82,7 @@ export const LinksOverflow: React.FC<LinksOverflowProps> = ({ id, items, text })
           data-test={id + '-dropdown'}
           id={id + '-dropdown'}
           onSelect={() => setOpen(false)}
+          onOpenChange={setOpen}
           isOpen={isOpen}
           toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
             <MenuToggle
@@ -93,7 +94,6 @@ export const LinksOverflow: React.FC<LinksOverflowProps> = ({ id, items, text })
               icon={<EllipsisVIcon />}
               isExpanded={isOpen}
               onClick={() => setOpen(!isOpen)}
-              onBlur={() => setTimeout(() => setOpen(false), 500)}
             >
               <>
                 <EllipsisVIcon /> {text || t('More options')}

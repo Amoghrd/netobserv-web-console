@@ -1,8 +1,9 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import App from './app';
 import { initI18N } from './init-i18n';
 
 initI18N().then(() => {
-  ReactDOM.render(<App />, document.getElementById('app'));
+  const root = createRoot(document.getElementById('app')!);
+  root.render(<App />);
 });

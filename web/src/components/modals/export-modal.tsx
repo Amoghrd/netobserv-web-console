@@ -1,6 +1,8 @@
 import {
   Button,
   Checkbox,
+  Content,
+  ContentVariants,
   DataList,
   DataListCell,
   DataListCheck,
@@ -9,10 +11,7 @@ import {
   DataListItemCells,
   DataListItemRow,
   Label,
-  LabelGroup,
-  Text,
-  TextContent,
-  TextVariants
+  LabelGroup
 } from '@patternfly/react-core';
 
 import _ from 'lodash';
@@ -147,9 +146,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       onClose={() => setModalOpen(false)}
       description={
         <>
-          <TextContent>
-            <Text component={TextVariants.p}>{t('Following query will be exported as CSV format:')}&nbsp;</Text>
-          </TextContent>
+          <Content>
+            <Content component={ContentVariants.p}>
+              {t('Following query will be exported as CSV format:')}&nbsp;
+            </Content>
+          </Content>
           <div data-test="export-chips" id="export-chips">
             <LabelGroup isClosable={false} categoryName={t('Time Range')}>
               <Label variant="outline">{rangeText()}</Label>
@@ -202,12 +203,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           label={t('Export all datas')}
           aria-label="Export all"
           description={
-            <TextContent className="netobserv-no-child-margin">
-              <Text component={TextVariants.p}>
+            <Content className="netobserv-no-child-margin">
+              <Content component={ContentVariants.p}>
                 {t('Use this option to export every fields and labels from flows.')}
-              </Text>
-              <Text component={TextVariants.p}>{t('Else pick from available columns.')}</Text>
-            </TextContent>
+              </Content>
+              <Content component={ContentVariants.p}>{t('Else pick from available columns.')}</Content>
+            </Content>
           }
           body={
             !isExportAll && (

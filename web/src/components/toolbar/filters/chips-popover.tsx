@@ -1,4 +1,4 @@
-import { Button, Flex, FlexItem, Popover, Text } from '@patternfly/react-core';
+import { Button, Content, Flex, FlexItem, Popover } from '@patternfly/react-core';
 import { TimesIcon } from '@patternfly/react-icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -35,7 +35,7 @@ export const ChipsPopover: React.FC<ChipsPopoverProps> = ({ chipsPopoverMessage,
           </FlexItem>
         </Flex>
       }
-      bodyContent={<Text component="p"> {chipsPopoverMessage}</Text>}
+      bodyContent={<Content component="p"> {chipsPopoverMessage}</Content>}
       triggerRef={() => document.getElementsByClassName('custom-chip-group disabled-group')?.[0] as HTMLElement}
     />
   );

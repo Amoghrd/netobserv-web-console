@@ -56,7 +56,7 @@ export const TopologyDisplayDropdown: React.FC<{
 
   const popper = React.useCallback(() => {
     return (
-      <div id="topology-display-popper" ref={popperRef} className="pf-v5-c-menu" role="dialog">
+      <div id="topology-display-popper" ref={popperRef} className="pf-v6-c-menu" role="dialog">
         <TopologyDisplayOptions
           metricFunction={metricFunction}
           setMetricFunction={setMetricFunction}

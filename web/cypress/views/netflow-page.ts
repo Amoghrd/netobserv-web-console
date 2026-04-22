@@ -6,7 +6,7 @@ declare global {
             checkPanel(panelName: string[]): Chainable<Element>
             openPanelsModal(): Chainable<Element>
             openColumnsModal(): Chainable<Element>
-            checkPopupItems(id: string, names: string[]): Chainable<Element>
+            checkPopItems(id: string, names: string[]): Chainable<Element>
             checkQuerySummary(metric: JQuery<HTMLElement>): Chainable<Element>
             checkPerformance(page: string, loadTime: number, memoryUsage: number): Chainable<Element>
             changeQueryOption(name: string): Chainable<Element>
@@ -53,7 +53,11 @@ export const netflowPage = {
             // only stop refresh if it's not already OFF
             if ($btn.text() != "Refresh off") {
                 cy.wrap($btn).click({ force: true })
-                cy.get('[data-test="OFF_KEY"]').should('exist').click({ force: true })
+                // Wait for dropdown menu to be rendered and visible
+                cy.get('.pf-v5-c-menu').should('be.visible')
+                cy.get('[data-test="OFF_KEY"]')
+                    .should('be.visible')
+                    .click()
             }
         })
     },
@@ -69,7 +73,7 @@ export const netflowPage = {
     selectSourceNS: (project: string) => {
         // verify Source namespace filter
         cy.get(filterSelectors.filterInput).type("src_namespace=" + project + '{enter}')
-        cy.get('#src_namespace-0-toggle > span.pf-v5-c-menu-toggle__text').should('contain.text', `${project}`)
+        cy.get('#src_namespace-0-toggle > span.pf-v6-c-menu-toggle__text').should('contain.text', `${project}`)
     }
 }
 
@@ -132,7 +136,7 @@ export function setupTopologyViewWithNamespaceFilter(namespace?: string) {
     // Add filter for namespace if provided
     if (namespace) {
         cy.get(filterSelectors.filterInput).type("src_namespace=" + namespace + '{enter}')
-        cy.get('#src_namespace-0-toggle > span.pf-v5-c-menu-toggle__text').should('contain.text', `${namespace}`)
+        cy.get('#src_namespace-0-toggle > span.pf-v6-c-menu-toggle__text').should('contain.text', `${namespace}`)
     }
 
     cy.byTestID("show-view-options-button").should('exist').click().then(() => {
@@ -145,19 +149,19 @@ export function setupTopologyViewWithNamespaceFilter(namespace?: string) {
 }
 
 export namespace pluginSelectors {
-    export const next = '#wizard-container > div > div > footer > button.pf-v5-c-button.pf-m-primary'
-    export const back = '#wizard-container > div > div > footer > button.pf-v5-c-button.pf-m-secondary'
+    export const next = '#wizard-container > div > div > footer > button.pf-v6-c-button.pf-m-primary'
+    export const back = '#wizard-container > div > div > footer > button.pf-v6-c-button.pf-m-secondary'
     export const save = '[data-test=save-changes]'
-    export const del = '#editor-toggle-footer > div > div > div > button.pf-v5-c-button.pf-m-danger'
-    export const confirmDel = '#delete-modal > div > div.modal-footer > div > button.pf-v5-c-button.pf-m-danger'
+    export const del = '#editor-toggle-footer > div > div > div > button.pf-v6-c-button.pf-m-danger'
+    export const confirmDel = '#delete-modal > div > div.modal-footer > div > button.pf-v6-c-button.pf-m-danger'
     export const openNetworkTraffic = '#open-network-traffic'
     export const editFlowcollector = '#edit-flow-collector'
-    export const update = '#editor-toggle-footer > div > div > div > button.pf-v5-c-button.pf-m-primary'
-    export const privilegedToggle = '#root_spec_agent_ebpf_privileged_field > div > div.pf-m-flex-4 > label > span.pf-v5-c-switch__toggle'
+    export const update = '#editor-toggle-footer > div > div > div > button.pf-v6-c-button.pf-m-primary'
+    export const privilegedToggle = '#root_spec_agent_ebpf_privileged_field > div > div.pf-m-flex-4 > label > span.pf-v6-c-switch__toggle'
     export const packetDropEnable = '[data-test-id=root_spec_agent_ebpf_features-PacketDrop]'
     export const lokiMode = '#root_spec_loki_mode-toggle'
     export const monolithicMode = '#root_spec_loki_mode-Monolithic'
-    export const installDemoLoki = '#root_spec_loki_monolithic_installDemoLoki_field > .pf-v5-l-flex > .pf-m-flex-4 > .pf-v5-c-switch > .pf-v5-c-switch__toggle'
+    export const installDemoLoki = '#root_spec_loki_monolithic_installDemoLoki_field > .pf-v6-l-flex > .pf-m-flex-4 > .pf-v6-c-switch > .pf-v6-c-switch__toggle'
 }
 
 export namespace genSelectors {
@@ -173,32 +177,32 @@ export namespace colSelectors {
     export const columnsModal = '.modal-content'
     export const save = 'columns-save-button'
     export const resetDefault = 'columns-reset-button'
-    export const mac = '[data-test=th-Mac] > .pf-v5-c-table__button'
-    export const k8sOwner = '[data-test=th-K8S_OwnerObject] > .pf-v5-c-table__button'
-    export const ipPort = '[data-test=th-AddrPort] > .pf-v5-c-table__button'
-    export const protocol = '[data-test=th-Proto] > .pf-v5-c-table__button'
-    export const icmpType = '[data-test=th-IcmpType] > .pf-v5-c-table__button'
-    export const icmpCode = '[data-test=th-IcmpCode] > .pf-v5-c-table__button'
-    export const srcNodeIP = '[data-test=th-SrcK8S_HostIP] > .pf-v5-c-table__button'
-    export const srcNS = '[data-test=th-SrcK8S_Namespace] > .pf-v5-c-table__button'
-    export const dstNodeIP = '[data-test=th-DstK8S_HostIP] > .pf-v5-c-table__button'
-    export const direction = '[data-test=th-FlowDirection] > .pf-v5-c-table__button'
-    export const bytes = '[data-test=th-Bytes] > .pf-v5-c-table__button'
-    export const packets = '[data-test=th-Packets] > .pf-v5-c-table__button'
-    export const recordType = '[data-test=th-RecordType] > .pf-v5-c-table__button'
-    export const conversationID = '[data-test=th-_HashId] > .pf-v5-c-table__button'
-    export const flowRTT = '[data-test=th-TimeFlowRttMs] > .pf-v5-c-table__button'
-    export const dscp = '[data-test=th-Dscp] > .pf-v5-c-table__button'
-    export const dnsLatency = '[data-test=th-DNSLatency] > .pf-v5-c-table__column-help > .pf-v5-c-table__button'
-    export const dnsResponseCode = '[data-test=th-DNSResponseCode] > .pf-v5-c-table__column-help > .pf-v5-c-table__button'
-    export const dnsId = '[data-test=th-DNSId] > .pf-v5-c-table__button'
-    export const dnsError = '[data-test=th-DNSErrNo] > .pf-v5-c-table__button'
+    export const mac = '[data-test=th-Mac] > .pf-v6-c-table__button'
+    export const k8sOwner = '[data-test=th-K8S_OwnerObject] > .pf-v6-c-table__button'
+    export const ipPort = '[data-test=th-AddrPort] > .pf-v6-c-table__button'
+    export const protocol = '[data-test=th-Proto] > .pf-v6-c-table__button'
+    export const icmpType = '[data-test=th-IcmpType] > .pf-v6-c-table__button'
+    export const icmpCode = '[data-test=th-IcmpCode] > .pf-v6-c-table__button'
+    export const srcNodeIP = '[data-test=th-SrcK8S_HostIP] > .pf-v6-c-table__button'
+    export const srcNS = '[data-test=th-SrcK8S_Namespace] > .pf-v6-c-table__button'
+    export const dstNodeIP = '[data-test=th-DstK8S_HostIP] > .pf-v6-c-table__button'
+    export const direction = '[data-test=th-FlowDirection] > .pf-v6-c-table__button'
+    export const bytes = '[data-test=th-Bytes] > .pf-v6-c-table__button'
+    export const packets = '[data-test=th-Packets] > .pf-v6-c-table__button'
+    export const recordType = '[data-test=th-RecordType] > .pf-v6-c-table__button'
+    export const conversationID = '[data-test=th-_HashId] > .pf-v6-c-table__button'
+    export const flowRTT = '[data-test=th-TimeFlowRttMs] > .pf-v6-c-table__button'
+    export const dscp = '[data-test=th-Dscp] > .pf-v6-c-table__button'
+    export const dnsLatency = '[data-test=th-DNSLatency] > .pf-v6-c-table__column-help > .pf-v6-c-table__button'
+    export const dnsResponseCode = '[data-test=th-DNSResponseCode] > .pf-v6-c-table__column-help > .pf-v6-c-table__button'
+    export const dnsId = '[data-test=th-DNSId] > .pf-v6-c-table__button'
+    export const dnsError = '[data-test=th-DNSErrNo] > .pf-v6-c-table__button'
     export const dnsName = '[data-test=th-DNSName]'
-    export const srcZone = '[data-test=th-SrcZone] > .pf-v5-c-table__button'
-    export const dstZone = '[data-test=th-DstZone] > .pf-v5-c-table__button'
-    export const clusterName = '[data-test=th-ClusterName] > .pf-v5-c-table__button'
-    export const srcNetworkName = '[data-test=th-SrcNetworkName] > .pf-v5-c-table__button'
-    export const dstNetworkName = '[data-test=th-DstNetworkName] > .pf-v5-c-table__button'
+    export const srcZone = '[data-test=th-SrcZone] > .pf-v6-c-table__button'
+    export const dstZone = '[data-test=th-DstZone] > .pf-v6-c-table__button'
+    export const clusterName = '[data-test=th-ClusterName] > .pf-v6-c-table__button'
+    export const srcNetworkName = '[data-test=th-SrcNetworkName] > .pf-v6-c-table__button'
+    export const dstNetworkName = '[data-test=th-DstNetworkName] > .pf-v6-c-table__button'
 }
 
 export namespace filterSelectors {
@@ -231,14 +235,14 @@ export namespace topologySelectors {
     export const metricsFunction = '#metricFunction'
     export const metricTypeDrop = 'metricType-dropdown'
     export const metricType = '#metricType'
-    export const optsClose = '.pf-v5-c-drawer__close > .pf-v5-c-button'
+    export const optsClose = '.pf-v6-c-drawer__close > .pf-v6-c-button'
     export const nGroups = '[data-layer-id="groups"] > g'
     export const group = 'g[data-type="group"]'
     export const node = 'g[data-kind="node"]:empty'
     export const edge = 'g[data-kind="edge"]'
     export const groupLayer = '[data-layer-id="groups"]'
     export const defaultLayer = '[data-layer-id="default"]'
-    export const groupToggle = '[for="group-collapsed-switch"] > .pf-v5-c-switch__toggle'
+    export const groupToggle = '[for="group-collapsed-switch"] > .pf-v6-c-switch__toggle'
     export const edgeToggle = "#edges-switch"
     export const labelToggle = '#edges-tag-switch'
     export const badgeToggle = '#badge-switch'
@@ -280,7 +284,7 @@ export const memoryUsage = {
 }
 
 export namespace histogramSelectors {
-    export const timeRangeContainer = "#chart-histogram > div.pf-v5-l-flex.pf-m-row.histogram-range-container"
+    export const timeRangeContainer = "#chart-histogram > div.pf-v6-l-flex.pf-m-row.histogram-range-container"
     export const zoomin = timeRangeContainer + " > div:nth-child(5) > div > div:nth-child(2) > div > button"
     export const zoomout = timeRangeContainer + "> div:nth-child(5) > div > div:nth-child(1) > div > button"
     const forwardShift = timeRangeContainer + "> div:nth-child(4)"
@@ -302,10 +306,10 @@ Cypress.Commands.add('checkPanel', (panelName) => {
     }
 });
 
-Cypress.Commands.add('checkPopupItems', (id, names) => {
+Cypress.Commands.add('checkPopItems', (id, names) => {
     for (let i = 0; i < names.length; i++) {
         cy.get(id).contains(names[i])
-            .closest('.pf-v5-c-data-list__item-row').find('.pf-v5-c-data-list__check');
+            .closest('.pf-v6-c-data-list__item-row').find('.pf-v6-c-data-list__check');
     }
 });
 
@@ -347,9 +351,9 @@ Cypress.Commands.add('checkQuerySummary', (metric) => {
 });
 
 Cypress.Commands.add('changeQueryOption', (name: string) => {
-    cy.get('#filter-toolbar-search-filters').contains('Query options').click();
-    cy.get('#query-options-dropdown').contains(name).click();
-    cy.get('#filter-toolbar-search-filters').contains('Query options').click();
+    cy.byTestID('query-options-dropdown').click();
+    cy.get('#query-options-popper').contains(name).click();
+    cy.byTestID('query-options-dropdown').click();
 });
 
 Cypress.Commands.add('visitNetflowTrafficTab', (page) => {

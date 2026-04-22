@@ -1,5 +1,5 @@
 import { isModelFeatureFlag, ModelFeatureFlag, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk';
-import { Button, Flex, FlexItem, PageSection, Text, TextVariants, Title } from '@patternfly/react-core';
+import { Button, Content, ContentVariants, Flex, FlexItem, PageSection, Title } from '@patternfly/react-core';
 import { SyncAltIcon } from '@patternfly/react-icons';
 import * as _ from 'lodash';
 import * as React from 'react';
@@ -78,6 +78,7 @@ import GuidedTourPopover, { GuidedTourHandle } from './guided-tour/guided-tour';
 import Modals from './modals/modals';
 import './netflow-traffic.css';
 import { SearchEvent, SearchHandle } from './search/search';
+import FlowCollectorStatusIndicator from './status/flowcollector-status-indicator';
 import TabsContainer from './tabs/tabs-container';
 import { FiltersToolbar } from './toolbar/filters-toolbar';
 import ChipsPopover from './toolbar/filters/chips-popover';
@@ -406,7 +407,7 @@ export const NetflowTraffic: React.FC<NetflowTrafficProps> = ({
         <FlexItem>
           <Flex direction={{ default: 'column' }}>
             <FlexItem className="netobserv-action-title">
-              <Text component={TextVariants.h4}>{t('Time range')}</Text>
+              <Content component={ContentVariants.h4}>{t('Time range')}</Content>
             </FlexItem>
             <FlexItem flex={{ default: 'flex_1' }}>
               <TimeRangeDropdown
@@ -422,7 +423,7 @@ export const NetflowTraffic: React.FC<NetflowTrafficProps> = ({
         <FlexItem className="netobserv-refresh-interval-container">
           <Flex direction={{ default: 'column' }}>
             <FlexItem className="netobserv-action-title">
-              <Text component={TextVariants.h4}>{t('Refresh interval')}</Text>
+              <Content component={ContentVariants.h4}>{t('Refresh interval')}</Content>
             </FlexItem>
             <FlexItem flex={{ default: 'flex_1' }}>
               <RefreshDropdown
@@ -454,7 +455,14 @@ export const NetflowTraffic: React.FC<NetflowTrafficProps> = ({
       <div id="pageHeader">
         <Flex direction={{ default: 'row' }}>
           <FlexItem flex={{ default: 'flex_1' }}>
-            <Title headingLevel={TextVariants.h1}>{t('Network Traffic')}</Title>
+            <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
+              <FlexItem>
+                <Title headingLevel={ContentVariants.h1}>{t('Network Traffic')}</Title>
+              </FlexItem>
+              <FlexItem>
+                <FlowCollectorStatusIndicator />
+              </FlexItem>
+            </Flex>
           </FlexItem>
           <FlexItem>{actions()}</FlexItem>
         </Flex>
@@ -476,7 +484,11 @@ export const NetflowTraffic: React.FC<NetflowTrafficProps> = ({
 
   return extensions && !_.isEmpty(extensions) ? (
     <NetflowContext.Provider value={contextValue}>
-      <PageSection id="pageSection" className={`${isDarkTheme ? 'dark' : 'light'} ${isTab ? 'tab' : ''}`}>
+      <PageSection
+        hasBodyWrapper={false}
+        id="pageSection"
+        className={`${isDarkTheme ? 'dark' : 'light'} ${isTab ? 'tab' : ''}`}
+      >
         {!hideTitle && pageHeader()}
         {!_.isEmpty(caps.filterDefs) && (
           <Flex direction={{ default: 'row' }} style={{ paddingRight: hideTitle ? '1.5rem' : undefined }}>

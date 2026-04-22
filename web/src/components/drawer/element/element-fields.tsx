@@ -1,4 +1,4 @@
-import { Text, TextContent, TextVariants } from '@patternfly/react-core';
+import { Content, ContentVariants } from '@patternfly/react-core';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Filter, FilterDefinition, Filters } from '../../../model/filters';
@@ -115,17 +115,17 @@ export const ElementFields: React.FC<ElementFieldsProps> = ({
       {fragments.length > 0 ? (
         fragments
       ) : (
-        <TextContent id={id + '-no-infos'} className="record-field-container">
+        <Content id={id + '-no-infos'} className="record-field-container">
           {
-            <Text component={TextVariants.p}>
+            <Content component={ContentVariants.p}>
               {t('No information available for this content. Decrease scope aggregation to get more details.')}
               <br />
               {t(
                 'You may also configure subnet labels in the FlowCollector resource (spec.processor.subnetLabels) to identify IP ranges that are external to the cluster.'
               )}
-            </Text>
+            </Content>
           }
-        </TextContent>
+        </Content>
       )}
     </>
   );

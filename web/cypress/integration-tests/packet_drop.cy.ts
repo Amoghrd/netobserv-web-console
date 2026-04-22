@@ -27,7 +27,7 @@ describe('(OCP-66141 Network_Observability) PacketDrop test', { tags: ['Network_
 
         // open panels modal and verify all relevant panels are listed
         cy.openPanelsModal();
-        cy.checkPopupItems(overviewSelectors.panelsModal, overviewSelectors.managePacketDropPanelsList);
+        cy.checkPopItems(overviewSelectors.panelsModal, overviewSelectors.managePacketDropPanelsList);
 
         // select all panels and verify they are rendered
         cy.get(overviewSelectors.panelsModal).contains('Select all').click();

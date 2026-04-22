@@ -278,7 +278,7 @@ export const ViewOptionsToolbar = React.forwardRef<SearchHandle, ViewOptionsTool
           <SearchComponent ref={ref} setSearchEvent={props.setSearchEvent} isDark={isDarkTheme} />
         </ToolbarItem>
       )}
-      <ToolbarItem className="flex-start view-options-last" align={{ default: 'alignRight' }}>
+      <ToolbarItem className="flex-start view-options-last" align={{ default: 'alignEnd' }}>
         <OverflowMenu breakpoint="2xl">
           <OverflowMenuContent isPersistent>
             <OverflowMenuGroup groupType="button" isPersistent className="view-options-group flex-start">

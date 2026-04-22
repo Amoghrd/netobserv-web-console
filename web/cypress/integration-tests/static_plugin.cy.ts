@@ -21,7 +21,7 @@ describe('(OCP-84156 Network_Observability) StaticPlugin test', { tags: ['Networ
         cy.get(pluginSelectors.update).click()
         // Wait for flowcollector to get ready
         cy.wait(20000)
-        cy.get('[id=Ready-row]').each($td => {
+        cy.get('[id=Ready-row]', { timeout: 60000 }).each($td => {
             cy.wrap($td).should('have.attr', 'data-test-status', 'True')
             cy.wrap($td).should('have.attr', "data-test-reason", 'Ready')
         })

@@ -1,5 +1,5 @@
 import { ResourceLink } from '@openshift-console/dynamic-plugin-sdk';
-import { Text } from '@patternfly/react-core';
+import { Content } from '@patternfly/react-core';
 import * as React from 'react';
 import { TopologyMetricPeer } from '../../../api/loki';
 
@@ -21,7 +21,7 @@ export const PeerResourceLink: React.FC<PeerResourceLinkProps> = ({ peer }) => {
       const kind = gvkString || peer.resourceKind;
       return <ResourceLink inline={true} kind={kind} name={name} namespace={peer.namespace} />;
     } else {
-      return <Text component="p">{name}</Text>;
+      return <Content component="p">{name}</Content>;
     }
   }
   return null;

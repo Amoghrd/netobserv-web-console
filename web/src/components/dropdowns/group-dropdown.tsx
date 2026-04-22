@@ -30,6 +30,7 @@ export const GroupDropdown: React.FC<GroupDropdownProps> = ({
       data-test={id}
       id={id}
       isOpen={isOpen}
+      onOpenChange={setOpen}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}
@@ -38,7 +39,6 @@ export const GroupDropdown: React.FC<GroupDropdownProps> = ({
           isDisabled={disabled}
           isExpanded={isOpen}
           onClick={() => setOpen(!isOpen)}
-          onBlur={() => setTimeout(() => setOpen(false), 500)}
         >
           {getGroupName(selected, scopes, t)}
         </MenuToggle>

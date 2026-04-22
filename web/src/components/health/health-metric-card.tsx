@@ -1,4 +1,4 @@
-import { Card, CardBody, Flex, FlexItem, Text, TextVariants } from '@patternfly/react-core';
+import { Card, CardBody, Content, ContentVariants, Flex, FlexItem } from '@patternfly/react-core';
 import * as React from 'react';
 
 export type Severity = 'critical' | 'warning' | 'info';
@@ -16,20 +16,20 @@ export const HealthMetricCard: React.FC<HealthMetricCardProps> = ({ severity, la
       <CardBody>
         <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsNone' }}>
           <FlexItem>
-            <Text component={TextVariants.small} className="metric-label">
+            <Content component={ContentVariants.small} className="metric-label">
               {label}
-            </Text>
+            </Content>
           </FlexItem>
           <FlexItem>
-            <Text component={TextVariants.h1} className="metric-value">
+            <Content component={ContentVariants.h1} className="metric-value">
               {total}
-            </Text>
+            </Content>
           </FlexItem>
           {total > 0 && detail && (
             <FlexItem>
-              <Text component={TextVariants.small} className="metric-detail">
+              <Content component={ContentVariants.small} className="metric-detail">
                 {detail}
-              </Text>
+              </Content>
             </FlexItem>
           )}
         </Flex>

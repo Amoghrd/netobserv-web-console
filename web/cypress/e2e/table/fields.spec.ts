@@ -81,11 +81,9 @@ describe('netflow-table', () => {
     // others
     cy.checkRecordField('K8S_FlowLayer', 'Flow layer', ['infra']);
 
-    cy.get('[data-test-id="group-5"]').contains("L3 Layer");
+    cy.get('[data-test-id="group-5"]').contains("Protocol Info");
     cy.checkRecordField('Proto', 'Protocol', ['ICMP']);
     cy.checkRecordField('Dscp', 'DSCP', ['Standard']);
-
-    cy.get('[data-test-id="group-6"]').contains("ICMP");
     cy.checkRecordField('IcmpType', 'Type', ['ICMP_DEST_UNREACH']);
     cy.checkRecordField('IcmpCode', 'Code', ['ICMP_NET_UNREACH']);
 
@@ -121,7 +119,7 @@ describe('netflow-table', () => {
     cy.get('#netflow-table-row-2').click();
 
     // check for rtt
-    cy.checkRecordField('TimeFlowRttMs', 'Flow RTT', ['4.05ms']);
+    cy.checkRecordField('TimeFlowRttMs', 'Flow RTT', ['4ms']);
   });
 
   it('display multiCluster', () => {

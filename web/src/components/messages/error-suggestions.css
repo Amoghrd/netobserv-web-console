@@ -5,8 +5,8 @@
 .error-suggestions blockquote {
   margin: 0.5rem 0;
   padding-left: 1rem;
-  border-left: 2px solid var(--pf-v5-global--BorderColor--300);
-  color: var(--pf-v5-global--Color--200);
+  border-left: 2px solid var(--pf-t--global--border--color--default);
+  color: var(--pf-t--global--text--color--subtle);
 }
 
 .error-suggestions ul {
@@ -14,7 +14,7 @@
   padding-left: 1.5rem;
 }
 
-.error-suggestions .pf-v5-c-button {
+.error-suggestions .pf-v6-c-button {
   margin-top: 0.5rem;
 }
 
@@ -32,7 +32,7 @@
   padding: 0;
   padding-left: 0.5rem;
   border-left-width: 1px;
-  font-size: var(--pf-v5-global--FontSize--sm);
+  font-size: var(--pf-t--global--font--size--sm);
 }
 
 .error-suggestions-compact ul {
@@ -40,17 +40,17 @@
   padding-left: 1rem;
 }
 
-.error-suggestions-compact .pf-v5-c-button {
+.error-suggestions-compact .pf-v6-c-button {
   margin-top: 0.25rem;
-  font-size: var(--pf-v5-global--FontSize--sm);
+  font-size: var(--pf-t--global--font--size--sm);
 }
 
 .error-suggestions-compact .error-suggestions-links {
   margin-top: 0.5rem;
 }
 
-.error-suggestions-compact .error-suggestions-links .pf-v5-c-button {
+.error-suggestions-compact .error-suggestions-links .pf-v6-c-button {
   padding: 0;
-  font-size: var(--pf-v5-global--FontSize--sm);
+  font-size: var(--pf-t--global--font--size--sm);
   margin-top: 0;
 }

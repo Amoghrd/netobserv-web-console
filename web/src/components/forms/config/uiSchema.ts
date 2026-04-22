@@ -992,13 +992,16 @@ export const flowCollectorUISchema: UiSchema = {
           controlFieldValue: 'Monolithic',
           controlFieldName: 'mode'
         },
+        installDemoLoki: {
+          'ui:title': 'Install demo Loki'
+        },
         tenantID: {
           'ui:title': 'Tenant id'
         },
         url: {
           'ui:title': 'Url'
         },
-        'ui:order': ['tenantID', 'url', 'tls', '*'],
+        'ui:order': ['installDemoLoki', 'tenantID', 'url', 'tls', '*'],
         tls: {
           'ui:title': 'TLS configuration',
           enable: {

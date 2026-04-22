@@ -6,23 +6,19 @@ div#app {
   height: 100%;
 }
 
-.pf-v5-c-page__main-container {
+.pf-v6-c-page__main-container {
   height: 100%;
 }
 
 /* fix page background color & spacing*/
-.pf-v5-c-page__main-section,
+.pf-v6-c-page__main-section,
 section#pageSection {
   background: transparent !important;
   padding: 10px;
 }
 
-section#pageSection.dark {
-  background: #0f1214 !important;
-}
-
-section#pageSection.light {
-  background: #fff !important;
+section#pageSection {
+  background: var(--pf-t--global--background--color--primary--default) !important;
 }
 
 #netobservPageSection {
@@ -33,15 +29,11 @@ section#pageSection.light {
   flex: 1;
 }
 
-body>#app>.pf-v5-c-page {
-  background: #fff;
+body>#app>.pf-v6-c-page {
+  background: var(--pf-t--global--background--color--primary--default);
 }
 
-.pf-v5-theme-dark>body>#app>.pf-v5-c-page {
-  background: var(--pf-v5-c-page__main-section--BackgroundColor);
-}
-
-.pf-v5-c-page__main-section {
+.pf-v6-c-page__main-section {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -49,15 +41,18 @@ body>#app>.pf-v5-c-page {
 }
 
 /* TODO: fix select. For now it only reduce size but doesn't match with console style */
-label.pf-v5-c-menu__menu-item {
+label.pf-v6-c-menu__menu-item {
   position: relative;
   left: 16px;
   padding: 0;
 }
 
 /* Map PF6 semantic tokens for standalone mode (light).
-   In OCP Console, these are provided by the Console shell. */
-#pageSection, #netobservPageSection {
+   In OCP Console, these are provided by the Console shell.
+   Omit when PatternFly high contrast is on so :root HC tokens are not overridden. */
+html:not(.pf-v6-theme-high-contrast):not(.pf-v6-theme-dark):not(.netobserv-standalone-theme-glass) #pageSection,
+html:not(.pf-v6-theme-high-contrast):not(.pf-v6-theme-dark):not(.netobserv-standalone-theme-glass)
+  #netobservPageSection {
   --pf-t--global--background--color--primary--default: #fff;
   --pf-t--global--background--color--secondary--default: #f0f0f0;
   --pf-t--global--border--color--default: #d2d2d2;
@@ -73,8 +68,8 @@ label.pf-v5-c-menu__menu-item {
 }
 
 /* Map PF6 semantic tokens for standalone mode (dark). */
-.pf-v5-theme-dark #pageSection,
-.pf-v5-theme-dark #netobservPageSection {
+.pf-v6-theme-dark #pageSection,
+.pf-v6-theme-dark #netobservPageSection {
   --pf-t--global--background--color--primary--default: #1b1d21;
   --pf-t--global--background--color--secondary--default: #0f1214;
   --pf-t--global--border--color--default: #444548;
@@ -89,14 +84,71 @@ label.pf-v5-c-menu__menu-item {
   --pf-t--global--spacer--xs: 0.25rem;
 }
 
+/*
+ * Standalone “glass” (frosted) look — approximates OpenShift Console’s glass shell where the
+ * full token set is injected by the Console app. PatternFly 6.4 in this repo has no pf-v6-theme-glass.
+ */
+html.netobserv-standalone-theme-glass {
+  min-height: 100%;
+}
+
+html.netobserv-standalone-theme-glass body {
+  min-height: 100%;
+  background: linear-gradient(145deg, #c7dbf5 0%, #e4dcf5 38%, #f2eadf 100%);
+  background-attachment: fixed;
+}
+
+/* Page chrome tokens: same frosted fill as sidebar + main (matches OCP glass shell). */
+html.netobserv-standalone-theme-glass body > #app > .pf-v6-c-page {
+  --pf-v6-c-page--BackgroundColor: transparent;
+  --pf-v6-c-page__sidebar--BackgroundColor: rgba(255, 255, 255, 0.35);
+  --pf-v6-c-page__main-container--BackgroundColor: rgba(255, 255, 255, 0.35);
+  --pf-v6-c-page__main-section--BackgroundColor: transparent;
+  background: transparent;
+}
+
+html.netobserv-standalone-theme-glass .pf-v6-c-page__sidebar,
+html.netobserv-standalone-theme-glass .pf-v6-c-page__main-container {
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+html.netobserv-standalone-theme-glass .pf-v6-c-page__sidebar-body {
+  background: transparent;
+}
+
+html.netobserv-standalone-theme-glass .pf-v6-c-masthead {
+  background: rgba(255, 255, 255, 0.4);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+html.netobserv-standalone-theme-glass #pageSection,
+html.netobserv-standalone-theme-glass #netobservPageSection {
+  --pf-t--global--background--color--primary--default: rgba(255, 255, 255, 0.52);
+  --pf-t--global--background--color--secondary--default: rgba(255, 255, 255, 0.38);
+  --pf-t--global--border--color--default: rgba(210, 210, 210, 0.65);
+  --pf-t--global--text--color--subtle: #5c5f66;
+  --pf-t--global--text--color--inverse: #fff;
+  --pf-t--global--text--color--regular: #151515;
+  --pf-t--global--text--color--status--danger--default: #c9190b;
+  --pf-t--global--text--color--status--warning--default: #f0ab00;
+  --pf-t--global--text--color--status--info--default: #2b9af3;
+  --pf-t--global--color--brand--default: #06c;
+  --pf-t--global--color--status--danger--default: #c9190b;
+  --pf-t--global--spacer--xs: 0.25rem;
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+}
+
+html.netobserv-standalone-theme-glass section#pageSection {
+  box-shadow: 0 1px 3px rgba(15, 17, 21, 0.08);
+}
+
 /*set font & titles styles*/
 :root {
-  --pf-v5-c-code-block--BackgroundColor: var(--pf-global--BackgroundColor--200);
-  --pf-v5-c-code-block__pre--FontFamily: var(--pf-global--FontFamily--monospace);
-  --pf-v5-c-code-block__pre--FontSize: var(--pf-global--FontSize--sm);
-  --pf-v5-c-content--MarginBottom: var(--pf-global--spacer--md);
-  --pf-global--FontSize--md: 14px;
-  --pf-global--FontSize--sm: 13px;
+  --pf-t--global--font--size--md: 14px;
+  --pf-t--global--font--size--sm: 13px;
 }
 
 h1,
@@ -105,30 +157,30 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--pf-global--FontFamily--heading--sans-serif);
-  font-weight: var(--pf-global--FontWeight--normal);
-  line-height: var(--pf-global--LineHeight--md);
-  margin-bottom: var(--pf-global--spacer--sm);
+  font-family: var(--pf-t--global--font--family--heading);
+  font-weight: var(--pf-t--global--font--weight--body--default);
+  line-height: var(--pf-t--global--font--line-height--body);
+  margin-bottom: var(--pf-t--global--spacer--sm);
   word-break: break-word;
 }
 
 h1 {
-  font-size: var(--pf-global--FontSize--2xl);
-  line-height: var(--pf-global--LineHeight--sm);
+  font-size: var(--pf-t--global--font--size--2xl);
+  line-height: var(--pf-t--global--font--line-height--heading);
 }
 
 h2 {
-  font-size: var(--pf-global--FontSize--xl);
+  font-size: var(--pf-t--global--font--size--xl);
 }
 
 h3 {
-  font-size: var(--pf-global--FontSize--lg);
+  font-size: var(--pf-t--global--font--size--lg);
 }
 
 h4,
 h5,
 h6 {
-  font-size: var(--pf-global--FontSize--md);
+  font-size: var(--pf-t--global--font--size--md);
 }
 
 button,
@@ -136,8 +188,8 @@ input,
 optgroup,
 select,
 textarea,
-.pf-v5-c-badge {
-  font-family: var(--pf-global--FontFamily--sans-serif);
+.pf-v6-c-badge {
+  font-family: var(--pf-t--global--font--family--body);
 }
 
 /* set popups styles. check _modals.scss*/
@@ -185,27 +237,6 @@ textarea,
   padding-top: 0.5em;
 }
 
-.modal-body {
-  padding: 0 3em 0 3em !important;
-  background: none !important;
-  max-height: 50vh;
-  overflow-x: hidden;
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
-  position: relative;
-}
-
-.modal-body.scrollable {
-  overflow-y: scroll;
-}
-
-.modal-body.overflow-visible {
-  overflow: visible;
-}
-
 .modal-footer {
   display: flex;
   align-self: flex-end;
@@ -215,9 +246,9 @@ textarea,
 
 /* resource icons */
 .co-m-resource-icon {
-  background-color: #2b9af3;
+  background-color: var(--pf-t--global--color--brand--default);
   border-radius: 20px;
-  color: var(--pf-global--palette--white);
+  color: var(--pf-t--global--text--color--inverse);
   display: inline-block;
   flex-shrink: 0;
   font-size: 14px;
@@ -230,54 +261,56 @@ textarea,
 }
 
 /* fix standalone selector color*/
-.pf-v5-c-toggle-group__button.pf-m-selected {
+.pf-v6-c-toggle-group__button.pf-m-selected {
   color: black;
 }
-.pf-v5-theme-dark .pf-v5-c-toggle-group__button.pf-m-selected {
-  color: var(--pf-v5-c-toggle-group__button--Color);
+.pf-v6-theme-dark .pf-v6-c-toggle-group__button.pf-m-selected {
+  color: var(--pf-v6-c-toggle-group__button--Color);
+  --pf-v6-c-toggle-group__button--BackgroundColor: var(--pf-t--global--color--brand--default);
+  --pf-v6-c-toggle-group__button--before--BorderColor: var(--pf-t--global--color--brand--hover);
 }
 
-/* fix selector color (dark)*/
-.pf-v5-theme-dark .pf-v5-c-toggle-group__button.pf-v5-m-selected {
-  --pf-v5-c-toggle-group__button--BackgroundColor: #06c;
-  --pf-v5-c-toggle-group__button--ZIndex: 100;
-  --pf-v5-c-toggle-group__button--before--BorderColor: #1fa7f8;
+html.netobserv-standalone-theme-glass .pf-v6-c-toggle-group__button.pf-m-selected {
+  color: black;
+}
+
+.pf-v6-theme-high-contrast:not(.pf-v6-theme-dark) .pf-v6-c-toggle-group__button.pf-m-selected {
+  color: var(--pf-v6-c-toggle-group__button--Color);
 }
 
 /* fix primary button color*/
-.pf-v5-theme-dark .pf-m-primary {
-  color: #fff;
-  background-color: #06c;
+.pf-v6-theme-dark .pf-m-primary {
+  color: var(--pf-t--global--text--color--inverse);
+  background-color: var(--pf-t--global--color--brand--default);
 }
 
 /* fix chip background colors */
-.pf-v5-theme-dark .pf-v5-c-chip {
-  --pf-v5-c-chip--BackgroundColor: var(--pf-global--BackgroundColor--100);
-  --pf-v5-c-chip--before--BorderColor: var(--pf-global--BorderColor--100);
-  --pf-v5-c-chip--m-draggable--BackgroundColor: var(--pf-global--palette--black-600);
+.pf-v6-theme-dark .pf-v6-c-chip {
+  --pf-v6-c-chip--BackgroundColor: var(--pf-t--global--background--color--primary--default);
+  --pf-v6-c-chip--before--BorderColor: var(--pf-t--global--border--color--default);
 }
 
 /* hide options texts */
-.pf-v5-u-screen-reader {
+.pf-v6-u-screen-reader {
   display: none;
 }
 
 /* fix search input*/
-.pf-v5-theme-dark .pf-v5-c-input-group {
-  --pf-v5-c-input-group--BackgroundColor: transparent;
-  --pf-v5-c-input-group__text--BorderTopColor: transparent;
-  --pf-v5-c-input-group__text--BorderRightColor: transparent;
-  --pf-v5-c-input-group__text--BorderBottomColor: var(--pf-global--BorderColor--400);
-  --pf-v5-c-input-group__text--BorderLeftColor: transparent;
-  --pf-v5-c-input-group__text--BackgroundColor: var(--pf-global--palette--black-600);
+.pf-v6-theme-dark .pf-v6-c-input-group {
+  --pf-v6-c-input-group--BackgroundColor: transparent;
+  --pf-v6-c-input-group__text--BorderTopColor: transparent;
+  --pf-v6-c-input-group__text--BorderRightColor: transparent;
+  --pf-v6-c-input-group__text--BorderBottomColor: var(--pf-t--global--border--color--default);
+  --pf-v6-c-input-group__text--BorderLeftColor: transparent;
+  --pf-v6-c-input-group__text--BackgroundColor: var(--pf-t--global--background--color--secondary--default);
 }
 
 /* masthead links */
-.pf-v5-c-masthead .masthead-link a {
+.pf-v6-c-masthead .masthead-link a {
   text-decoration: none;
   font-weight: bold;
-  color: #e0e0e0;
+  color: var(--pf-t--global--text--color--inverse);
 }
-.pf-v5-c-masthead .masthead-link a:hover {
-  color: #bbb;
+.pf-v6-c-masthead .masthead-link a:hover {
+  color: var(--pf-t--global--text--color--subtle);
 }

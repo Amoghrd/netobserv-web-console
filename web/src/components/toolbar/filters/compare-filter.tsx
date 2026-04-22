@@ -95,6 +95,7 @@ export const CompareFilter: React.FC<CompareFilterProps> = ({ value, setValue, c
     <Dropdown
       id="filter-compare"
       isOpen={isOpen}
+      onOpenChange={setOpen}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}
@@ -102,7 +103,6 @@ export const CompareFilter: React.FC<CompareFilterProps> = ({ value, setValue, c
           badge={<Badge>{value}</Badge>}
           onClick={() => setOpen(!isOpen)}
           isExpanded={isOpen}
-          onBlur={() => setTimeout(() => setOpen(false), 500)}
         >
           {getText(value)}
         </MenuToggle>

@@ -17,12 +17,8 @@
   border-width: 3px;
 }
 
-.description.border.light {
-  border-left-color: #06c !important;
-}
-
-.description.border.dark {
-  border-left-color: #1fa7f8 !important;
+.description.border {
+  border-left-color: var(--pf-t--global--color--brand--default) !important;
 }
 
 .co-pre-line {
@@ -53,6 +49,6 @@ pre.backticks {
 /* PF6 accordion CSS variables inherit through the DOM tree, so when a parent
    AccordionItem is expanded, nested collapsed items inherit visibility: visible
    instead of hidden. Force-hide content of non-expanded items to fix this. */
-.co-dynamic-form__accordion .pf-v5-c-accordion__item:not(.pf-m-expanded) > .pf-v5-c-accordion__expandable-content {
+.co-dynamic-form__accordion .pf-v6-c-accordion__item:not(.pf-m-expanded) > .pf-v6-c-accordion__expandable-content {
   display: none;
 }

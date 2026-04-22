@@ -34,6 +34,6 @@ describe('<NetflowOverviewPanel />', () => {
         <MetricsGraph {...contentProps} />
       </NetflowOverviewPanel>
     );
-    expect(container.querySelector('.pf-v5-c-card')).toBeTruthy();
+    expect(container.querySelector('.pf-v6-c-card')).toBeTruthy();
   });
 });

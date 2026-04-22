@@ -56,7 +56,7 @@ describe('(OCP-68246 Network_Observability) FlowRTT test', { tags: ['Network_Obs
         cy.get(filterSelectors.filterInput).type("protocol=TCP" + '{enter}').click()
 
         cy.get('[data-test-id=edge-handler]').each((g) => {
-            expect(g.text()).to.match(/\d* ms/gm);
+            expect(g.text()).to.match(/\d+\s*ms/);
         });
         netflowPage.clearAllFilters()
 

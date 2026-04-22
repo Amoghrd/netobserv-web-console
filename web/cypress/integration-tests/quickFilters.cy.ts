@@ -49,7 +49,7 @@ describe('(OCP-56222 Network_Observability) Quick Filters test', { tags: ['Netwo
         })
         cy.contains("Quick filters").should('exist').click()
         cy.get('#quick-filters-dropdown').contains("Test NS")
-        cy.get('#quick-filters-dropdown').find('.pf-v5-c-check__input').should('exist').click()
+        cy.get('#quick-filters-dropdown').find('.pf-v6-c-check__input').should('exist').click()
 
         // verify source and destination NS are test-server and test-client respectively
         cy.get('[data-test-td-column-id=SrcK8S_Namespace]').each((td) => {
@@ -59,7 +59,7 @@ describe('(OCP-56222 Network_Observability) Quick Filters test', { tags: ['Netwo
             expect(td).to.contain(CLIENT_NS)
         })
 
-        cy.get('#quick-filters-dropdown').find('.pf-v5-c-check__input').should('exist').click()
+        cy.get('#quick-filters-dropdown').find('.pf-v6-c-check__input').should('exist').click()
         cy.get('#filters').should('not.exist')
     })
 

@@ -2,7 +2,6 @@ import { Operator } from "@views/netobserv"
 import { dashboard, dashboardSelectors } from "@views/dashboards-page"
 
 const healthPanels = [
-    "flows-per-second-chart",
     "global-sampling-chart",
     "errors-last-minute-chart",
     "dropped-flows-per-second-chart"

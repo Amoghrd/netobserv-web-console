@@ -34,7 +34,7 @@
     padding-left: 1em;
 }
 
-span.pf-v5-c-button__icon.pf-v5-m-start {
+span.pf-v6-c-button__icon.pf-m-start {
     width: 14px;
     display: flex;
 }
@@ -53,7 +53,7 @@ span.pf-v5-c-button__icon.pf-v5-m-start {
 
 /*allow new lines for error text*/
 
-.pf-v5-c-empty-state__body {
+.pf-v6-c-empty-state__body {
     white-space: pre-line;
 }
 
@@ -64,15 +64,7 @@ span.pf-v5-c-button__icon.pf-v5-m-start {
     flex: 1;
     padding: 0;
     gap: 0;
-}
-
-/* fix page section color for PF4 compat in OCP 4.15+ */
-#pageSection.light {
-    background: #fff;
-}
-
-#pageSection.dark {
-    background: #1b1d21;
+    background: var(--pf-t--global--background--color--primary--default);
 }
 
 #filter-toolbar {
@@ -87,7 +79,7 @@ span.pf-v5-c-button__icon.pf-v5-m-start {
     overflow: hidden;
 }
 
-.pf-v5-c-drawer__panel.pf-v5-m-resizable {
+.pf-v6-c-drawer__panel.pf-m-resizable {
     overflow: hidden;
 }
 
@@ -126,7 +118,7 @@ span.pf-v5-c-button__icon.pf-v5-m-start {
 #export-button,
 #view-options-button,
 #more-options-button,
-.pf-v5-c-overflow-menu .overflow-button {
+.pf-v6-c-overflow-menu .overflow-button {
     display: flex;
     align-items: center;
     margin-left: 0;
@@ -164,7 +156,7 @@ span.pf-v5-c-button__icon.pf-v5-m-start {
 }
 
 /*remove bullets from dropdown*/
-.pf-v5-c-dropdown__group>ul {
+.pf-v6-c-dropdown__group>ul {
     list-style: none;
     padding-left: 10px;
 }
@@ -222,11 +214,11 @@ span.pf-v5-c-button__icon.pf-v5-m-start {
 }
 
 .query-option-tooltip-text {
-    color: #fff !important;
+    color: var(--pf-t--global--text--color--inverse) !important;
 }
 
 .netobserv-tooltip-text {
-    color: #fff !important;
+    color: var(--pf-t--global--text--color--inverse) !important;
 }
 
 .netobserv-no-child-margin>* {
@@ -235,6 +227,15 @@ span.pf-v5-c-button__icon.pf-v5-m-start {
 
 .netobserv-tab-container {
     margin-top: 1.5rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.netobserv-tab-container>section#pageSection {
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 .chips-popover-close-button {

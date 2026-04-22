@@ -17,12 +17,12 @@ describe('(OCP-74049, OCP-73875 Network_Observability) Prometheus datasource onl
         cy.checkNetflowTraffic("Disabled")
 
         // verify only prom and auto dataSource is enabled in query options
-        cy.get('#filter-toolbar-search-filters').contains('Query options').click();
-        cy.get('#query-options-dropdown').click();
+        cy.byTestID('query-options-dropdown').click();
+        cy.get('#query-options-popper').click();
         cy.get('#dataSource-loki').should('be.disabled')
         cy.get('#dataSource-prom').should('not.be.disabled')
         cy.get('#dataSource-auto').should('not.be.disabled')
-        cy.get('#filter-toolbar-search-filters').contains('Query options').click();
+        cy.byTestID('query-options-dropdown').click();
 
         // verify resource scope is not observed with prom dataSource
         cy.byTestID("show-view-options-button").should('exist').click().then(views => {

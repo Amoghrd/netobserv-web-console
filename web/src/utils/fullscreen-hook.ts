@@ -4,15 +4,14 @@ export function useFullScreen(): [boolean, React.Dispatch<React.SetStateAction<b
   const [isFullScreen, setFullScreen] = React.useState(false);
 
   React.useEffect(() => {
-    const sidebarExpanded = document.querySelector(
-      '.pf-v5-c-page__sidebar.pf-m-expanded, .pf-v6-c-page__sidebar.pf-m-expanded'
-    );
-    if (isFullScreen && sidebarExpanded) {
+    const pageSidebar = document.querySelector('.pf-v6-c-page__sidebar');
+    const sidebarOpen = pageSidebar?.getAttribute('aria-hidden') === 'false';
+    if (isFullScreen && sidebarOpen) {
       document.getElementById('nav-toggle')?.click();
     }
 
     const elements = document.querySelectorAll(
-      '#page-main-header, .pf-v5-c-masthead, .pf-v6-c-masthead, #page-sidebar, .pf-v5-c-page__sidebar, .pf-v6-c-page__sidebar'
+      '#page-main-header, .pf-v6-c-masthead, #page-sidebar, .pf-v6-c-page__sidebar'
     );
 
     elements.forEach(e => {
@@ -22,6 +21,10 @@ export function useFullScreen(): [boolean, React.Dispatch<React.SetStateAction<b
         e.classList.remove('hidden');
       }
     });
+
+    return () => {
+      elements.forEach(e => e.classList.remove('hidden'));
+    };
   }, [isFullScreen]);
 
   return [isFullScreen, setFullScreen];

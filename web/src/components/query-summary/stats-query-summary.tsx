@@ -1,4 +1,4 @@
-import { FlexItem, Text, TextVariants, Tooltip } from '@patternfly/react-core';
+import { Content, ContentVariants, FlexItem, Tooltip } from '@patternfly/react-core';
 import { ExclamationTriangleIcon, GlobeAmericasIcon } from '@patternfly/react-icons';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -61,12 +61,12 @@ export const StatsQuerySummary: React.FC<StatsQuerySummaryProps> = ({
       >
         <div className={`stats-query-summary-container-with-icon ${loading ? 'stats-loading-blink' : ''}`}>
           {warning !== undefined ? <ExclamationTriangleIcon /> : <GlobeAmericasIcon />}
-          <Text id="lastRefresh" component={TextVariants.p}>
+          <Content id="lastRefresh" component={ContentVariants.p}>
             {dateText}
             {detailed && numQueries && ` ${t('running')} ${numQueries} ${numQueries > 1 ? t('queries') : t('query')}`}
             {detailed && dataSources?.length && ` ${t('from')} ${formatDatasources()}`}
             {detailed && durationText !== '' && ` ${t('in')} ${durationText}`}
-          </Text>
+          </Content>
         </div>
       </Tooltip>
     </FlexItem>

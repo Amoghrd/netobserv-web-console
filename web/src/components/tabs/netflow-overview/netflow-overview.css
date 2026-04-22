@@ -1,14 +1,7 @@
 #overview-container {
   overflow: inherit;
   height: 100%;
-}
-
-#overview-container.dark {
-  background: #0f1214;
-}
-
-#overview-container.light {
-  background: #f0f0f0;
+  background: var(--pf-t--global--background--color--secondary--default);
 }
 
 .overview-flex-item {

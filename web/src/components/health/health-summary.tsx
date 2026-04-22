@@ -1,5 +1,15 @@
 import { Rule } from '@openshift-console/dynamic-plugin-sdk';
-import { Alert, Card, CardBody, Flex, FlexItem, Grid, GridItem, Text, TextVariants } from '@patternfly/react-core';
+import {
+  Alert,
+  Card,
+  CardBody,
+  Content,
+  ContentVariants,
+  Flex,
+  FlexItem,
+  Grid,
+  GridItem
+} from '@patternfly/react-core';
 import { AngleDownIcon, AngleRightIcon } from '@patternfly/react-icons';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -233,14 +243,14 @@ export const HealthSummary: React.FC<HealthSummaryProps> = ({ rules, stats, forc
                 <CardBody>
                   <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsNone' }}>
                     <FlexItem>
-                      <Text component={TextVariants.small} className="metric-label">
+                      <Content component={ContentVariants.small} className="metric-label">
                         {t('Status')}
-                      </Text>
+                      </Content>
                     </FlexItem>
                     <FlexItem>
-                      <Text component={TextVariants.p} className="metric-status">
+                      <Content component={ContentVariants.p} className="metric-status">
                         {title}
-                      </Text>
+                      </Content>
                     </FlexItem>
                     {details.length > 0 && (
                       <FlexItem className="status-details">
@@ -305,9 +315,9 @@ export const HealthSummary: React.FC<HealthSummaryProps> = ({ rules, stats, forc
               <Flex gap={{ default: 'gapXs' }} alignItems={{ default: 'alignItemsCenter' }}>
                 <FlexItem className="health-summary-compact-icon status" />
                 <FlexItem>
-                  <Text component={TextVariants.p} className="health-summary-compact-text">
+                  <Content component={ContentVariants.p} className="health-summary-compact-text">
                     {title}
-                  </Text>
+                  </Content>
                 </FlexItem>
               </Flex>
             </FlexItem>
@@ -315,9 +325,9 @@ export const HealthSummary: React.FC<HealthSummaryProps> = ({ rules, stats, forc
               <Flex gap={{ default: 'gapXs' }} alignItems={{ default: 'alignItemsCenter' }}>
                 <FlexItem className="health-summary-compact-icon critical" />
                 <FlexItem>
-                  <Text component={TextVariants.p} className="health-summary-compact-text">
+                  <Content component={ContentVariants.p} className="health-summary-compact-text">
                     {criticalTotal}
-                  </Text>
+                  </Content>
                 </FlexItem>
               </Flex>
             </FlexItem>
@@ -325,9 +335,9 @@ export const HealthSummary: React.FC<HealthSummaryProps> = ({ rules, stats, forc
               <Flex gap={{ default: 'gapXs' }} alignItems={{ default: 'alignItemsCenter' }}>
                 <FlexItem className="health-summary-compact-icon warning" />
                 <FlexItem>
-                  <Text component={TextVariants.p} className="health-summary-compact-text">
+                  <Content component={ContentVariants.p} className="health-summary-compact-text">
                     {warningTotal}
-                  </Text>
+                  </Content>
                 </FlexItem>
               </Flex>
             </FlexItem>
@@ -335,9 +345,9 @@ export const HealthSummary: React.FC<HealthSummaryProps> = ({ rules, stats, forc
               <Flex gap={{ default: 'gapXs' }} alignItems={{ default: 'alignItemsCenter' }}>
                 <FlexItem className="health-summary-compact-icon info" />
                 <FlexItem>
-                  <Text component={TextVariants.p} className="health-summary-compact-text">
+                  <Content component={ContentVariants.p} className="health-summary-compact-text">
                     {infoTotal}
-                  </Text>
+                  </Content>
                 </FlexItem>
               </Flex>
             </FlexItem>

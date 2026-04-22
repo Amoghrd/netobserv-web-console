@@ -57,7 +57,7 @@ describe('(OCP-67087 Network_Observability) DNSTracking test', { tags: ['Network
         cy.contains('Display options').should('exist').click()
 
         cy.get('[data-test-id=edge-handler]').should('exist').each((g) => {
-            expect(g.text()).to.match(/\d* ms/gm);
+            expect(g.text()).to.match(/\d+\s*ms/);
         });
 
         // verify Query Summary stats for DNSTracking

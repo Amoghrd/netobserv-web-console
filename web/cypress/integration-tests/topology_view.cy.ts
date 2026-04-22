@@ -86,7 +86,7 @@ describe("(OCP-53591 Network_Observability) Netflow Topology view features", { t
         cy.get('#drawer-tabs > ul > li:nth-child(1)').should('exist')
         // metrics tab
         cy.get('#drawer-tabs > ul > li:nth-child(2)').should('exist').click()
-        cy.get('div.pf-v5-c-chart').should('exist')
+        cy.get('div.pf-v6-c-chart').should('exist')
     })
 
     afterEach("test", function () {

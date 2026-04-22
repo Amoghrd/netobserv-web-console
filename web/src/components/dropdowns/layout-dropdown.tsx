@@ -46,6 +46,7 @@ export const LayoutDropdown: React.FC<LayoutDropdownProps> = ({ selected, setLay
       data-test={id}
       id={id}
       isOpen={isOpen}
+      onOpenChange={setOpen}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}
@@ -53,7 +54,6 @@ export const LayoutDropdown: React.FC<LayoutDropdownProps> = ({ selected, setLay
           id={`${id}-dropdown`}
           isExpanded={isOpen}
           onClick={() => setOpen(!isOpen)}
-          onBlur={() => setTimeout(() => setOpen(false), 500)}
         >
           {getLayoutDisplay(selected)}
         </MenuToggle>

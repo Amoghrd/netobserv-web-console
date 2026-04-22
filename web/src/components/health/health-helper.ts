@@ -619,19 +619,7 @@ const severityLabelsColors = {
   info: 'blue'
 } as const;
 
-/** PF6 label color names → PF5 `Label` color prop */
-const pf6ToPf5LabelColor = {
-  teal: 'cyan',
-  yellow: 'gold',
-  orangered: 'orange'
-} as const;
-
-type LabelColor = 'red' | 'orange' | 'blue' | 'grey' | 'purple' | 'green' | 'cyan' | 'gold';
-
-export const getSeverityColor = (severity: string | undefined): LabelColor => {
-  if (severity && severity in pf6ToPf5LabelColor) {
-    return pf6ToPf5LabelColor[severity as keyof typeof pf6ToPf5LabelColor];
-  }
+export const getSeverityColor = (severity: string | undefined): 'red' | 'orange' | 'blue' => {
   if (severity && severity in severityLabelsColors) {
     return severityLabelsColors[severity as keyof typeof severityLabelsColors];
   }

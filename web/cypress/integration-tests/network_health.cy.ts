@@ -81,7 +81,7 @@ describe('(OCP-84821 Network_Observability) Network Health test', { tags: ['Netw
     })
 
     after("any test", function () {
-        cy.adminCLI('oc delete -f cypress/fixtures/dns_errors.yaml')
+        cy.adminCLI('oc delete -f cypress/fixtures/dns_errors.yaml --ignore-not-found')
         Operator.deleteFlowCollector()
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })

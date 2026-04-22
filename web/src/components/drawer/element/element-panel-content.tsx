@@ -4,12 +4,11 @@ import {
   AccordionItem,
   AccordionToggle,
   Button,
+  Content,
+  ContentVariants,
   Divider,
   Flex,
-  FlexItem,
-  Text,
-  TextContent,
-  TextVariants
+  FlexItem
 } from '@patternfly/react-core';
 import { FilterIcon, TimesIcon } from '@patternfly/react-icons';
 import { BaseEdge, BaseNode } from '@patternfly/react-topology';
@@ -55,8 +54,8 @@ export const ElementPanelContent: React.FC<ElementPanelContentProps> = ({
       const fields = createPeer({ cluster: d.peer.cluster });
       const isFiltered = isElementFiltered(fields, filters.list, filterDefinitions);
       return (
-        <TextContent id="clusterName" className="record-field-container">
-          <Text component={TextVariants.h4}>{t('Cluster name')}</Text>
+        <Content id="clusterName" className="record-field-container">
+          <Content component={ContentVariants.h4}>{t('Cluster name')}</Content>
           <Flex>
             <FlexItem flex={{ default: 'flex_1' }}>{d.peer.cluster}</FlexItem>
             <FlexItem>
@@ -69,7 +68,7 @@ export const ElementPanelContent: React.FC<ElementPanelContentProps> = ({
               />
             </FlexItem>
           </Flex>
-        </TextContent>
+        </Content>
       );
     },
     [filterDefinitions, filters, setFilters, t]
@@ -83,8 +82,8 @@ export const ElementPanelContent: React.FC<ElementPanelContentProps> = ({
       const fields = createPeer({ udn: d.peer.udn });
       const isFiltered = isElementFiltered(fields, filters.list, filterDefinitions);
       return (
-        <TextContent id="udn" className="record-field-container">
-          <Text component={TextVariants.h4}>{t('UDN')}</Text>
+        <Content id="udn" className="record-field-container">
+          <Content component={ContentVariants.h4}>{t('UDN')}</Content>
           <Flex>
             <FlexItem flex={{ default: 'flex_1' }}>{d.peer.udn}</FlexItem>
             <FlexItem>
@@ -97,7 +96,7 @@ export const ElementPanelContent: React.FC<ElementPanelContentProps> = ({
               />
             </FlexItem>
           </Flex>
-        </TextContent>
+        </Content>
       );
     },
     [filterDefinitions, filters, setFilters, t]
@@ -110,13 +109,13 @@ export const ElementPanelContent: React.FC<ElementPanelContentProps> = ({
       }
 
       return (
-        <TextContent id="noMetrics" className="record-field-container">
-          <Text component={TextVariants.p}>
+        <Content id="noMetrics" className="record-field-container">
+          <Content component={ContentVariants.p}>
             {t(
               "Can't find metrics for this element. Check your capture filters to ensure we can monitor it. Else it probably means there is no traffic here."
             )}
-          </Text>
-        </TextContent>
+          </Content>
+        </Content>
       );
     },
     [t]
@@ -149,20 +148,13 @@ export const ElementPanelContent: React.FC<ElementPanelContentProps> = ({
         {udnName(combinedData)}
         <Accordion asDefinitionList={false}>
           <div className="record-group-container" key={'source'} data-test-id={'source'}>
-            <AccordionItem data-test-id={'source'}>
-              <AccordionToggle
-                className="borderless-accordion"
-                onClick={() => toggle('source')}
-                id={'source'}
-                isExpanded={!hidden.includes('source')}
-              >
-                {filters.match === 'bidirectional' ? t('Endpoint A') : t('Source')}
-              </AccordionToggle>
-              <AccordionContent
-                className="borderless-accordion"
-                id="source-content"
-                isHidden={hidden.includes('source')}
-              >
+            <AccordionItem isExpanded={!hidden.includes('source')} data-test-id={'source'}>
+              {
+                <AccordionToggle className="borderless-accordion" onClick={() => toggle('source')} id={'source'}>
+                  {filters.match === 'bidirectional' ? t('Endpoint A') : t('Source')}
+                </AccordionToggle>
+              }
+              <AccordionContent className="borderless-accordion" id="source-content">
                 <ElementFields
                   id="source-info"
                   data={aData}
@@ -175,20 +167,17 @@ export const ElementPanelContent: React.FC<ElementPanelContentProps> = ({
           </div>
           <div className="record-group-container" key={'destination'} data-test-id={'destination'}>
             <Divider />
-            <AccordionItem data-test-id={'destination'}>
-              <AccordionToggle
-                className="borderless-accordion"
-                onClick={() => toggle('destination')}
-                id={'destination'}
-                isExpanded={!hidden.includes('destination')}
-              >
-                {filters.match === 'bidirectional' ? t('Endpoint B') : t('Destination')}
-              </AccordionToggle>
-              <AccordionContent
-                className="borderless-accordion"
-                id="destination-content"
-                isHidden={hidden.includes('destination')}
-              >
+            <AccordionItem isExpanded={!hidden.includes('destination')} data-test-id={'destination'}>
+              {
+                <AccordionToggle
+                  className="borderless-accordion"
+                  onClick={() => toggle('destination')}
+                  id={'destination'}
+                >
+                  {filters.match === 'bidirectional' ? t('Endpoint B') : t('Destination')}
+                </AccordionToggle>
+              }
+              <AccordionContent className="borderless-accordion" id="destination-content">
                 <ElementFields
                   id="destination-info"
                   data={bData}

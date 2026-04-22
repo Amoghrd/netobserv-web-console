@@ -99,6 +99,7 @@ export const DescriptionField: React.FC<DescriptionFieldProps> = ({
 };
 
 export type FormFieldProps = {
+  children?: React.ReactNode;
   id: string;
   defaultLabel?: string;
   required: boolean;
@@ -129,6 +130,7 @@ export const FormField: React.FC<FormFieldProps> = ({ children, id, defaultLabel
 };
 
 export type FieldSetProps = Pick<FieldProps, 'idSchema' | 'required' | 'schema' | 'uiSchema'> & {
+  children?: React.ReactNode;
   defaultLabel?: string;
 };
 
@@ -139,11 +141,11 @@ export const FieldSet: React.FC<FieldSetProps> = props => {
   const description = useSchemaDescription(schema, uiSchema || {});
   return showLabel && label ? (
     <div id={`${idSchema.$id}_field-group`} className="form-group co-dynamic-form__field-group">
-      <AccordionItem>
+      <AccordionItem isExpanded={expanded}>
         <AccordionToggle
           id={`${idSchema.$id}_accordion-toggle`}
+          data-test={`${idSchema.$id}_accordion-toggle`}
           onClick={() => setExpanded(!expanded)}
-          isExpanded={expanded}
         >
           <span className={classnames({ 'co-required': required })}>{label}</span>
         </AccordionToggle>
@@ -156,7 +158,7 @@ export const FieldSet: React.FC<FieldSetProps> = props => {
             padding={true}
           />
         )}
-        <AccordionContent id={`${idSchema.$id}_accordion-content`} isHidden={!expanded}>
+        <AccordionContent id={`${idSchema.$id}_accordion-content`} data-test={`${idSchema.$id}_accordion-content`}>
           {children}
         </AccordionContent>
       </AccordionItem>

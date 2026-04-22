@@ -18,9 +18,9 @@ th.netobserv-header.dragged {
 }
 
 th.netobserv-header.resizing {
-  border-bottom: solid #0066CC;
+  border-bottom: solid var(--pf-t--global--color--brand--default);
 }
 
 th.netobserv-header.dropzone:not(.dragged) {
-  box-shadow: inset 5px 0px 0px 0px #0066CC;
+  box-shadow: inset 5px 0px 0px 0px var(--pf-t--global--color--brand--default);
 }

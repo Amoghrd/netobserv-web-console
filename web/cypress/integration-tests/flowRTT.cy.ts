@@ -34,7 +34,7 @@ describe('(OCP-68246 Network_Observability) FlowRTT test', { tags: ['Network_Obs
 
         // verify all relevant panels are listed
         cy.openPanelsModal()
-        cy.checkPopupItems(overviewSelectors.panelsModal, overviewSelectors.manageFlowRTTPanelsList);
+        cy.checkPopItems(overviewSelectors.panelsModal, overviewSelectors.manageFlowRTTPanelsList);
 
         // select all panels and verify they are rendered
         cy.get(overviewSelectors.panelsModal).contains('Select all').click();

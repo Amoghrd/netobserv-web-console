@@ -1,9 +1,5 @@
-#topology-container.dark {
-  background: #0f1214;
-}
-
-#topology-container.light {
-  background: #f0f0f0;
+#topology-container {
+  background: var(--pf-t--global--background--color--secondary--default);
 }
 
 #topology-container-div {

@@ -42,6 +42,18 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
   const [paths, setPaths] = React.useState<string[]>(defaultPaths);
   const params = useParams<{ name?: string }>();
   const navigate = useNavigate();
+  // After submit, the watch updates `resourceVersion` before/after onSuccess; without this,
+  // the Consumer's "existing CR → edit page" redirect runs and overrides navigation to status.
+  const blockAutoRedirectToEditRef = React.useRef(false);
+
+  React.useEffect(() => {
+    blockAutoRedirectToEditRef.current = false;
+  }, []);
+
+  const submitFlowCollector = React.useCallback((ctx: { onSubmit: (d: any) => void }, formData: any) => {
+    blockAutoRedirectToEditRef.current = true;
+    ctx.onSubmit(formData);
+  }, []);
 
   const form = React.useCallback(
     (errors?: string[]) => {
@@ -120,7 +132,7 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
           // redirect to edit page if resource already exists or is created while using the wizard
           // We can't handle edition here since this page doesn't include ResourceYAMLEditor
           // which handle reload / update buttons
-          if (ctx.data.metadata?.resourceVersion) {
+          if (ctx.data.metadata?.resourceVersion && !blockAutoRedirectToEditRef.current) {
             navigate(flowCollectorEditPath);
           }
           // first init schema & data when watch resource query got results
@@ -144,14 +156,18 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
             }
           }
           return (
-            <PageSection id="pageSection">
+            <PageSection hasBodyWrapper={false} id="pageSection">
               <div id="pageHeader">
                 <Title headingLevel="h1" size="2xl">
                   {t('Network Observability FlowCollector setup')}
                 </Title>
               </div>
               <div id="wizard-container">
-                <Wizard onStepChange={onStepChange} onSave={() => ctx.onSubmit(data)} onClose={() => navigateTo('/')}>
+                <Wizard
+                  onStepChange={onStepChange}
+                  onSave={() => submitFlowCollector(ctx, data)}
+                  onClose={() => navigateTo('/')}
+                >
                   <WizardStep name={t('Overview')} id="overview">
                     <span className="co-pre-line">
                       {t(
@@ -192,10 +208,18 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
                     id="consumption"
                     footer={
                       <WizardFooterWrapper>
-                        <Button variant="primary" onClick={() => ctx.onSubmit(data)}>
+                        <Button
+                          variant="primary"
+                          data-test-id="flowcollector-wizard-consumption-submit"
+                          onClick={() => submitFlowCollector(ctx, data)}
+                        >
                           {t('Submit')}
                         </Button>
-                        <Button variant="link" onClick={() => navigateTo('/')}>
+                        <Button
+                          variant="link"
+                          data-test-id="flowcollector-wizard-consumption-cancel"
+                          onClick={() => navigateTo('/')}
+                        >
                           {t('Cancel')}
                         </Button>
                       </WizardFooterWrapper>
