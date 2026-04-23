@@ -5531,7 +5531,7 @@ export const flowCollectorSchema: RJSFSchema | any = {
               "type": "string"
             },
             "metrics": {
-              "description": "`Metrics` define the processor configuration regarding metrics",
+              "description": "`Metrics` define the processor configuration regarding metrics.\n\nTo add optional metrics while keeping the built-in defaults, use `additionalIncludeList`.\nTo take full control and export only specific metrics, use `includeList` (which replaces the default set; `additionalIncludeList` is then ignored).",
               "properties": {
                 "disableAlerts": {
                   "description": "`disableAlerts` is a list of alert groups that should be disabled from the default set of alerts.\nPossible values are: `NetObservNoFlows`, `NetObservLokiError`, `PacketDropsByKernel`, `PacketDropsByDevice`, `IPsecErrors`, `NetpolDenied`,\n`LatencyHighTrend`, `DNSErrors`, `DNSNxDomain`, `ExternalEgressHighTrend`, `ExternalIngressHighTrend`, `Ingress5xxErrors`, `IngressHTTPLatencyTrend`.\nMore information on alerts: https://github.com/netobserv/netobserv-operator/blob/main/docs/HealthRules.md",
@@ -5640,7 +5640,51 @@ export const flowCollectorSchema: RJSFSchema | any = {
                   "type": "array"
                 },
                 "includeList": {
-                  "description": "`includeList` is a list of metric names to specify which ones to generate.\nThe names correspond to the names in Prometheus without the prefix. For example,\n`namespace_egress_packets_total` shows up as `netobserv_namespace_egress_packets_total` in Prometheus.\nNote that the more metrics you add, the bigger is the impact on Prometheus workload resources.\nMetrics enabled by default are:\n`namespace_flows_total`, `node_ingress_bytes_total`, `node_egress_bytes_total`, `workload_ingress_bytes_total`,\n`workload_egress_bytes_total`, `namespace_drop_packets_total` (when `PacketDrop` feature is enabled),\n`namespace_rtt_seconds` (when `FlowRTT` feature is enabled), `namespace_dns_latency_seconds` (when `DNSTracking` feature is enabled),\n`namespace_network_policy_events_total` (when `NetworkEvents` feature is enabled).\nMore information, with full list of available metrics: https://github.com/netobserv/netobserv-operator/blob/main/docs/Metrics.md",
+                  "description": "`includeList` replaces the default metric set entirely: only the metrics you list here are generated.\nOmit this field to keep the built-in defaults (they depend on enabled features). To add metrics on top of defaults instead, use `additionalIncludeList`.\n\nIf both are set, `includeList` wins and `additionalIncludeList` is ignored.\n\nNames match Prometheus without the `netobserv_` prefix; for example, `namespace_egress_packets_total` appears as `netobserv_namespace_egress_packets_total`.\nMore metrics increase load on Prometheus.\n\nWhen this field is omitted, defaults include: `namespace_flows_total`, `node_ingress_bytes_total`, `node_egress_bytes_total`, `workload_ingress_bytes_total`,\n`workload_egress_bytes_total`, `namespace_drop_packets_total` (when `PacketDrop` is enabled),\n`namespace_rtt_seconds` (when `FlowRTT` is enabled), `namespace_dns_latency_seconds` (when `DNSTracking` is enabled),\n`namespace_network_policy_events_total` (when `NetworkEvents` is enabled).\nFull list: https://github.com/netobserv/netobserv-operator/blob/main/docs/Metrics.md",
+                  "items": {
+                    "description": "Metric name. More information in https://github.com/netobserv/netobserv-operator/blob/main/docs/Metrics.md.",
+                    "enum": [
+                      "namespace_egress_bytes_total",
+                      "namespace_egress_packets_total",
+                      "namespace_ingress_bytes_total",
+                      "namespace_ingress_packets_total",
+                      "namespace_flows_total",
+                      "node_egress_bytes_total",
+                      "node_egress_packets_total",
+                      "node_ingress_bytes_total",
+                      "node_ingress_packets_total",
+                      "node_flows_total",
+                      "workload_egress_bytes_total",
+                      "workload_egress_packets_total",
+                      "workload_ingress_bytes_total",
+                      "workload_ingress_packets_total",
+                      "workload_flows_total",
+                      "namespace_drop_bytes_total",
+                      "namespace_drop_packets_total",
+                      "node_drop_bytes_total",
+                      "node_drop_packets_total",
+                      "workload_drop_bytes_total",
+                      "workload_drop_packets_total",
+                      "namespace_rtt_seconds",
+                      "node_rtt_seconds",
+                      "workload_rtt_seconds",
+                      "namespace_dns_latency_seconds",
+                      "node_dns_latency_seconds",
+                      "workload_dns_latency_seconds",
+                      "node_network_policy_events_total",
+                      "namespace_network_policy_events_total",
+                      "workload_network_policy_events_total",
+                      "node_ipsec_flows_total",
+                      "namespace_ipsec_flows_total",
+                      "workload_ipsec_flows_total",
+                      "node_to_node_ingress_flows_total"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "additionalIncludeList": {
+                  "description": "`additionalIncludeList` adds extra metrics on top of the default set. It does not remove or replace defaults.\nOmit `includeList` when using this field: if `includeList` is set, it replaces all defaults and `additionalIncludeList` is ignored.\n\nNames match Prometheus without the `netobserv_` prefix; for example, `namespace_egress_packets_total` appears as `netobserv_namespace_egress_packets_total`.\nMore metrics increase load on Prometheus.\nFull list: https://github.com/netobserv/netobserv-operator/blob/main/docs/Metrics.md",
                   "items": {
                     "description": "Metric name. More information in https://github.com/netobserv/netobserv-operator/blob/main/docs/Metrics.md.",
                     "enum": [

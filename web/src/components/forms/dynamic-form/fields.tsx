@@ -132,13 +132,16 @@ export const FormField: React.FC<FormFieldProps> = ({ children, id, defaultLabel
 export type FieldSetProps = Pick<FieldProps, 'idSchema' | 'required' | 'schema' | 'uiSchema'> & {
   children?: React.ReactNode;
   defaultLabel?: string;
+  /** When true, the schema description block under the accordion title is omitted (e.g. full text only in a tooltip). */
+  suppressDescription?: boolean;
 };
 
 export const FieldSet: React.FC<FieldSetProps> = props => {
-  const { children, defaultLabel, idSchema, required = false, schema, uiSchema } = props;
+  const { children, defaultLabel, idSchema, required = false, schema, suppressDescription, uiSchema } = props;
   const [expanded, setExpanded] = React.useState(idSchema['$id'] === 'root'); // root is expanded by default
   const [showLabel, label] = useSchemaLabel(schema, uiSchema || {}, defaultLabel);
-  const description = useSchemaDescription(schema, uiSchema || {});
+  const schemaDescription = useSchemaDescription(schema, uiSchema || {});
+  const description = suppressDescription ? '' : schemaDescription;
   return showLabel && label ? (
     <div id={`${idSchema.$id}_field-group`} className="form-group co-dynamic-form__field-group">
       <AccordionItem isExpanded={expanded}>

@@ -595,7 +595,20 @@ export const flowCollectorUISchema: UiSchema = {
           'ui:order': ['tls', 'port', '*']
         },
         includeList: {
-          'ui:title': 'Include list'
+          'ui:title': 'Metric include list (replaces defaults)'
+        },
+        additionalIncludeList: {
+          'ui:title': 'Additional metrics (on top of defaults)',
+          'ui:options': {
+            addDisabledTooltip:
+              'Cannot add metrics while "Metric include list (replaces defaults)" is set. Clear that list first.'
+          },
+          'ui:dependency': {
+            controlFieldPath: ['processor', 'metrics', 'includeList'],
+            controlFieldValue: '',
+            controlFieldName: 'includeList',
+            matchMode: 'controlUnset'
+          }
         },
         alerts: {
           'ui:title': 'Alerts'
@@ -603,7 +616,7 @@ export const flowCollectorUISchema: UiSchema = {
         disableAlerts: {
           'ui:title': 'Disable alerts'
         },
-        'ui:order': ['server', 'includeList', 'alerts', 'disableAlerts', '*']
+        'ui:order': ['server', 'includeList', 'additionalIncludeList', 'alerts', 'disableAlerts', '*']
       },
       resources: {
         'ui:title': 'Resource Requirements',

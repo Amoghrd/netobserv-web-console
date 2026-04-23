@@ -12,10 +12,11 @@ import {
 import * as _ from 'lodash';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
+import { MaybeTooltip } from '../../tooltip/maybe-tooltip';
 import { jsonSchemaGroupTypes } from './const';
 import { DescriptionField, FieldSet, FormField } from './fields';
 import { UiSchemaOptionsWithDependency } from './types';
-import { useSchemaLabel } from './utils';
+import { isDependencyControlUnset, useSchemaLabel } from './utils';
 
 export const AtomicFieldTemplate: React.FC<FieldTemplateProps> = ({
   children,
@@ -57,6 +58,11 @@ export const FieldTemplate: React.FC<FieldTemplateProps> = props => {
     const { dependency } = getUiOptions(uiSchema ?? {}) as UiSchemaOptionsWithDependency; // Type defs for this function are awful
     if (dependency) {
       setDependencyMet(() => {
+        if (dependency.matchMode === 'controlUnset') {
+          const spec = _.get(formContext.formData ?? {}, ['spec'], {});
+          return isDependencyControlUnset(spec, dependency.controlFieldPath);
+        }
+
         let val = _.get(formContext.formData ?? {}, ['spec'], '');
         dependency.controlFieldPath.forEach(path => {
           val = _.get(val, [path], '');
@@ -72,11 +78,21 @@ export const FieldTemplate: React.FC<FieldTemplateProps> = props => {
     }
   }, [uiSchema, formContext, id]);
 
-  if (hidden || !dependencyMet) {
+  if (hidden) {
     return null;
   }
+
+  const { dependency } = getUiOptions(uiSchema ?? {}) as UiSchemaOptionsWithDependency;
+  const disableBecauseControlUnset = dependency?.matchMode === 'controlUnset' && String(type) === 'array';
+
+  if (dependency && !dependencyMet && !disableBecauseControlUnset) {
+    return null;
+  }
+
   const isGroup = jsonSchemaGroupTypes.includes(String(type));
-  return isGroup ? children : <AtomicFieldTemplate {...props} />;
+  const inner = isGroup ? children : <AtomicFieldTemplate {...props} />;
+
+  return <>{inner}</>;
 };
 
 export const ObjectFieldTemplate: React.FC<ObjectFieldTemplateProps> = props => {
@@ -102,12 +118,20 @@ export const ArrayFieldTemplate: React.FC<ArrayFieldTemplateProps> = ({
   required,
   schema,
   title,
-  uiSchema
+  uiSchema,
+  formContext
 }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
   const [, label] = useSchemaLabel(schema, uiSchema || {}, title ?? 'Items');
-  return (
-    <FieldSet defaultLabel={label} idSchema={idSchema} required={required} schema={schema} uiSchema={uiSchema}>
+  const { addDisabledTooltip, dependency } = getUiOptions(uiSchema ?? {}) as UiSchemaOptionsWithDependency;
+  const spec = _.get(formContext?.formData, 'spec');
+  const pauseArrayEdit =
+    dependency?.matchMode === 'controlUnset' &&
+    Boolean(dependency.controlFieldPath?.length) &&
+    !isDependencyControlUnset(spec, dependency.controlFieldPath);
+  const addDisabledTooltipContent = pauseArrayEdit && addDisabledTooltip ? addDisabledTooltip : undefined;
+  const itemsBlock = (
+    <>
       {_.map(items ?? [], item => {
         return (
           <div className="co-dynamic-form__array-field-group-item" key={item.key}>
@@ -130,17 +154,40 @@ export const ArrayFieldTemplate: React.FC<ArrayFieldTemplateProps> = ({
           </div>
         );
       })}
+    </>
+  );
+  return (
+    <FieldSet
+      defaultLabel={label}
+      idSchema={idSchema}
+      required={required}
+      schema={schema}
+      suppressDescription={pauseArrayEdit}
+      uiSchema={uiSchema}
+    >
+      {pauseArrayEdit ? (
+        <fieldset disabled style={{ border: 'none', margin: 0, padding: 0, minWidth: 0 }}>
+          {itemsBlock}
+        </fieldset>
+      ) : (
+        itemsBlock
+      )}
       <div className="row">
-        <Button
-          icon={<PlusCircleIcon className="co-icon-space-r" />}
-          id={`${idSchema.$id}_add-btn`}
-          data-test-id={`${idSchema.$id}_add-btn`}
-          type="button"
-          onClick={onAddClick}
-          variant="link"
-        >
-          {t('Add {{singularLabel}}', { singularLabel: label })}
-        </Button>
+        <MaybeTooltip content={addDisabledTooltipContent}>
+          <span style={{ display: 'inline-block' }}>
+            <Button
+              icon={<PlusCircleIcon className="co-icon-space-r" />}
+              id={`${idSchema.$id}_add-btn`}
+              data-test-id={`${idSchema.$id}_add-btn`}
+              type="button"
+              isDisabled={pauseArrayEdit}
+              onClick={onAddClick}
+              variant="link"
+            >
+              {t('Add {{singularLabel}}', { singularLabel: label })}
+            </Button>
+          </span>
+        </MaybeTooltip>
       </div>
     </FieldSet>
   );

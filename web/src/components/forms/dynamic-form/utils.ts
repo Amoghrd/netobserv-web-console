@@ -33,6 +33,30 @@ export const getSchemaErrors = (schema: JSONSchema7): DynamicFormSchemaError[] =
   ];
 };
 
+/**
+ * For `ui:dependency` `matchMode: 'controlUnset'`: true when the control path under `spec` is
+ * effectively unset: property missing, `null`/`undefined`, or an empty array.
+ */
+export const isDependencyControlUnset = (spec: unknown, path: string[]): boolean => {
+  if (!path.length) {
+    return true;
+  }
+  const parentPath = path.slice(0, -1);
+  const fieldName = path[path.length - 1];
+  const parent = parentPath.length > 0 ? _.get(spec, parentPath) : spec;
+  if (!_.has(parent, fieldName)) {
+    return true;
+  }
+  const value = _.get(parent, fieldName);
+  if (value == null) {
+    return true;
+  }
+  if (Array.isArray(value) && value.length === 0) {
+    return true;
+  }
+  return false;
+};
+
 // Returns true if a value is not nil and is empty
 export const definedAndEmpty = (value: any): boolean => !_.isNil(value) && _.isEmpty(value);
 
