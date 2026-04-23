@@ -25,6 +25,8 @@ Best practices for AI coding agents on NetObserv Web Console.
 | 4.15-4.18 | `main-pf5` | PF5 |
 | ≤ 4.14 | `main-pf4` | PF4 |
 
+See [OpenShift Console PatternFly documentation](https://github.com/openshift/console/tree/main/frontend/packages/console-dynamic-plugin-sdk#patternfly) for plugin compatibility details.
+
 **Key Directories:**
 - `web/src/components/`: React components (forms, tables, topology, etc.)
 - `web/src/api/`: Backend API client
@@ -57,12 +59,6 @@ Best practices for AI coding agents on NetObserv Web Console.
 - `Dockerfile.downstream`: Downstream/productized builds
 - `Dockerfile.ci`: CI environment builds
 - `Dockerfile.e2e`, `Dockerfile.cypress`: Test runner images
-
-### 🚨 Backward Compatibility
-Frontend configuration schemas must remain compatible:
-- ✅ Add optional fields with defaults
-- ❌ Never remove/rename fields in schemas or API responses
-- Changes to `web/src/components/forms/config/uiSchema.ts` must preserve existing field behaviors
 
 ### 🚨 i18n Strings
 - All user-facing strings must use react-i18next
@@ -109,8 +105,7 @@ FlowCollector CRD field changed in operator:
 3. Update web/src/model/flow-query.ts if query params change
 4. Update web/src/components/tabs/netflow-overview/ if overview UI changes
 5. Regenerate schemas using scripts/generate-schemas.sh (requires running cluster)
-6. Ensure backward compatibility with older field names
-7. Test with both old and new FlowCollector versions
+6. Test with both old and new FlowCollector versions
 ```
 
 ## Repository-Specific Context
@@ -155,11 +150,10 @@ Review for:
 4. Error handling (proper error messages and patterns)
 5. Unit tests (React Testing Library for frontend, Go tests for backend)
 6. Loki query efficiency (time ranges, label matchers)
-7. Backward compatibility (schema changes)
-8. Both plugin and standalone mode testing
-9. Accessibility (ARIA labels, keyboard navigation)
-10. Performance (avoid unnecessary re-renders, optimize queries)
-11. Usability and user experience (intuitive workflows, clear feedback)
+7. Both plugin and standalone mode testing
+8. Accessibility (ARIA labels, keyboard navigation)
+9. Performance (avoid unnecessary re-renders, optimize queries)
+10. Usability and user experience (intuitive workflows, clear feedback)
 ```
 
 ## Testing
