@@ -74,7 +74,7 @@ describe('(OCP-56222 Network_Observability) Quick Filters test', { tags: ['Netwo
     })
 
     afterEach("each test", function () {
-        netflowPage.resetClearFilters()
+        netflowPage.clearAllFilters()
     })
 
     after("all tests", function () {
