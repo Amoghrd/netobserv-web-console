@@ -14,10 +14,6 @@ metadata:
   labels:
     app: nginx
 spec:
-  securityContext:     
-    runAsNonRoot: true
-    seccompProfile:
-      type: RuntimeDefault
   replicas: 1
   selector:
     matchLabels:
@@ -27,13 +23,17 @@ spec:
       labels:
         app: nginx
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: nginx
         securityContext:
           allowPrivilegeEscalation: false
+          privileged: false
           capabilities:
             drop: ["ALL"]
-            privileged: false
         image: quay.io/openshifttest/nginx-alpine:1.2.3
         imagePullPolicy: IfNotPresent
         ports:
@@ -92,9 +92,9 @@ spec:
     image: quay.io/openshifttest/hello-openshift:multiarch
     securityContext:
       allowPrivilegeEscalation: false
+      privileged: false
       capabilities:
         drop: ["ALL"]
-        privileged: false
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault

@@ -91,19 +91,19 @@ export const Operator = {
         // if user still does not have admin access
         // try few more times
         cy.contains("openshift-netobserv-operator").should('be.visible')
-        cy.get("div.loading-box").should('be.visible').then(() => {
-            for (let retries = 0; retries <= 15; retries++) {
-                cy.get("div.loading-box").should('be.visible')
-                if (Cypress.$('.co-disabled').length == 1) {
-                    cy.log(`user does not have access ${retries}`)
+
+        const waitForAccess = (retries = 15) => {
+            cy.get("div.loading-box").should('be.visible')
+            cy.document().then(doc => {
+                if (doc.querySelectorAll('.co-disabled').length > 0 && retries > 0) {
+                    cy.log(`user does not have access, retries left: ${retries}`)
                     cy.wait(5000)
                     cy.reload(true)
+                    waitForAccess(retries - 1)
                 }
-                else {
-                    break;
-                }
-            }
-        })
+            })
+        }
+        waitForAccess()
         // don't install operator if its already installed
         cy.get("div.loading-box").should('be.visible').then(loading => {
             if (Cypress.$('td[role="gridcell"]').length == 0) {
