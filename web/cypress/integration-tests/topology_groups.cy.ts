@@ -41,15 +41,10 @@ describe("(OCP-53591 Network_Observability) Netflow Topology groups features", {
             fixture: 'flowmetrics/owner.json'
         }).as('matchedUrl')
 
-        // using slider
-        let lastRefresh = Cypress.$("#lastRefresh").text()
-        cy.log(`last refresh is ${lastRefresh}`)
-        cy.get('#scope-step-2 >  div:nth-child(2) > button').click().then(slider => {
-            netflowPage.waitForLokiQuery()
-            cy.wait(3000)
-            cy.get('#lastRefresh').invoke('text').should('not.eq', lastRefresh)
-        })
-
+        // selecting something different first
+        // to re-trigger API request on owner selection
+        topologyPage.selectScopeGroup("namespace")
+        topologyPage.selectScopeGroup(scope)
         cy.wait('@matchedUrl').then(({ response }) => {
             expect(response?.statusCode).to.eq(200)
         })

@@ -57,6 +57,7 @@ describe('(OCP-56222 Network_Observability) Quick Filters test', { tags: ['Netwo
         cy.get('[data-test-td-column-id=DstK8S_Namespace]').each((td) => {
             expect(td).to.contain(CLIENT_NS)
         })
+        netflowPage.clearAllFilters()
     })
 
     it("(OCP-56222, memodi, Network_Observability) should verify quick filters remove", function () {
@@ -74,7 +75,7 @@ describe('(OCP-56222 Network_Observability) Quick Filters test', { tags: ['Netwo
     })
 
     afterEach("each test", function () {
-        netflowPage.clearAllFilters()
+        netflowPage.resetClearFilters()
     })
 
     after("all tests", function () {

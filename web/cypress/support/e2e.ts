@@ -13,3 +13,4 @@
 import '@cypress/grep'
 import './commands'
 import './selectors'
+import '../views/netflow-page'
