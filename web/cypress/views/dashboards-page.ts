@@ -6,26 +6,12 @@ export const dashboard = {
     visitDashboard: (dashboardName: string) => {
         cy.visit(`/monitoring/dashboards/${dashboardName}`)
 
-        // Revert once https://issues.redhat.com/browse/OCPBUGS-57307 is fixed
-        // cy.get('#refresh-interval-dropdown-dropdown').should('exist').then(btn => {
-        //     cy.wrap(btn).click().then(drop => {
-        //         cy.contains('15 seconds').should('exist').click()
-        //     })
-        // })
-        cy.get('label[for="refresh-interval-dropdown"]').parent().parent().parent().within(() => {
-            cy.get('button').click()
-        })
+        // Set refresh interval to 15 seconds
+        cy.get('#refresh-interval-dropdown-dropdown').should('exist').click()
         cy.contains('15 seconds').should('exist').click()
 
-        // Revert once https://issues.redhat.com/browse/OCPBUGS-57307 is fixed
-        // cy.get('#monitoring-time-range-dropdown-dropdown').should('exist').then(btn => {
-        //     cy.wrap(btn).click().then(drop => {
-        //         cy.contains('Last 5 minutes').should('exist').click()
-        //     })
-        // })
-        cy.get('label[for="monitoring-time-range-dropdown"]').parent().parent().parent().within(() => {
-            cy.get('button').click()
-        })
+        // Set time range to Last 5 minutes
+        cy.get('#monitoring-time-range-dropdown-dropdown').should('exist').click()
         cy.contains('Last 5 minutes').should('exist').click()
 
         // to load all the graphs on the dashboard
@@ -36,23 +22,18 @@ export const dashboard = {
 }
 
 export namespace dashboardSelectors {
-    export const flowStatsToggle = '[data-test-id=panel-flowlogs-pipeline-statistics] > div > div > div > button'
-    export const ebpfStatsToggle = '[data-test-id=panel-e-bpf-agent-statistics]> div > div > div > button'
-    export const operatorStatsToggle = '[data-test-id=panel-operator-statistics] > div > div > div > button'
-    export const resourceStatsToggle = '[data-test-id=panel-resource-usage] > div > div > div > button'
-    export const top10PerRouteToggle = '[data-test-id=panel-top-10-per-route] > div > div > div > button'
-    export const top10PerNamespaceToggle = '[data-test-id=panel-top-10-per-namespace] > div > div > div > button'
-    export const top10PerShardToggle = '[data-test-id=panel-top-10-per-shard] > div > div > div > button'
+    export const flowStatsToggle = '[data-test-id=panel-flowlogs-pipeline-statistics] button:first'
+    export const ebpfStatsToggle = '[data-test-id=panel-e-bpf-agent-statistics] button:first'
+    export const operatorStatsToggle = '[data-test-id=panel-operator-statistics] button:first'
+    export const resourceStatsToggle = '[data-test-id=panel-resource-usage] button:first'
+    export const top10PerRouteToggle = '[data-test-id=panel-top-10-per-route] button:first'
+    export const top10PerNamespaceToggle = '[data-test-id=panel-top-10-per-namespace] button:first'
+    export const top10PerShardToggle = '[data-test-id=panel-top-10-per-shard] button:first'
 }
 
 export const graphSelector = {
-    graphBody: '.pf-v6-c-card__body > div > div'
+    graphBody: '[role="region"]'
 }
-
-export const appsInfra = [
-    "applications-chart",
-    "infrastructure-chart"
-]
 
 Cypress.Commands.add('checkDashboards', (names) => {
     for (let i = 0; i < names.length; i++) {
@@ -68,7 +49,7 @@ Cypress.Commands.add('checkDashboards', (names) => {
         // Check that graph body doesn't have empty state - use a custom retry mechanism
         cy.byTestID(names[i], { timeout: 120000 }).first().within(() => {
             cy.get(graphSelector.graphBody, { timeout: 120000 }).should($body => {
-                const hasEmptyState = $body.hasClass('pf-v6-c-empty-state')
+                const hasEmptyState = $body.find('[data-test="empty-state"]').length > 0
                 if (hasEmptyState) {
                     // Force a retry by throwing an error
                     throw new Error('Dashboard panel still showing empty state, retrying...')
