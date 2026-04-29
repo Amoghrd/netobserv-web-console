@@ -1,10 +1,22 @@
-import { colSelectors, filterSelectors, netflowPage, setupTopologyViewWithNamespaceFilter, topologyPage, topologySelectors } from "@views/netflow-page"
+import { colSelectors, filterSelectors, netflowPage, topologyPage, topologySelectors } from "@views/netflow-page"
 import { Operator } from "@views/netobserv"
-describe('(OCP-81751 Network_Observability) UDN test', { tags: ['Network_Observability'] }, function () {
+import { catalogSources } from "@views/catalog-source"
+
+describe('(OCP-81751) UDN test', { tags: ['Network_Observability'] }, function () {
 
     before('any test', function () {
         cy.adminCLI(`oc adm policy add-cluster-role-to-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
         cy.uiLogin(Cypress.env('LOGIN_IDP'), Cypress.env('LOGIN_USERNAME'), Cypress.env('LOGIN_PASSWORD'))
+
+        // UDN is only supported from OCP 4.18 onwards
+        catalogSources.getOCPVersion()
+        cy.get('@VERSION').then((version) => {
+            const ocpVersion = parseFloat(version as string)
+            if (ocpVersion < 4.18) {
+                cy.log(`Skipping UDN tests - OCP version ${version} is less than 4.18`)
+                this.skip()
+            }
+        })
 
         Operator.install()
         cy.checkStorageClass(this)
@@ -19,7 +31,7 @@ describe('(OCP-81751 Network_Observability) UDN test', { tags: ['Network_Observa
     })
 
     it("(OCP-81751, aramesha) should verify default Network Name columns", function () {
-        cy.get('#tabs-container li:nth-child(2)').click()
+        cy.get('#tabs-container').contains('Traffic flows').click()
         cy.byTestID("table-composable").should('exist')
         netflowPage.stopAutoRefresh()
 
@@ -31,10 +43,10 @@ describe('(OCP-81751 Network_Observability) UDN test', { tags: ['Network_Observa
     })
 
     it("(OCP-81751, aramesha) should verify network scope", function () {
-        setupTopologyViewWithNamespaceFilter()
+        topologyPage.setupWithNamespaceFilter()
 
         const scope = 'network'
-        topologyPage.selectScopeGroup(scope, null)
+        topologyPage.selectScopeGroup(scope)
         topologyPage.isViewRendered()
 
         // Filter on empty CUDN
@@ -56,7 +68,7 @@ describe('(OCP-81751 Network_Observability) UDN test', { tags: ['Network_Observa
     })
 
     after("all tests", function () {
-        cy.adminCLI('oc delete -f cypress/fixtures/test-udn.yaml')
+        cy.adminCLI('oc delete -f cypress/fixtures/test-udn.yaml --ignore-not-found')
         Operator.deleteFlowCollector()
         cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })
