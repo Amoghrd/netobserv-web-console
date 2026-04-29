@@ -1,0 +1,89 @@
+import { Operator } from "@views/netobserv"
+import { displayDropdownSelectors, netflowPage, querySumSelectors } from "@views/netflow-page"
+import { dashboard, graphSelector } from "@views/dashboards-page"
+
+const metricType = [
+    "Bytes",
+    "Packets",
+    "RTT"
+]
+
+const flowRTTPanels = [
+    // below 2 panels should appear with the 'node_rtt_seconds' metric
+    "top-p50-srtt-per-node-(ms)-chart",
+    "top-p99-srtt-per-node-(ms)-chart",
+    // below 2 panels should appear with the 'namespace_rtt_seconds' metric
+    "top-p50-srtt-per-infra-namespace-(ms)-chart",
+    "top-p99-srtt-per-infra-namespace-(ms)-chart",
+    // below 2 panels should appear with the 'workload_rtt_seconds' metric
+    "top-p50-srtt-per-infra-workload-(ms)-chart",
+    "top-p99-srtt-per-infra-workload-(ms)-chart"
+]
+
+describe('(OCP-68246 Network_Observability) FlowRTT test', { tags: ['Network_Observability'] }, function () {
+
+    before('any test', function () {
+        cy.adminCLI(`oc adm policy add-cluster-role-to-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
+        cy.uiLogin(Cypress.env('LOGIN_IDP'), Cypress.env('LOGIN_USERNAME'), Cypress.env('LOGIN_PASSWORD'))
+
+        Operator.install()
+        cy.checkStorageClass(this)
+        Operator.createFlowcollector("FlowRTT")
+    })
+
+    it("(OCP-68246, aramesha, Network_Observability) Validate flowRTT edge labels and Query Summary stats", function () {
+        netflowPage.visit()
+        cy.get('#tabs-container').contains('Topology').click()
+        cy.get('#drawer').should('not.be.empty')
+
+        cy.byTestID("show-view-options-button").should('exist').click().then(views => {
+            cy.get(displayDropdownSelectors.overview).should('exist').click()
+            // set one display to test with
+            cy.byTestID('layout-dropdown').click()
+            cy.byTestID('Grid').click()
+        })
+
+        cy.byTestID('metricType').should('exist').click()
+        cy.get('#metricType > ul > li').should('have.length', 3).each((item, index) => {
+            cy.wrap(item).should('contain.text', metricType[index])
+        })
+
+        cy.get('#TimeFlowRttNs').click()
+        cy.byTestID("scope-dropdown").click().byTestID("host").click()
+        cy.get(displayDropdownSelectors.overview).should('exist').click()
+
+        // Filter with Protocol=TCP
+        cy.byTestID("column-filter-toggle").click().get('.pf-c-dropdown__menu').should('be.visible')
+        cy.get('#group-2-toggle').click().should('be.visible')
+        cy.byTestID('protocol').click()
+        cy.get('#autocomplete-search').type('TCP' + '{enter}')
+
+        cy.get('[data-test-id=edge-handler]').each((g) => {
+            expect(g.text()).to.match(/\d+\s*ms/);
+        });
+        netflowPage.clearAllFilters()
+
+        // verify Query summary panel
+        cy.get(querySumSelectors.avgRTT).should('exist').then(avgRTT => {
+            cy.checkQuerySummary(avgRTT)
+        })
+        netflowPage.resetClearFilters()
+    })
+
+    it("(OCP-68246, aramesha, Network_Observability) Validate flowRTT dashboards", function () {
+        // navigate to 'NetObserv / Main' Dashboard page
+        dashboard.visit()
+        dashboard.visitDashboard("netobserv-main")
+
+        // verify 'TCP latency,p99' panel
+        cy.checkDashboards(['tcp-latency,-p99-chart'])
+
+        cy.checkDashboards(flowRTTPanels)
+    })
+
+    after("all tests", function () {
+        Operator.deleteFlowCollector()
+        cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
+    })
+})
+

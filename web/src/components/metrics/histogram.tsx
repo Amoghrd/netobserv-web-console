@@ -264,6 +264,7 @@ export const Histogram: React.FC<HistogramProps> = ({
             isVisible={tooltipsTrigger === 'manual' ? false : undefined}
           >
             <Button
+              data-test="histogram-double-left"
               variant="plain"
               className={`metrics-content-button ${loading ? 'loading' : ''}`}
               onClick={() => moveRange(false)}
@@ -278,6 +279,7 @@ export const Histogram: React.FC<HistogramProps> = ({
             isVisible={tooltipsTrigger === 'manual' ? false : undefined}
           >
             <Button
+              data-test="histogram-single-left"
               variant="plain"
               className={`metrics-content-button ${loading ? 'loading' : ''}`}
               onClick={() => moveHistogramRange(false)}
@@ -297,6 +299,7 @@ export const Histogram: React.FC<HistogramProps> = ({
             isVisible={tooltipsTrigger === 'manual' ? false : undefined}
           >
             <Button
+              data-test="histogram-single-right"
               variant="plain"
               className={`metrics-content-button ${loading ? 'loading' : ''}`}
               onClick={() => moveHistogramRange(true)}
@@ -310,6 +313,7 @@ export const Histogram: React.FC<HistogramProps> = ({
             isVisible={tooltipsTrigger === 'manual' ? false : undefined}
           >
             <Button
+              data-test="histogram-double-right"
               variant="plain"
               className={`metrics-content-button ${loading ? 'loading' : ''}`}
               onClick={() => moveRange(true)}
@@ -327,6 +331,7 @@ export const Histogram: React.FC<HistogramProps> = ({
                 isVisible={tooltipsTrigger === 'manual' ? false : undefined}
               >
                 <Button
+                  data-test="histogram-zoom-out"
                   variant="plain"
                   className={`metrics-content-button ${loading ? 'loading' : ''}`}
                   onClick={() => zoomRange(false)}
@@ -343,6 +348,7 @@ export const Histogram: React.FC<HistogramProps> = ({
                 isVisible={tooltipsTrigger === 'manual' ? false : undefined}
               >
                 <Button
+                  data-test="histogram-zoom-in"
                   variant="plain"
                   className={`metrics-content-button ${loading ? 'loading' : ''}`}
                   onClick={() => zoomRange(true)}

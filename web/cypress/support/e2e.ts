@@ -9,4 +9,8 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
+// Import types to enable tags in describe/it blocks
+import '@cypress/grep'
 import './commands'
+import './selectors'
+import '../views/netflow-page'

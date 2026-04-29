@@ -39,6 +39,7 @@
 // }
 
 import * as c from './const';
+import { guidedTour } from '@views/tour';
 
 Cypress.Commands.add('openNetflowTrafficPage', (clearCache = true) => {
   if (clearCache) {
@@ -56,6 +57,7 @@ Cypress.Commands.add('showAdvancedOptions', () => {
         return;
       } else {
         cy.get('#show-view-options-button').click();
+        cy.get('[data-test-id="view-options-toolbar"]').should('be.visible');
       }
     })
 });
@@ -211,7 +213,120 @@ declare global {
       changeTimeRange(name: string, topology?: boolean): Chainable<Element>
       changeMetricFunction(name: string): Chainable<Element>
       changeMetricType(name: string): Chainable<Element>
-      checkRecordField(field: string, name: string, values: string[])
+      checkRecordField(field: string, name: string, values: string[]): Chainable<Element>
+      switchPerspective(perspective: string): Chainable<Element>
+      login(provider: string, username: string, password: string): Chainable<Element>
+      uiLogin(provider: string, username: string, password: string): Chainable<Element>
+      uiLogout(): Chainable<Element>
+      cliLogin(username?: string, password?: string, hostapi?: string): Chainable<Element>
+      adminCLI(command: string, options?: any): Chainable<Element>
+      retryTask(condition: string, expectedoutput: string, options?: any): Chainable<boolean>
+      checkCommandResult(condition: string, expectedoutput: string, options?: any): Chainable<void>
     }
   }
 }
+const kubeconfig = Cypress.env('KUBECONFIG_PATH');
+const DEFAULT_RETRY_OPTIONS = { retries: 3, interval: 10000 };
+
+Cypress.Commands.add("switchPerspective", (perspective: string) => {
+    cy.get('body').then(($body) => {
+        if ($body.find('.pf-m-collapsed').length > 0) {
+            cy.get('#nav-toggle').click()
+        }
+
+        const currentPerspective = $body.find('[data-test-id="perspective-switcher-toggle"]').text();
+        if (currentPerspective.includes(perspective)) {
+            cy.log('Already on ' + perspective + ' perspective');
+            return;
+        }
+
+        cy.byLegacyTestID('perspective-switcher-toggle').click();
+        cy.byLegacyTestID(`perspective-switcher-menu-option-${perspective.toLowerCase()}`).click();
+    });
+});
+
+Cypress.Commands.add("cliLogin", (username?, password?, hostapi?) => {
+  const loginUsername = username || Cypress.env('LOGIN_USERNAME');
+  const loginPassword = password || Cypress.env('LOGIN_PASSWORD');
+  const hostapiurl = hostapi || Cypress.env('HOST_API');
+  cy.exec(`oc login -u ${loginUsername} -p ${loginPassword} ${hostapiurl} --insecure-skip-tls-verify=true`, { failOnNonZeroExit: false })
+    .then(result => {
+      cy.log(result.stderr);
+      cy.log(result.stdout);
+  });
+});
+
+Cypress.Commands.add("adminCLI", (command: string, options?: {}) => {
+  cy.log(`Run admin command: ${command}`)
+  cy.exec(`${command} --kubeconfig ${kubeconfig}`, options)
+});
+
+Cypress.Commands.add('retryTask', (command: string, expectedOutput: string, options?: any) => {
+  const { retries, interval } = options || DEFAULT_RETRY_OPTIONS;
+
+  const retryTaskFn = (currentRetries: number): Cypress.Chainable<boolean> => {
+    return cy.exec(`${command} --kubeconfig ${kubeconfig}`)
+      .then((result: any) => {
+        if (result.stdout.includes(expectedOutput)) {
+          return cy.wrap(true);
+        } else if (currentRetries < retries) {
+          return cy.wait(interval).then(() => retryTaskFn(currentRetries + 1));
+        } else {
+          return cy.wrap(false);
+        }
+      });
+  };
+  return retryTaskFn(0);
+});
+
+Cypress.Commands.add("checkCommandResult", (command: string, expectedoutput: string, options?: any) => {
+  cy.retryTask(command, expectedoutput, options)
+    .then((conditionMet: boolean) =>{
+      if (!conditionMet) {
+        throw new Error(`"${command}" failed to meet expectedoutput ${expectedoutput} within ${options.retries} retries`);
+      }
+    })
+});
+
+Cypress.Commands.add('uiLogin', (provider: string, username: string, password: string)=> {
+  cy.clearCookie('openshift-session-token');
+  cy.visit('/');
+  cy.window().then((win: any) => {
+    if(win.SERVER_FLAGS?.authDisabled) {
+      cy.task('log', 'Skipping login, console is running with auth disabled');
+      return;
+    }
+  cy.get('[data-test-id="login"]').should('be.visible');
+  cy.get('body').then(($body) => {
+    if ($body.text().includes(provider)) {
+      cy.contains(provider).should('be.visible').click();
+    }else if ($body.find('li.idp').length > 0) {
+      cy.get('li.idp').last().click();
+    }
+  });
+  cy.get('#inputUsername').type(username);
+  cy.get('#inputPassword').type(password);
+  cy.get('button[type=submit]').click();
+  cy.byTestID("username", {timeout: 120000})
+    .should('be.visible');
+  });
+  guidedTour.close();
+  cy.switchPerspective('Administrator');
+});
+
+Cypress.Commands.add('login', (provider: string, username: string, password: string) => {
+  cy.uiLogin(provider, username, password);
+});
+
+Cypress.Commands.add('uiLogout', () => {
+  cy.window().then((win: any) => {
+    if (win.SERVER_FLAGS?.authDisabled){
+      cy.log('Skipping logout, console is running with auth disabled');
+      return;
+    }
+    cy.log('Loggin out UI');
+    cy.byTestID('user-dropdown').click();
+    cy.byTestID('log-out').should('be.visible');
+    cy.byTestID('log-out').click({ force: true });
+  })
+});
