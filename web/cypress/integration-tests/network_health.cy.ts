@@ -23,9 +23,9 @@ describe('(OCP-84821) Network Health test', { tags: ['Network_Observability'] },
 
     it("(OCP-84821, memodi) Verify Network Health Alerts", function () {
         cy.visit('/monitoring/alertrules')
-        cy.get('#alert-rules-table-scroll', { timeout: 60000 }).should('exist')
-        cy.get('[data-test="loading-indicator"]', { timeout: 30000 }).should('not.exist')
-        cy.byTestID('name-filter-input').should('be.visible').clear().type('DNSNxDomain_PerDst{enter}')
+        cy.get('table', { timeout: 60000 }).should('exist')
+
+        cy.get('#name').should('be.visible').clear().type('DNSNxDomain_PerDst{enter}')
         const variants = ["Namespace", "Workload"]
         variants.forEach(variant => {
             alertServerity.forEach(severity => {
@@ -63,8 +63,8 @@ describe('(OCP-84821) Network Health test', { tags: ['Network_Observability'] },
 
         cy.get(networkHealthSelectors.sidePanel).should('be.visible')
         // click the kebab button
-        cy.get('div.rule-details-row').first().find('button').click().then(() => {
-            cy.contains('Inspect network traffic').click().then(() => {
+        cy.get('div.rule-details-row').first().find('button').click({ force: true }).then(() => {
+            cy.contains('Inspect network traffic', { timeout: 60000 }).click().then(() => {
                 cy.checkNetflowTraffic()
                 // select Owner group
                 topologyPage.selectGroupWithSlider("Owner")

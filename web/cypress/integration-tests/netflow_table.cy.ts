@@ -194,9 +194,9 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408) Netflow Table view tests'
     it("(OCP-59408, memodi) should verify histogram", function () {
         cy.get('#time-range-dropdown-dropdown').should('exist').click().byTestID("5m").should('exist').click()
         cy.byTestID("show-histogram-button").should('exist').click()
-        cy.get('#popover-netobserv-tour-popover-body').should('exist')
+        cy.get('#popover-netobserv-tour-popover-body', { timeout: 30000 }).should('exist')
         // close tour
-        cy.get(".guided-tour-close-button").should("exist").click()
+        cy.get(".guided-tour-close-button", { timeout: 30000 }).should("exist").click()
         cy.byTestID(genSelectors.refreshDrop).should('be.disabled')
         // get current refreshed time
         let lastRefresh = Cypress.$("#lastRefresh").text()

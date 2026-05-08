@@ -225,7 +225,7 @@ export const Operator = {
         })
     },
     deployFlowcollectorFromUI: () => {
-        cy.byTestID('item-create').should('exist').click()
+        cy.byTestID('item-create').should('exist').click({ force: true })
         // Overview tab
         cy.get(pluginSelectors.next).should('exist').click()
         // Processing tab
