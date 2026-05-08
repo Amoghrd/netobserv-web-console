@@ -1,3 +1,18 @@
+import { catalogSources } from "@views/catalog-source"
+
+// Helper function to click dashboard dropdown based on OCP version
+const clickDashboardDropdown = (labelText: string, ocpVersion: number) => {
+    if (ocpVersion < 4.19) {
+        // OCP 4.18 and below: button is in parent.parent.parent
+        cy.contains('label', labelText).parent().parent().parent().within(() => {
+            cy.get('button').click()
+        })
+    } else {
+        // OCP 4.19+: button is in parent's siblings
+        cy.contains('label', labelText).parent().siblings().find('button').first().click()
+    }
+}
+
 export const dashboard = {
     visit: () => {
         cy.visit('/monitoring/dashboards')
@@ -6,11 +21,21 @@ export const dashboard = {
     visitDashboard: (dashboardName: string) => {
         cy.visit(`/monitoring/dashboards/${dashboardName}`)
 
-        cy.contains('label', 'Refresh interval').parent().siblings().find('button').first().click()
-        cy.contains('15 seconds').should('exist').click()
+        // Get OCP version to use appropriate selectors
+        catalogSources.getOCPVersion()
 
-        cy.contains('label', 'Time range').parent().siblings().find('button').first().click()
-        cy.contains('Last 5 minutes').should('exist').click()
+        // Use version-specific selectors for dashboard controls
+        cy.get('@VERSION').then((version) => {
+            const ocpVersion = parseFloat(String(version))
+
+            // Set refresh interval to 15 seconds
+            clickDashboardDropdown('Refresh interval', ocpVersion)
+            cy.contains('15 seconds').should('exist').click()
+
+            // Set time range to last 5 minutes
+            clickDashboardDropdown('Time range', ocpVersion)
+            cy.contains('Last 5 minutes').should('exist').click()
+        })
 
         // to load all the graphs on the dashboard
         cy.wait(1000)
