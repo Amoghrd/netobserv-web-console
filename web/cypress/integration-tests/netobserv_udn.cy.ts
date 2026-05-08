@@ -3,7 +3,6 @@ import { Operator } from "@views/netobserv"
 import { catalogSources } from "@views/catalog-source"
 
 describe('(OCP-81751) UDN test', { tags: ['Network_Observability'] }, function () {
-
     before('any test', function () {
         cy.adminCLI(`oc adm policy add-cluster-role-to-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
         cy.uiLogin(Cypress.env('LOGIN_IDP'), Cypress.env('LOGIN_USERNAME'), Cypress.env('LOGIN_PASSWORD'))
@@ -23,7 +22,7 @@ describe('(OCP-81751) UDN test', { tags: ['Network_Observability'] }, function (
         Operator.createFlowcollector("UDNMapping")
 
         // deploy UDN and CUDN
-        cy.adminCLI('oc create -f cypress/fixtures/test-udn.yaml')
+        cy.adminCLI('oc apply -f cypress/fixtures/test-udn.yaml')
     })
 
     beforeEach('any UDN test', function () {
@@ -68,8 +67,18 @@ describe('(OCP-81751) UDN test', { tags: ['Network_Observability'] }, function (
     })
 
     after("all tests", function () {
-        cy.adminCLI('oc delete -f cypress/fixtures/test-udn.yaml --ignore-not-found')
-        Operator.deleteFlowCollector()
-        cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
+        // Skip cleanup if test was skipped (OCP < 4.18)
+        catalogSources.getOCPVersion()
+        cy.get('@VERSION').then((version) => {
+            const ocpVersion = parseFloat(String(version))
+            if (ocpVersion < 4.18) {
+                cy.log(`Skipping cleanup - OCP version ${version} is less than 4.18`)
+                cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
+            } else {
+                cy.adminCLI('oc delete -f cypress/fixtures/test-udn.yaml --ignore-not-found')
+                Operator.deleteFlowCollector()
+                cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
+            }
+        })
     })
 })

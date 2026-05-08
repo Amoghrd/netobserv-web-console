@@ -56,17 +56,17 @@ describe("(OCP-87215) Gateway API owner metadata", { tags: ['Network_Observabili
 
     after("all tests", function () {
         // Skip cleanup if test was skipped (OCP < 4.19)
+        catalogSources.getOCPVersion()
         cy.get('@VERSION').then((version) => {
             const ocpVersion = parseFloat(String(version))
             if (ocpVersion < 4.19) {
                 cy.log(`Skipping cleanup - OCP version ${version} is less than 4.19`)
                 cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
-                return
+            } else {
+                cy.adminCLI('oc delete -f cypress/fixtures/gateway-api.yaml --ignore-not-found')
+                Operator.deleteFlowCollector()
+                cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
             }
-
-            cy.adminCLI('oc delete -f cypress/fixtures/gateway-api.yaml --ignore-not-found')
-            Operator.deleteFlowCollector()
-            cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
         })
     })
 })
