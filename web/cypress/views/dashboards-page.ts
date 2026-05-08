@@ -1,18 +1,3 @@
-import { catalogSources } from "@views/catalog-source"
-
-// Helper function to click dashboard dropdown based on OCP version
-const clickDashboardDropdown = (labelText: string, ocpVersion: number) => {
-    if (ocpVersion < 4.19) {
-        // OCP 4.18 and below: button is in parent.parent.parent
-        cy.contains('label', labelText).parent().parent().parent().within(() => {
-            cy.get('button').click()
-        })
-    } else {
-        // OCP 4.19+: button is in parent's siblings
-        cy.contains('label', labelText).parent().siblings().find('button').first().click()
-    }
-}
-
 export const dashboard = {
     visit: () => {
         cy.visit('/monitoring/dashboards')
@@ -21,21 +6,30 @@ export const dashboard = {
     visitDashboard: (dashboardName: string) => {
         cy.visit(`/monitoring/dashboards/${dashboardName}`)
 
-        // Get OCP version to use appropriate selectors
-        catalogSources.getOCPVersion()
-
-        // Use version-specific selectors for dashboard controls
-        cy.get('@VERSION').then((version) => {
-            const ocpVersion = parseFloat(String(version))
-
-            // Set refresh interval to 15 seconds
-            clickDashboardDropdown('Refresh interval', ocpVersion)
-            cy.contains('15 seconds').should('exist').click()
-
-            // Set time range to last 5 minutes
-            clickDashboardDropdown('Time range', ocpVersion)
-            cy.contains('Last 5 minutes').should('exist').click()
+        // Handle different DOM structures between PF5 (OCP 4.18) and PF6 (OCP 4.19+)
+        // PF5: label and button are in the same parent div
+        // PF6: label is in one div, button is in the first sibling div
+        cy.contains('label', 'Refresh interval').parent().then($parent => {
+            if (Cypress.$($parent).find('button').length > 0) {
+                // PF5: button is in the same parent
+                cy.wrap($parent).within(() => cy.get('button').click())
+            } else {
+                // PF6: button is in the first sibling
+                cy.wrap($parent).siblings().first().find('button').click()
+            }
         })
+        cy.contains('15 seconds').should('exist').click()
+
+        cy.contains('label', 'Time range').parent().then($parent => {
+            if (Cypress.$($parent).find('button').length > 0) {
+                // PF5: button is in the same parent
+                cy.wrap($parent).within(() => cy.get('button').click())
+            } else {
+                // PF6: button is in the first sibling
+                cy.wrap($parent).siblings().first().find('button').click()
+            }
+        })
+        cy.contains('Last 5 minutes').should('exist').click()
 
         // to load all the graphs on the dashboard
         cy.wait(1000)
