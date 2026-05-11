@@ -7,6 +7,8 @@ const gatewayNS = 'netobserv-gateway-test'
 const gatewayName = 'test-gateway-owner'
 
 describe("(OCP-87215) Gateway API owner metadata", { tags: ['Network_Observability'] }, function () {
+    let skipTest = false
+
     before('any test', function () {
         cy.adminCLI(`oc adm policy add-cluster-role-to-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
         cy.uiLogin(Cypress.env('LOGIN_IDP'), Cypress.env('LOGIN_USERNAME'), Cypress.env('LOGIN_PASSWORD'))
@@ -17,22 +19,26 @@ describe("(OCP-87215) Gateway API owner metadata", { tags: ['Network_Observabili
             const ocpVersion = parseFloat(String(version))
             if (ocpVersion < 4.19) {
                 cy.log(`Skipping Gateway test - OCP version ${version} is less than 4.19`)
+                skipTest = true
                 this.skip()
             }
+        }).then(() => {
+            // Only run setup if test is not being skipped
+            if (!skipTest) {
+                Operator.install()
+                cy.checkStorageClass(this)
+                Operator.createFlowcollector("FlowRTT")
+
+                cy.adminCLI('oc apply -f cypress/fixtures/gateway-api.yaml')
+
+                // Wait for pods to be created
+                cy.wait(10000)
+
+                // Wait for pods to be ready
+                cy.adminCLI('oc wait --for=condition=Ready pod -l app=traffic-generator -n netobserv-gateway-test --timeout=120s')
+                cy.adminCLI('oc wait --for=condition=Ready pod -l app=echo-server -n netobserv-gateway-test --timeout=120s')
+            }
         })
-
-        Operator.install()
-        cy.checkStorageClass(this)
-        Operator.createFlowcollector("FlowRTT")
-
-        cy.adminCLI('oc apply -f cypress/fixtures/gateway-api.yaml')
-
-        // Wait for pods to be created
-        cy.wait(10000)
-
-        // Wait for pods to be ready
-        cy.adminCLI('oc wait --for=condition=Ready pod -l app=traffic-generator -n netobserv-gateway-test --timeout=120s')
-        cy.adminCLI('oc wait --for=condition=Ready pod -l app=echo-server -n netobserv-gateway-test --timeout=120s')
     })
 
     beforeEach("navigate to topology view", function () {
@@ -55,18 +61,14 @@ describe("(OCP-87215) Gateway API owner metadata", { tags: ['Network_Observabili
     })
 
     after("all tests", function () {
-        // Skip cleanup if test was skipped (OCP < 4.19)
-        catalogSources.getOCPVersion()
-        cy.get('@VERSION').then((version) => {
-            const ocpVersion = parseFloat(String(version))
-            if (ocpVersion < 4.19) {
-                cy.log(`Skipping cleanup - OCP version ${version} is less than 4.19`)
-                cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
-            } else {
-                cy.adminCLI('oc delete -f cypress/fixtures/gateway-api.yaml --ignore-not-found')
-                Operator.deleteFlowCollector()
-                cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
-            }
-        })
+        if (skipTest) {
+            cy.log('Skipping cleanup - test was not run')
+            cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
+            return
+        }
+
+        cy.adminCLI('oc delete -f cypress/fixtures/gateway-api.yaml --ignore-not-found')
+        Operator.deleteFlowCollector()
+        cy.adminCLI(`oc adm policy remove-cluster-role-from-user cluster-admin ${Cypress.env('LOGIN_USERNAME')}`)
     })
 })
