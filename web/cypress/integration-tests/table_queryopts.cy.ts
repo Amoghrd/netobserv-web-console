@@ -86,7 +86,7 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408) Netflow Table Query Optio
         netflowPage.stopAutoRefresh()
         cy.openColumnsModal().then(col => {
             cy.get(colSelectors.columnsModal).should('be.visible')
-            cy.get('#Dscp').check()
+            cy.get(colSelectors.dscp).check()
             cy.byTestID(colSelectors.save).click()
         })
         cy.reload()

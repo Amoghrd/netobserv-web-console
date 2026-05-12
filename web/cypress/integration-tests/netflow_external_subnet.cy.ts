@@ -23,8 +23,8 @@ describe('(OCP-67615, OCP-72874) Return external traffic and custom subnet label
         // enable SrcSubnetLabel and DstSubnetLabel columns
         cy.openColumnsModal().then(col => {
             cy.get(colSelectors.columnsModal).should('be.visible')
-            cy.get('#SrcSubnetLabel').check()
-            cy.get('#DstSubnetLabel').check()
+            cy.get(colSelectors.srcSubnetLabel).check()
+            cy.get(colSelectors.dstSubnetLabel).check()
             cy.byTestID(colSelectors.save).click()
         })
 

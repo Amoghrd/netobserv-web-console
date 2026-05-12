@@ -63,12 +63,12 @@ describe('(OCP-67087) DNSTracking test', { tags: ['Network_Observability'] }, fu
         cy.get(filterSelectors.filterInput).type("dst_namespace=" + project + '{enter}')
         cy.get(filterSelectors.filterInput).type("dns_name=" + dns_name + '{enter}')
 
-        // select DNS Id and DNS Error columns
+        // select DNS Id, DNS Error and DNS Name columns
         cy.openColumnsModal().then(col => {
             cy.get(colSelectors.columnsModal).should('be.visible')
-            cy.get('#DNSId').check()
-            cy.get('#DNSErrNo').check()
-            cy.get('#DNSName').check()
+            cy.get(colSelectors.dnsId).check()
+            cy.get(colSelectors.dnsError).check()
+            cy.get(colSelectors.dnsName).check()
             cy.byTestID(colSelectors.save).click()
         })
 
@@ -79,7 +79,7 @@ describe('(OCP-67087) DNSTracking test', { tags: ['Network_Observability'] }, fu
             cy.get(colSelectors.dnsName).should('exist')
         })
 
-        // Verify DNSName column for all rows
+        // Verify DNSName value for all rows
         cy.get('[data-test-td-column-id="DNSName"]').each((td) => {
             expect(td).to.contain(`${dns_name}`)
         })
