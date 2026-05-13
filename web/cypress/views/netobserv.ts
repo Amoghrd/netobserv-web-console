@@ -65,6 +65,15 @@ export const Operator = {
             return "Network Observability"
         }
     },
+    getCSVName: () => {
+        return cy.adminCLI('oc get csv -n openshift-netobserv-operator --no-headers -o custom-columns=":metadata.name"')
+            .then((result: any) => {
+                const csvName = result.stdout.trim().split('\n').find((line: string) =>
+                    line.includes('netobserv-operator') || line.includes('network-observability-operator')
+                )
+                return csvName
+            })
+    },
     install_catalogsource: () => {
         let catalogDisplayName = "Production Operators"
         let catalogImg: string
@@ -93,38 +102,20 @@ export const Operator = {
         }
 
         // Check operator status via CLI
-        cy.adminCLI('oc get csv -n openshift-netobserv-operator --no-headers 2>/dev/null || echo "NotFound"')
-            .then((result: any) => {
-                // Check for both upstream (netobserv-operator) and downstream (network-observability-operator)
-                const isInstalled = result.stdout &&
-                    (result.stdout.includes('netobserv-operator') || result.stdout.includes('network-observability-operator')) &&
-                    result.stdout.includes('Succeeded')
-
-                if (isInstalled) {
-                    cy.log('NetObserv Operator already installed')
-                    return
-                }
-
-                cy.log('Installing NetObserv Operator (not found or not ready)...')
+        Operator.getCSVName().then((csvName: any) => {
+            if (csvName) {
+                // CSV exists, check if it's in Succeeded state
+                cy.adminCLI(`oc get csv ${csvName} -n openshift-netobserv-operator -o jsonpath='{.status.phase}'`)
+                    .then((result: any) => {
+                        if (result.stdout.includes('Succeeded')) {
+                            cy.log('NetObserv Operator already installed')
+                        } else {
+                            throw new Error(`NetObserv Operator CSV exists but not in Succeeded state: ${result.stdout}`)
+                        }
+                    })
+            } else {
+                cy.log('Installing NetObserv Operator')
                 var catalogSource = Operator.install_catalogsource()
-
-                cy.visit(`/k8s/ns/openshift-netobserv-operator/operators.coreos.com~v1alpha1~ClusterServiceVersion`);
-                // if user still does not have admin access
-                // try few more times
-                cy.contains("openshift-netobserv-operator").should('be.visible')
-                cy.get("div.loading-box").should('be.visible').then(() => {
-                    for (let retries = 0; retries <= 15; retries++) {
-                        cy.get("div.loading-box").should('be.visible')
-                        if (Cypress.$('.co-disabled').length === 1) {
-                            cy.log(`user does not have access ${retries}`)
-                            cy.wait(5000)
-                            cy.reload(true)
-                        }
-                        else {
-                            break;
-                        }
-                    }
-                })
 
                 if (catSrc === "upstream") {
                     // metrics checkbox is not available for upstream operators
@@ -132,32 +123,18 @@ export const Operator = {
                 } else {
                     operatorHubPage.install("netobserv-operator", catalogSource, true)
                 }
-            })
+            }
+        })
     },
     visitFlowcollector: () => {
-        cy.visit('k8s/ns/openshift-netobserv-operator/operators.coreos.com~v1alpha1~ClusterServiceVersion')
-        const selector = '[data-test-operator-row="' + Operator.name() + '"]'
-
-        cy.get(selector, { timeout: 30000 })
-            .should('exist')
-            .invoke('attr', 'href')
-            .then((href) => {
-                cy.visit(href as string)
-            })
-
-        // Wait for operator details page to load
-        cy.get('div.loading-box__loaded', { timeout: 30000 }).should('exist')
-
-        // More specific selector for Flow Collector tab link
-        cy.contains('a', 'Flow Collector')
-            .should('exist')
-            .invoke('attr', 'href')
-            .then((href) => {
-                cy.visit(href as string)
-            })
-
-        // Verify we're on the FlowCollector page
-        cy.get('div.loading-box__loaded', { timeout: 30000 }).should('exist')
+        Operator.getCSVName().then((csvName: any) => {
+            if (csvName) {
+                cy.visit(`/k8s/ns/openshift-netobserv-operator/operators.coreos.com~v1alpha1~ClusterServiceVersion/${csvName}/flows.netobserv.io~v1beta2~FlowCollector`)
+                cy.get('div.loading-box__loaded', { timeout: 30000 }).should('exist')
+            } else {
+                throw new Error('NetObserv CSV not found')
+            }
+        })
     },
     createFlowcollector: (parameters?: FlowCollectorParameter) => {
         Operator.visitFlowcollector()
