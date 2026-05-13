@@ -170,11 +170,7 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408) Netflow Table view tests'
             cy.contains('Display options').should('exist').click()
             cy.byTestID('size-s').click()
             cy.contains('Display options').should('exist').click()
-            cy.openColumnsModal().then(col => {
-                cy.get(colSelectors.columnsModal).should('be.visible')
-                cy.get('#StartTime').check()
-                cy.byTestID(colSelectors.save).click()
-            })
+            cy.selectAndVerifyColumns([colSelectors.startTime])
             cy.byTestID("show-view-options-button").should('exist').click()
         })
 

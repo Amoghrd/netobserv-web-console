@@ -20,25 +20,12 @@ describe('Netflow Zone and multiCluster test', { tags: ['Network_Observability']
         cy.get('#tabs-container').contains('Traffic flows').click()
         cy.byTestID("table-composable").should('exist')
 
-        cy.openColumnsModal().then(col => {
-            cy.get(colSelectors.columnsModal).should('be.visible')
-            // Check zone columns
-            cy.get(colSelectors.srcZone).check()
-            cy.get(colSelectors.dstZone).check()
-
-            // Check multiCluster column
-            cy.get(colSelectors.clusterName).check()
-            cy.byTestID(colSelectors.save).click()
-        })
-
-        cy.byTestID('table-composable').should('exist').within(() => {
-            // Verify zone column
-            cy.get(colSelectors.srcZone).should('exist')
-            cy.get(colSelectors.dstZone).should('exist')
-
-            // Verify multiCluster column
-            cy.get(colSelectors.clusterName).should('exist')
-        })
+        // Check zone and multiCluster columns
+        cy.selectAndVerifyColumns([
+            colSelectors.srcZone,
+            colSelectors.dstZone,
+            colSelectors.clusterName
+        ])
     })
 
     it("(OCP-71524, aramesha) should verify zone/cluster scope topology", function () {

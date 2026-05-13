@@ -30,8 +30,6 @@ describe('(OCP-88966) TLSTracking test', { tags: ['Network_Observability'] }, fu
         cy.get(overviewSelectors.panelsModal).contains('Save').click();
         netflowPage.waitForLokiQuery()
         cy.checkPanelsNum(8);
-
-        netflowPage.waitForLokiQuery()
         cy.checkPanel(overviewSelectors.allTLSTrackingPanels)
 
         // restore default panels and verify they are visible
@@ -53,20 +51,11 @@ describe('(OCP-88966) TLSTracking test', { tags: ['Network_Observability'] }, fu
         })
 
         // select TLS Cipher Suite, TLS Group and TLS Types columns
-        cy.openColumnsModal().then(col => {
-            cy.get(colSelectors.columnsModal).should('be.visible')
-            cy.get(colSelectors.tlsCipherSuite).check()
-            cy.get(colSelectors.tlsGroup).check()
-            cy.get(colSelectors.tlsTypes).check()
-            cy.byTestID(colSelectors.save).click()
-        })
-
-        // verify they are visible in table view
-        cy.byTestID('table-composable').should('exist').within(() => {
-            cy.get(colSelectors.tlsCipherSuite).should('exist')
-            cy.get(colSelectors.tlsGroup).should('exist')
-            cy.get(colSelectors.tlsTypes).should('exist')
-        })
+        cy.selectAndVerifyColumns([
+            colSelectors.tlsCipherSuite,
+            colSelectors.tlsGroup,
+            colSelectors.tlsTypes
+        ])
 
         // add filter for tls_version= TLS 1.3 and tls_types = ServerHello
         cy.get(filterSelectors.filterInput).type("tls_version=TLS 1.3" + '{enter}')

@@ -6,6 +6,7 @@ declare global {
             checkPanel(panelName: string[]): Chainable<Element>
             openPanelsModal(): Chainable<Element>
             openColumnsModal(): Chainable<Element>
+            selectAndVerifyColumns(columnSelectors: string[]): Chainable<Element>
             checkPopItems(id: string, names: string[]): Chainable<Element>
             checkQuerySummary(metric: JQuery<HTMLElement>): Chainable<Element>
             checkPerformance(page: string, loadTime: number, memoryUsage: number): Chainable<Element>
@@ -190,6 +191,7 @@ export namespace colSelectors {
     export const packets = '#Packets'
     export const recordType = '#RecordType'
     export const conversationID = '#_HashId'
+    export const startTime = '#StartTime'
     export const flowRTT = '#TimeFlowRttMs'
     export const dscp = '#Dscp'
     export const dnsLatency = '#DNSLatency'
@@ -335,6 +337,28 @@ Cypress.Commands.add('openColumnsModal', () => {
     cy.get('#table-column-management').should('exist');
 });
 
+Cypress.Commands.add('selectAndVerifyColumns', (columnSelectors: string[]) => {
+    // Open the columns modal
+    cy.openColumnsModal().then(() => {
+        cy.get(colSelectors.columnsModal).should('be.visible');
+
+        // Check each column
+        columnSelectors.forEach(selector => {
+            cy.get(selector).check();
+        });
+
+        cy.byTestID(colSelectors.save).click();
+    });
+    cy.reload();
+
+    // Verify columns appear in table
+    cy.byTestID('table-composable').should('exist').within(() => {
+        columnSelectors.forEach(selector => {
+            cy.get(selector).should('exist');
+        });
+    });
+});
+
 Cypress.Commands.add('checkQuerySummary', (metric) => {
     // parseFloat handles formats: "123 ms", "123+ ms", "1.5k ms", "1.5k+ ms"
     const num = parseFloat(metric.text())
@@ -366,7 +390,7 @@ Cypress.Commands.add('checkNetflowTraffic', (loki = "Enabled") => {
     // table view
     if (loki == "Disabled") {
         // verify netflow traffic page is disabled
-        cy.get('#tabs-container').contains('Traffic flows').should('exist').should('have.class', 'pf-m-disabled')
+        cy.get('li.tableTabButton').should('exist').should('have.class', 'pf-m-disabled')
     }
     else {
         cy.get('#tabs-container').contains('Traffic flows').click()
