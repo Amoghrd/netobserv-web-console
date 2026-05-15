@@ -102,13 +102,9 @@ export const Operator = {
 
                 if (csvName && !stdout.includes('NotFound') && !stdout.includes('No resources found')) {
                     // CSV exists, check if it's in Succeeded state
-                    cy.adminCLI(`oc get csv ${csvName.trim()} -n openshift-netobserv-operator -o jsonpath='{.status.phase}'`)
-                        .then((statusResult: any) => {
-                            if (statusResult.stdout.includes('Succeeded')) {
-                                cy.log('NetObserv Operator already installed')
-                            } else {
-                                throw new Error(`NetObserv Operator CSV exists but not in Succeeded state: ${statusResult.stdout}`)
-                            }
+                    cy.adminCLI(`oc wait csv ${csvName.trim()} -n openshift-netobserv-operator --for=jsonpath='{.status.phase}'=Succeeded --timeout=120s`)
+                        .then(() => {
+                            cy.log('NetObserv Operator already installed')
                         })
                 } else {
                     cy.log('Installing NetObserv Operator')

@@ -36,8 +36,10 @@ export const netflowPage = {
         // set the page to auto refresh
         netflowPage.setAutoRefresh()
 
-        cy.byTestID('no-results-found').should('not.exist')
-        cy.get('#overview-container').should('exist')
+        netflowPage.waitForLokiQuery()
+
+        cy.byTestID('no-results-found', { timeout: 30000 }).should('not.exist')
+        cy.get('#overview-container', { timeout: 30000 }).should('exist')
     },
     setAutoRefresh: () => {
         cy.byTestID(genSelectors.refreshDrop).should('exist').invoke('text').then((text) => {
@@ -388,6 +390,7 @@ Cypress.Commands.add('visitNetflowTrafficTab', (page) => {
 Cypress.Commands.add('checkNetflowTraffic', (loki = "Enabled") => {
     // overview panels
     cy.get('#tabs-container').contains('Overview').click({ force: true })
+    netflowPage.waitForLokiQuery()
     cy.checkPanel(overviewSelectors.defaultPanels)
 
     // table view
