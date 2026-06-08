@@ -51,7 +51,7 @@ LABEL url="https://catalog.redhat.com/en/search?searchType=containers"
 LABEL vendor="Red Hat, Inc."
 LABEL release=$BUILDVERSION
 LABEL com.redhat.component="network-observability-console-plugin-container"
-LABEL name="network-observability/network-observability-console-plugin-compat-rhel9"
+LABEL name="network-observability/network-observability-console-plugin-pf4-rhel9"
 LABEL cpe="cpe:/a:redhat:network_observ_optr:$BUILDVERSION_Y::el9"
 LABEL io.k8s.display-name="Network Observability Console Plugin"
 LABEL io.k8s.description="Network Observability Console Plugin"
