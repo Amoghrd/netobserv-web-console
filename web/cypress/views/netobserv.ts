@@ -20,6 +20,7 @@ type FlowCollectorParameter =
     | 'UDNMapping'
     | 'TLSTracking'
     | 'LokiDisabled'
+    | 'WithLokiStack'
     | 'Conversations'
     | 'ZonesAndMultiCluster'
     | 'BytesMetrics'
@@ -50,6 +51,7 @@ const FIXTURE_PATHS = {
     udnMapping: './cypress/fixtures/flowcollector/fc_UDN.yaml',
     tlsTracking: './cypress/fixtures/flowcollector/fc_TLSTracking.yaml',
     lokiDisabled: './cypress/fixtures/flowcollector/fc_lokiDisabled.yaml',
+    withLokiStack: './cypress/fixtures/flowcollector/fc_withLokiStack.yaml',
     conversations: './cypress/fixtures/flowcollector/fc_conversations.yaml',
     subnetLabels: './cypress/fixtures/flowcollector/fc_subnetLabel.yaml',
     zonesMultiCluster: './cypress/fixtures/flowcollector/fc_zoneMulticluster.yaml',
@@ -168,6 +170,9 @@ export const Operator = {
                     case "LokiDisabled":
                         cy.deployFlowcollectorFromFixture(FIXTURE_PATHS.lokiDisabled)
                         break;
+                    case "WithLokiStack":
+                        cy.deployFlowcollectorFromFixture(FIXTURE_PATHS.withLokiStack)
+                        break;
                     case "Conversations":
                         cy.deployFlowcollectorFromFixture(FIXTURE_PATHS.conversations)
                         break;
@@ -204,17 +209,19 @@ export const Operator = {
                 // wait for all window refresh
                 cy.wait('@reload', { timeout: 120000 })
                 cy.log("Console refreshed successfully")
-                if (parameters !== "LokiDisabled") {
-                    cy.adminCLI(`oc get pods -n ${project} -l app=loki -o jsonpath="{.items[*].status.phase}"`).then(result => {
-                        cy.adminCLI(`oc wait --for=condition=Ready pod -l app=loki -n ${project} --timeout=180s`)
-                    })
+                if (parameters !== "LokiDisabled" && parameters !== "WithLokiStack") {
+                    cy.adminCLI(`oc wait --for=condition=Ready pod -l app=loki -n ${project} --timeout=180s`)
                 }
+                if (parameters !== "WithLokiStack") {
+                    Operator.visitFlowcollector()
+                    cy.byTestID('status-text', { timeout: 120000 }).should('exist').should('contain.text', 'Ready')
 
-                // Check FlowCollector status and wait for plugin pod to be Ready
-                cy.contains('tr', 'cluster').within(() => {
-                    cy.byTestID('status-text', { timeout: 60000 }).should('contain.text', 'Ready')
-                })
-                cy.adminCLI(`oc wait --for=condition=Ready pod -l app=netobserv-plugin -n ${project} --timeout=180s`)
+                    // Check FlowCollector status and wait for plugin pod to be Ready
+                    cy.contains('tr', 'cluster').within(() => {
+                        cy.byTestID('status-text', { timeout: 60000 }).should('contain.text', 'Ready')
+                    })
+                    cy.adminCLI(`oc wait --for=condition=Ready pod -l app=netobserv-plugin -n ${project} --timeout=180s`)
+                }
             }
         })
     },
