@@ -6,3 +6,7 @@
     position: absolute;
     z-index: 999;
 }
+
+.netobserv-sampling-alert {
+    margin-bottom: var(--pf-v6-global--spacer--md);
+}
