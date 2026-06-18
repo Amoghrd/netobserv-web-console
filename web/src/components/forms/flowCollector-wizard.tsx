@@ -43,6 +43,19 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
   const params = useParams<{ name?: string }>();
   const navigate = useNavigate();
 
+  // Get initial step from URL parameter
+  const getInitialStep = React.useCallback(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    const validSteps = ['overview', 'processing', 'loki', 'consumption'];
+    if (tabParam && validSteps.includes(tabParam)) {
+      return validSteps.indexOf(tabParam) + 1;
+    }
+    return 1;
+  }, []);
+
+  const [startIndex] = React.useState(getInitialStep());
+
   const form = React.useCallback(
     (errors?: string[]) => {
       if (!schema) {
@@ -151,7 +164,12 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
                 </Title>
               </div>
               <div id="wizard-container">
-                <Wizard onStepChange={onStepChange} onSave={() => ctx.onSubmit(data)} onClose={() => navigateTo('/')}>
+                <Wizard
+                  startIndex={startIndex}
+                  onStepChange={onStepChange}
+                  onSave={() => ctx.onSubmit(data)}
+                  onClose={() => navigateTo('/')}
+                >
                   <WizardStep name={t('Overview')} id="overview">
                     <span className="co-pre-line">
                       {t(

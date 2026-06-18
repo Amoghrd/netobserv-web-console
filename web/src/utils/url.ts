@@ -59,9 +59,11 @@ export const useParams = <T extends Record<string, string | undefined> = Record<
 };
 
 export const netflowTrafficPath = '/netflow-traffic';
-export const flowCollectorNewPath = '/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/~new';
-export const flowCollectorEditPath = '/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/cluster';
-export const flowCollectorStatusPath = '/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/status';
+export const flowCollectorBasePath = '/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector';
+export const flowCollectorNewPath = `${flowCollectorBasePath}/~new`;
+export const flowCollectorSetupPath = `${flowCollectorBasePath}/setup`;
+export const flowCollectorEditPath = `${flowCollectorBasePath}/cluster`;
+export const flowCollectorStatusPath = `${flowCollectorBasePath}/status`;
 export const flowMetricNewPath = '/k8s/cluster/flows.netobserv.io~v1alpha1~FlowMetric/~new';
 export const flowCollectorSliceNewPath = '/k8s/cluster/flows.netobserv.io~v1alpha1~FlowCollectorSlice/~new';
 

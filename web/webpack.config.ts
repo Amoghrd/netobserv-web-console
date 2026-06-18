@@ -490,8 +490,11 @@ if (process.env.FLAVOR === 'static') {
         {
           type: "console.page/route",
           properties: {
-            // add FlowCollector wizard to 'Installed Operator' -> 'Create' action
-            path: "/k8s/ns/:namespace/operators.coreos.com~v1alpha1~ClusterServiceVersion/:operator/flows.netobserv.io~v1beta2~FlowCollector/~new",
+            path: [
+              // add FlowCollector wizard to 'Installed Operator' -> 'Create' action
+              "/k8s/ns/:namespace/operators.coreos.com~v1alpha1~ClusterServiceVersion/:operator/flows.netobserv.io~v1beta2~FlowCollector/~new",
+              "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/setup"
+            ],
             component: {
               "$codeRef": "flowCollectorWizard.default"
             }
