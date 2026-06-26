@@ -1,19 +1,14 @@
 approvers:
-- mariomac
 - jotak
 - jpinsonneau
 - OlivierCazade
-- eranra
-- KalmanMeth
-- ronensc
 - stleerh
+- luisjira
+- leandroberetta
+- Amoghrd
 options: {}
 reviewers:
-- mariomac
 - jotak
 - jpinsonneau
 - OlivierCazade
 - stleerh
-- eranra
-- KalmanMeth
-- ronensc
