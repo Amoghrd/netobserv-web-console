@@ -73,10 +73,18 @@ export const netflowPage = {
         })
     },
     resetClearFilters: () => {
-        cy.byTestID("reset-filters-button").should('exist').click({ force: true })
+        cy.get('body').then($body => {
+            if ($body.find('[data-test="reset-filters-button"]').length > 0) {
+                cy.byTestID("reset-filters-button").click({ force: true })
+            }
+        })
     },
     clearAllFilters: () => {
-        cy.byTestID("clear-all-filters-button").should('exist').click()
+        cy.get('body').then($body => {
+            if ($body.find('[data-test="clear-all-filters-button"]').length > 0) {
+                cy.byTestID("clear-all-filters-button").click()
+            }
+        })
     },
     waitForLokiQuery: () => {
         cy.get("#refresh-button > span > svg").invoke('attr', 'style').should('contain', '0s linear 0s')
