@@ -1,4 +1,4 @@
-package loki
+package merger
 
 import (
 	"fmt"
@@ -9,9 +9,8 @@ import (
 	"github.com/netobserv/network-observability-console-plugin/pkg/model"
 )
 
-// MatrixMerger stores a state to build unique Matrix from multiple ones
+// MatrixMerger aggregates multiple Matrix results from Loki or Prometheus queries.
 type MatrixMerger struct {
-	Merger
 	index        map[string]indexedSampleStream
 	merged       model.Matrix
 	stats        []interface{}
@@ -20,6 +19,7 @@ type MatrixMerger struct {
 	limitReached bool
 }
 
+// NewMatrixMerger creates a new MatrixMerger with the given per-query result limit.
 func NewMatrixMerger(reqLimit int) *MatrixMerger {
 	return &MatrixMerger{
 		reqLimit: reqLimit,
@@ -35,10 +35,11 @@ type indexedSampleStream struct {
 	index  int
 }
 
+// Add merges a new QueryResponseData (Matrix result) into the aggregated result.
 func (m *MatrixMerger) Add(from model.QueryResponseData) (model.ResultValue, error) {
 	matrix, ok := from.Result.(model.Matrix)
 	if !ok {
-		return nil, fmt.Errorf("loki returned an unexpected type for MatrixMerger: %T", from)
+		return nil, fmt.Errorf("unexpected result type for MatrixMerger: %T", from)
 	}
 
 	m.numQueries++
@@ -75,6 +76,7 @@ func (m *MatrixMerger) Add(from model.QueryResponseData) (model.ResultValue, err
 	return m.merged, nil
 }
 
+// Get returns the final aggregated AggregatedQueryResponse.
 func (m *MatrixMerger) Get() *model.AggregatedQueryResponse {
 	for idx, stream := range m.merged {
 		skey := stream.Metric.String()
