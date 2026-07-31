@@ -45,9 +45,44 @@ export const useParams = <T extends Record<string, string | undefined> = Record<
 };
 
 export const netflowTrafficPath = '/netflow-traffic';
-export const flowCollectorNewPath = '/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/~new';
-export const flowCollectorEditPath = '/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/cluster';
-export const flowCollectorStatusPath = '/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/status';
+export const flowCollectorBasePath = '/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector';
+export const flowCollectorNewPath = `${flowCollectorBasePath}/~new`;
+export const flowCollectorSetupPath = `${flowCollectorBasePath}/setup`;
+export const flowCollectorEditPath = `${flowCollectorBasePath}/edit`;
+export const flowCollectorStatusPath = `${flowCollectorBasePath}/status`;
+
+const flowCollectorPathSegment = (pathname: string = window.location.pathname): string | undefined => {
+  const prefix = `${flowCollectorBasePath}/`;
+  if (!pathname.startsWith(prefix)) {
+    return undefined;
+  }
+  return pathname.slice(prefix.length).split('/')[0] || undefined;
+};
+
+/** True on Console "Create" routes (`~new` form bypass and wizard `setup`). */
+export const isFlowCollectorCreatePath = (pathname: string = window.location.pathname): boolean => {
+  const segment = flowCollectorPathSegment(pathname);
+  return segment === '~new' || segment === 'setup';
+};
+
+/**
+ * Resolves the FlowCollector instance name from the URL on edit/yaml routes.
+ * Form routes use static segments (e.g. `/edit`, `/cluster/yaml`) rather than a `:name` param
+ * because `/cluster` is reserved for the status page.
+ */
+export const getFlowCollectorResourceName = (pathname: string = window.location.pathname): string | undefined => {
+  if (isFlowCollectorCreatePath(pathname)) {
+    return undefined;
+  }
+  const segment = flowCollectorPathSegment(pathname);
+  if (!segment) {
+    return undefined;
+  }
+  if (segment === 'edit' || segment === 'cluster') {
+    return 'cluster';
+  }
+  return segment;
+};
 export const flowMetricNewPath = '/k8s/cluster/flows.netobserv.io~v1alpha1~FlowMetric/~new';
 export const flowCollectorSliceNewPath = '/k8s/cluster/flows.netobserv.io~v1alpha1~FlowCollectorSlice/~new';
 

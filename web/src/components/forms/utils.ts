@@ -4,17 +4,67 @@ import { UiSchema } from '@rjsf/utils';
 import _ from 'lodash';
 import { ClusterServiceVersionKind } from './types';
 
-export type FlowCollectorOverallStatus = 'ready' | 'degraded' | 'pending' | 'error' | 'onHold' | 'loading';
+export type FlowCollectorOverallStatus = 'ready' | 'degraded' | 'pending' | 'error' | 'onHold' | 'deleting' | 'loading';
+
+type K8sErrorLike = {
+  message?: string;
+  code?: number;
+  status?: number;
+  response?: { status?: number };
+  json?: { message?: string; code?: number; reason?: string };
+};
+
+/** Human-readable message from a K8s/Console rejection (avoids "[object Object]"). */
+export const k8sErrorMessage = (error: unknown): string => {
+  if (!error) {
+    return '';
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  const e = error as K8sErrorLike;
+  if (typeof e.message === 'string' && e.message) {
+    return e.message;
+  }
+  if (typeof e.json?.message === 'string' && e.json.message) {
+    return e.json.message;
+  }
+  return String(error);
+};
+
+/** True when a K8s watch/API error indicates the requested resource does not exist. */
+export const isK8sNotFoundError = (error: unknown): boolean => {
+  if (!error) {
+    return false;
+  }
+  const e = error as K8sErrorLike;
+  if (e.code === 404 || e.json?.code === 404 || e.response?.status === 404 || e.status === 404) {
+    return true;
+  }
+  if (e.json?.reason === 'NotFound') {
+    return true;
+  }
+  return /not found/i.test(k8sErrorMessage(error));
+};
 
 export const getFlowCollectorOverallStatus = (
   cr: K8sResourceKind | undefined,
   loadError: unknown
 ): { status: FlowCollectorOverallStatus; message?: string } => {
-  if (loadError) {
-    return { status: 'error', message: String(loadError) };
+  if (loadError && !isK8sNotFoundError(loadError)) {
+    return { status: 'error', message: k8sErrorMessage(loadError) };
   }
   if (!cr) {
     return { status: 'loading' };
+  }
+  // Prefer this over watch-only: operator ≥1.5 no longer keeps a finalizer, so the
+  // terminating window is often invisible to useK8sWatchResource. Callers can stamp
+  // deletionTimestamp locally after k8sDelete succeeds.
+  if (cr.metadata?.deletionTimestamp) {
+    return { status: 'deleting' };
   }
   if (cr.spec?.execution?.mode === 'OnHold') {
     return { status: 'onHold' };

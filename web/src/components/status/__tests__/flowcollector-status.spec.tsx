@@ -1,7 +1,7 @@
 import { useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk';
 import { render } from '@testing-library/react';
 import * as React from 'react';
-import { getFlowCollectorOverallStatus } from '../../forms/utils';
+import { getFlowCollectorOverallStatus, isK8sNotFoundError } from '../../forms/utils';
 import { FlowCollectorStatusIndicator } from '../flowcollector-status-indicator';
 
 describe('getFlowCollectorOverallStatus', () => {
@@ -13,9 +13,23 @@ describe('getFlowCollectorOverallStatus', () => {
     expect(getFlowCollectorOverallStatus(undefined, 'some error')).toEqual({ status: 'error', message: 'some error' });
   });
 
+  it('should ignore not-found load errors', () => {
+    expect(getFlowCollectorOverallStatus(undefined, 'flowcollectors.flows.netobserv.io "cluster" not found')).toEqual({
+      status: 'loading'
+    });
+  });
+
   it('should return onHold when execution mode is OnHold', () => {
     const cr = { spec: { execution: { mode: 'OnHold' } } };
     expect(getFlowCollectorOverallStatus(cr, null)).toEqual({ status: 'onHold' });
+  });
+
+  it('should return deleting when deletionTimestamp is set', () => {
+    const cr = {
+      metadata: { deletionTimestamp: '2026-07-29T10:00:00Z' },
+      status: { conditions: [{ type: 'Ready', status: 'True', reason: 'Ready' }] }
+    };
+    expect(getFlowCollectorOverallStatus(cr, null)).toEqual({ status: 'deleting' });
   });
 
   it('should return pending when no conditions', () => {
@@ -84,6 +98,23 @@ describe('getFlowCollectorOverallStatus', () => {
   });
 });
 
+describe('isK8sNotFoundError', () => {
+  it('should detect not-found messages', () => {
+    expect(isK8sNotFoundError('flowcollectors.flows.netobserv.io "cluster" not found')).toBe(true);
+    expect(isK8sNotFoundError(new Error('resource not found'))).toBe(true);
+    expect(isK8sNotFoundError(null)).toBe(false);
+    expect(isK8sNotFoundError('permission denied')).toBe(false);
+  });
+
+  it('should detect Console/K8s rejection objects', () => {
+    expect(isK8sNotFoundError({ json: { code: 404, reason: 'NotFound', message: 'not found' } })).toBe(true);
+    expect(isK8sNotFoundError({ code: 404, message: 'Not Found' })).toBe(true);
+    expect(isK8sNotFoundError({ response: { status: 404 } })).toBe(true);
+    expect(isK8sNotFoundError({ json: { reason: 'NotFound' } })).toBe(true);
+    expect(isK8sNotFoundError({ json: { code: 403, reason: 'Forbidden', message: 'forbidden' } })).toBe(false);
+  });
+});
+
 const useK8sWatchResourceMock = useK8sWatchResource as jest.Mock;
 
 describe('<FlowCollectorStatusIndicator />', () => {
@@ -145,5 +176,11 @@ describe('<FlowCollectorStatusIndicator />', () => {
     useK8sWatchResourceMock.mockReturnValue([{ spec: { execution: { mode: 'OnHold' } } }, true, null]);
     const { container } = render(<FlowCollectorStatusIndicator />);
     expect(container.querySelector('svg')).toBeTruthy();
+  });
+
+  it('should render spinner when CR is deleting', () => {
+    useK8sWatchResourceMock.mockReturnValue([{ metadata: { deletionTimestamp: '2026-07-29T10:00:00Z' } }, true, null]);
+    const { container } = render(<FlowCollectorStatusIndicator />);
+    expect(container.querySelector('[role="progressbar"]')).toBeTruthy();
   });
 });
