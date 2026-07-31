@@ -150,7 +150,7 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
       group="flows.netobserv.io"
       version="v1beta2"
       kind="FlowCollector"
-      name={isSetupRoute ? 'cluster' : (params.name || props.name || 'cluster')}
+      name={isSetupRoute ? 'cluster' : params.name || props.name || 'cluster'}
       skipCRError
       onSuccess={() => {
         navigate(flowCollectorStatusPath);
