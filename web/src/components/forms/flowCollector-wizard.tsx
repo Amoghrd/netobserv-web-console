@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import {
   flowCollectorEditPath,
   flowCollectorNewPath,
+  flowCollectorSetupPath,
   flowCollectorStatusPath,
   navigateTo,
   useNavigate,
@@ -160,7 +161,8 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
           // redirect to edit page if resource already exists or is created while using the wizard
           // We can't handle edition here since this page doesn't include ResourceYAMLEditor
           // which handle reload / update buttons
-          if (ctx.data.metadata?.resourceVersion && !blockAutoRedirectToEditRef.current) {
+          const isSetupRoute = window.location.pathname.startsWith(flowCollectorSetupPath);
+          if (ctx.data.metadata?.resourceVersion && !blockAutoRedirectToEditRef.current && !isSetupRoute) {
             navigate(flowCollectorEditPath);
           }
           // first init schema & data when watch resource query got results
