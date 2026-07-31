@@ -57,8 +57,7 @@ describe('<SamplingBanner />', () => {
 
     expect(container.querySelector('[data-test="sampling-banner"]')).toBeTruthy();
 
-    // PatternFly Alert close button
-    const closeButton = container.querySelector('.pf-v6-c-alert__action button');
+    const closeButton = container.querySelector('[data-test-id="sampling-banner-close"]');
     expect(closeButton).toBeTruthy();
 
     await act(async () => {

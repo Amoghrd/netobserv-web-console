@@ -37,32 +37,43 @@ export type FlowCollectorWizardProps = {
 
 const defaultPaths = ['spec.namespace', 'spec.networkPolicy'];
 
+const processingPaths = [
+  'spec.deploymentModel',
+  'spec.kafka.address',
+  'spec.kafka.topic',
+  'spec.kafka.tls',
+  'spec.agent.ebpf.privileged',
+  'spec.agent.ebpf.features',
+  'spec.processor.clusterName',
+  'spec.processor.addZone',
+  'spec.processor.consumerReplicas'
+];
+
+const stepPaths: Record<string, string[]> = {
+  overview: defaultPaths,
+  processing: processingPaths,
+  loki: ['spec.loki'],
+  consumption: []
+};
+
 export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
   const { t } = useTranslation('plugin__netobserv-plugin');
   const [schema, setSchema] = React.useState<RJSFSchema | null>(null);
   const [data, setData] = React.useState<any>(null);
-  const [paths, setPaths] = React.useState<string[]>(defaultPaths);
   const params = useParams<{ name?: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const isSetupRoute = window.location.pathname.startsWith(flowCollectorSetupPath);
+
+  const validSteps = Object.keys(stepPaths);
+  const initialTab = searchParams.get('tab');
+  const initialStepId = initialTab && validSteps.includes(initialTab) ? initialTab : 'overview';
+  const [startIndex] = React.useState(validSteps.indexOf(initialStepId) + 1);
+  const [paths, setPaths] = React.useState<string[]>(stepPaths[initialStepId]);
+
   // After submit, the watch updates `resourceVersion` before/after onSuccess; without this,
   // the Consumer's "existing CR → edit page" redirect runs and overrides navigation to status.
   const blockAutoRedirectToEditRef = React.useRef(false);
-
-  // Get initial step from URL parameter
-  const getInitialStep = React.useCallback(() => {
-    const tabParam = searchParams.get('tab');
-    const validSteps = ['overview', 'processing', 'loki', 'consumption'];
-    if (tabParam && validSteps.includes(tabParam)) {
-      // Map step ID to step index (1-based for PatternFly Wizard)
-      const stepIndex = validSteps.indexOf(tabParam) + 1;
-      return stepIndex;
-    }
-    return 1; // default to first step (overview)
-  }, [searchParams]);
-
-  const [startIndex] = React.useState(getInitialStep());
 
   React.useEffect(() => {
     blockAutoRedirectToEditRef.current = false;
@@ -98,37 +109,13 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
 
   const onStepChange = React.useCallback(
     (_event: React.MouseEvent<HTMLButtonElement>, step: WizardStepType) => {
-      // Update URL parameter when step changes, preserving existing params
       if (step.id) {
         setSearchParams(prev => {
           const newParams = new URLSearchParams(prev);
           newParams.set('tab', step.id as string);
           return newParams;
         });
-      }
-
-      switch (step.id) {
-        case 'overview':
-          setPaths(defaultPaths);
-          break;
-        case 'processing':
-          setPaths([
-            'spec.deploymentModel',
-            'spec.kafka.address',
-            'spec.kafka.topic',
-            'spec.kafka.tls',
-            'spec.agent.ebpf.privileged',
-            'spec.agent.ebpf.features',
-            'spec.processor.clusterName',
-            'spec.processor.addZone',
-            'spec.processor.consumerReplicas'
-          ]);
-          break;
-        case 'loki':
-          setPaths(['spec.loki']);
-          break;
-        default:
-          setPaths([]);
+        setPaths(stepPaths[step.id as string] ?? []);
       }
     },
     [setSearchParams]

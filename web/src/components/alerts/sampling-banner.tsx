@@ -36,7 +36,7 @@ export const SamplingBanner: React.FC<SamplingBannerProps> = ({ samplingValue })
         title={t('Sampling is enabled')}
         isInline={true}
         variant="info"
-        actionClose={<AlertActionCloseButton onClose={handleDismiss} />}
+        actionClose={<AlertActionCloseButton data-test-id="sampling-banner-close" onClose={handleDismiss} />}
         actionLinks={
           <React.Fragment>
             <AlertActionLink data-test-id="sampling-action-link" onClick={() => navigate(configLink)}>
