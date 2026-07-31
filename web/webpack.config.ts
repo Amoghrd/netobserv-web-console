@@ -490,8 +490,11 @@ if (process.env.FLAVOR === 'static') {
         {
           type: "console.page/route",
           properties: {
-            // add FlowCollector wizard to 'Installed Operator' -> 'Create' action
-            path: "/k8s/ns/:namespace/operators.coreos.com~v1alpha1~ClusterServiceVersion/:operator/flows.netobserv.io~v1beta2~FlowCollector/~new",
+            path: [
+              // add FlowCollector wizard to 'Installed Operator' -> 'Create' action
+              "/k8s/ns/:namespace/operators.coreos.com~v1alpha1~ClusterServiceVersion/:operator/flows.netobserv.io~v1beta2~FlowCollector/~new",
+              "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/setup"
+            ],
             component: {
               "$codeRef": "flowCollectorWizard.default"
             }
@@ -503,7 +506,8 @@ if (process.env.FLAVOR === 'static') {
             path: [
               // add FlowCollector form to standard 'New' and 'Edit' actions
               "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/~new",
-              "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/:name"
+              "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/edit",
+              "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/cluster/yaml"
             ],
             component: {
               "$codeRef": "flowCollectorForm.default"
@@ -513,7 +517,11 @@ if (process.env.FLAVOR === 'static') {
         {
           type: "console.page/route",
           properties: {
-            path: "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/status",
+            path: [
+              // existing FlowCollector 'cluster' will be redirected to status page first
+              "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/cluster",
+              "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/status"
+            ],
             component: {
               "$codeRef": "flowCollectorStatus.default"
             }

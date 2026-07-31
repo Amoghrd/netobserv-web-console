@@ -106,5 +106,5 @@ export function useK8sModelsWithColors() {
 
 export function useK8sModel(group: string, version: string, kind: string) {
   const [k8sModels] = useK8sModels();
-  return k8sModels[`${group}~${version}~${kind}`];
+  return k8sModels?.[`${group}~${version}~${kind}`];
 }
