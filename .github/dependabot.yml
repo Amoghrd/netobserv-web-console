@@ -9,7 +9,6 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
-
     groups:
       k8s:
         applies-to: version-updates
@@ -30,6 +29,33 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      cypress-docker:
+        applies-to: version-updates
+        patterns:
+          - "cypress/*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/.github"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "npm"
+    directory: "/web"
+    target-branch: "main-pf5"
+    schedule:
+      interval: "monthly"
+    groups:
+      cypress-npm:
+        applies-to: version-updates
+        patterns:
+          - "cypress"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    target-branch: "main-pf5"
+    schedule:
+      interval: "monthly"
     groups:
       cypress-docker:
         applies-to: version-updates

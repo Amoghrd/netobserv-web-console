@@ -1,6 +1,12 @@
 import React, { FC } from 'react';
 
-import { useNavigate, useParams } from '../../utils/url';
+import {
+  flowCollectorStatusPath,
+  getFlowCollectorResourceName,
+  isFlowCollectorCreatePath,
+  useNavigate,
+  useParams
+} from '../../utils/url';
 import { flowCollectorUISchema } from './config/uiSchema';
 import { ResourceForm } from './resource-form';
 import { ResourceWatcher } from './resource-watcher';
@@ -13,13 +19,25 @@ export const FlowCollectorForm: FC<FlowCollectorFormProps> = props => {
   const params = useParams<{ name?: string }>();
   const navigate = useNavigate();
 
+  let name: string | undefined;
+  if (isFlowCollectorCreatePath()) {
+    // Create route: do not watch an existing resource (wizard bypass lands here).
+    name = undefined;
+  } else {
+    name = params.name || props.name;
+    if (name === 'edit') {
+      name = 'cluster';
+    }
+    name = name || getFlowCollectorResourceName();
+  }
+
   return (
     <ResourceWatcher
       group="flows.netobserv.io"
       version="v1beta2"
       kind="FlowCollector"
-      name={params.name || props.name}
-      onSuccess={() => navigate(-1)}
+      name={name}
+      onSuccess={() => navigate(flowCollectorStatusPath)}
       defaultFrom="CSVExample"
     >
       <ResourceForm uiSchema={flowCollectorUISchema} />
