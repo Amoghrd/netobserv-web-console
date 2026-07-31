@@ -43,6 +43,7 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
   const [paths, setPaths] = React.useState<string[]>(defaultPaths);
   const params = useParams<{ name?: string }>();
   const navigate = useNavigate();
+  const isSetupRoute = window.location.pathname.startsWith(flowCollectorSetupPath);
 
   // Get initial step from URL parameter
   const getInitialStep = React.useCallback(() => {
@@ -122,7 +123,7 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
       group="flows.netobserv.io"
       version="v1beta2"
       kind="FlowCollector"
-      name={params.name || props.name || 'cluster'} // fallback on cluster to ensure it doesn't already exists
+      name={isSetupRoute ? 'cluster' : (params.name || props.name || 'cluster')}
       skipCRError
       onSuccess={() => {
         navigate(flowCollectorStatusPath);
@@ -135,7 +136,6 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
           // We can't handle edition here since this page doesn't include ResourceYAMLEditor
           // which handle reload / update buttons
           // Skip redirect when accessed via /setup route (e.g. from the sampling banner)
-          const isSetupRoute = window.location.pathname.startsWith(flowCollectorSetupPath);
           if (ctx.data.metadata?.resourceVersion && !isSetupRoute) {
             navigate(flowCollectorEditPath);
           }
@@ -144,8 +144,11 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
             setSchema(ctx.schema);
           }
           if (data == null) {
-            // slightly modify default example when creating a new resource
-            if (params.name !== 'cluster') {
+            // when on /setup route, use existing FC data as-is
+            if (isSetupRoute || params.name === 'cluster') {
+              setData(ctx.data);
+            } else {
+              // slightly modify default example when creating a new resource
               const updatedData = _.cloneDeep(ctx.data) as any;
               if (!updatedData.spec) {
                 updatedData.spec = {};
@@ -155,8 +158,6 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
               }
               updatedData.spec.loki.mode = 'LokiStack'; // default to lokistack
               setData(updatedData);
-            } else {
-              setData(ctx.data);
             }
           }
           return (
