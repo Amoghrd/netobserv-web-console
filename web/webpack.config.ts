@@ -506,7 +506,8 @@ if (process.env.FLAVOR === 'static') {
             path: [
               // add FlowCollector form to standard 'New' and 'Edit' actions
               "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/~new",
-              "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/:name"
+              "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/edit",
+              "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/cluster/yaml"
             ],
             component: {
               "$codeRef": "flowCollectorForm.default"
@@ -516,7 +517,11 @@ if (process.env.FLAVOR === 'static') {
         {
           type: "console.page/route",
           properties: {
-            path: "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/status",
+            path: [
+              // existing FlowCollector 'cluster' will be redirected to status page first
+              "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/cluster",
+              "/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector/status"
+            ],
             component: {
               "$codeRef": "flowCollectorStatus.default"
             }

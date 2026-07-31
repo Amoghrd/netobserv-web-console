@@ -62,8 +62,39 @@ export const netflowTrafficPath = '/netflow-traffic';
 export const flowCollectorBasePath = '/k8s/cluster/flows.netobserv.io~v1beta2~FlowCollector';
 export const flowCollectorNewPath = `${flowCollectorBasePath}/~new`;
 export const flowCollectorSetupPath = `${flowCollectorBasePath}/setup`;
-export const flowCollectorEditPath = `${flowCollectorBasePath}/cluster`;
+export const flowCollectorEditPath = `${flowCollectorBasePath}/edit`;
 export const flowCollectorStatusPath = `${flowCollectorBasePath}/status`;
+
+const flowCollectorPathSegment = (pathname: string = window.location.pathname): string | undefined => {
+  const prefix = `${flowCollectorBasePath}/`;
+  if (!pathname.startsWith(prefix)) {
+    return undefined;
+  }
+  return pathname.slice(prefix.length).split('/')[0] || undefined;
+};
+
+/** True on Console "Create" routes (wizard bypass uses the full form at `~new`). */
+export const isFlowCollectorCreatePath = (pathname: string = window.location.pathname): boolean =>
+  flowCollectorPathSegment(pathname) === '~new';
+
+/**
+ * Resolves the FlowCollector instance name from the URL on edit/yaml routes.
+ * Form routes use static segments (e.g. `/edit`, `/cluster/yaml`) rather than a `:name` param
+ * because `/cluster` is reserved for the status page.
+ */
+export const getFlowCollectorResourceName = (pathname: string = window.location.pathname): string | undefined => {
+  if (isFlowCollectorCreatePath(pathname)) {
+    return undefined;
+  }
+  const segment = flowCollectorPathSegment(pathname);
+  if (!segment) {
+    return undefined;
+  }
+  if (segment === 'edit' || segment === 'cluster') {
+    return 'cluster';
+  }
+  return segment;
+};
 export const flowMetricNewPath = '/k8s/cluster/flows.netobserv.io~v1alpha1~FlowMetric/~new';
 export const flowCollectorSliceNewPath = '/k8s/cluster/flows.netobserv.io~v1alpha1~FlowCollectorSlice/~new';
 
