@@ -36,27 +36,38 @@ export type FlowCollectorWizardProps = {
 
 const defaultPaths = ['spec.namespace', 'spec.networkPolicy'];
 
+const processingPaths = [
+  'spec.deploymentModel',
+  'spec.kafka.address',
+  'spec.kafka.topic',
+  'spec.kafka.tls',
+  'spec.agent.ebpf.privileged',
+  'spec.agent.ebpf.features',
+  'spec.processor.clusterName',
+  'spec.processor.addZone',
+  'spec.processor.consumerReplicas'
+];
+
+const stepPaths: Record<string, string[]> = {
+  overview: defaultPaths,
+  processing: processingPaths,
+  loki: ['spec.loki'],
+  consumption: []
+};
+
 export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
   const { t } = useTranslation('plugin__netobserv-plugin');
   const [schema, setSchema] = React.useState<RJSFSchema | null>(null);
   const [data, setData] = React.useState<any>(null);
-  const [paths, setPaths] = React.useState<string[]>(defaultPaths);
   const params = useParams<{ name?: string }>();
   const navigate = useNavigate();
   const isSetupRoute = window.location.pathname.startsWith(flowCollectorSetupPath);
 
-  // Get initial step from URL parameter
-  const getInitialStep = React.useCallback(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab');
-    const validSteps = ['overview', 'processing', 'loki', 'consumption'];
-    if (tabParam && validSteps.includes(tabParam)) {
-      return validSteps.indexOf(tabParam) + 1;
-    }
-    return 1;
-  }, []);
-
-  const [startIndex] = React.useState(getInitialStep());
+  const validSteps = Object.keys(stepPaths);
+  const initialTab = new URLSearchParams(window.location.search).get('tab');
+  const initialStepId = initialTab && validSteps.includes(initialTab) ? initialTab : 'overview';
+  const [startIndex] = React.useState(validSteps.indexOf(initialStepId) + 1);
+  const [paths, setPaths] = React.useState<string[]>(stepPaths[initialStepId]);
 
   const form = React.useCallback(
     (errors?: string[]) => {
@@ -82,28 +93,8 @@ export const FlowCollectorWizard: FC<FlowCollectorWizardProps> = props => {
   );
 
   const onStepChange = React.useCallback((_event: React.MouseEvent<HTMLButtonElement>, step: WizardStepType) => {
-    switch (step.id) {
-      case 'overview':
-        setPaths(defaultPaths);
-        break;
-      case 'processing':
-        setPaths([
-          'spec.deploymentModel',
-          'spec.kafka.address',
-          'spec.kafka.topic',
-          'spec.kafka.tls',
-          'spec.agent.ebpf.privileged',
-          'spec.agent.ebpf.features',
-          'spec.processor.clusterName',
-          'spec.processor.addZone',
-          'spec.processor.consumerReplicas'
-        ]);
-        break;
-      case 'loki':
-        setPaths(['spec.loki']);
-        break;
-      default:
-        setPaths([]);
+    if (step.id) {
+      setPaths(stepPaths[step.id as string] ?? []);
     }
   }, []);
 

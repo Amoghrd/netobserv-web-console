@@ -53,16 +53,15 @@ describe('<SamplingBanner />', () => {
   });
 
   it('should dismiss and save to localStorage', async () => {
-    const { container, getByLabelText } = render(<SamplingBanner samplingValue={50} />);
+    const { container } = render(<SamplingBanner samplingValue={50} />);
 
     expect(container.querySelector('[data-test="sampling-banner"]')).toBeTruthy();
 
-    // PF5 Alert close button has aria-label like "Close Info alert: alert: Sampling is enabled"
-    const closeButton = getByLabelText(/Close Info alert/);
+    const closeButton = container.querySelector('[data-test-id="sampling-banner-close"]');
     expect(closeButton).toBeTruthy();
 
     await act(async () => {
-      fireEvent.click(closeButton);
+      fireEvent.click(closeButton!);
     });
 
     await waitFor(() => {
