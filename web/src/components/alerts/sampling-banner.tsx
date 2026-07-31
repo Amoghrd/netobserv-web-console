@@ -1,10 +1,9 @@
 import { Alert, AlertActionCloseButton, AlertActionLink } from '@patternfly/react-core';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSamplingBannerDismiss } from '../../utils/sampling-banner-hook';
 import { flowCollectorSetupPath, useNavigate } from '../../utils/url';
 import './banner.css';
-
-const SAMPLING_BANNER_DISMISSED_KEY = 'netobserv.sampling-banner-dismissed';
 
 export interface SamplingBannerProps {
   samplingValue: number;
@@ -13,14 +12,7 @@ export interface SamplingBannerProps {
 export const SamplingBanner: React.FC<SamplingBannerProps> = ({ samplingValue }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
   const navigate = useNavigate();
-  const [isDismissed, setIsDismissed] = React.useState(() => {
-    return localStorage.getItem(SAMPLING_BANNER_DISMISSED_KEY) === 'true';
-  });
-
-  const handleDismiss = () => {
-    localStorage.setItem(SAMPLING_BANNER_DISMISSED_KEY, 'true');
-    setIsDismissed(true);
-  };
+  const { isDismissed, handleDismiss } = useSamplingBannerDismiss();
 
   // Don't show if sampling <= 1 (all flows captured) or already dismissed
   if (samplingValue <= 1 || isDismissed) {
