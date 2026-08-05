@@ -113,6 +113,7 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408) Netflow Table view tests'
         })
 
         // verify swap button
+        netflowPage.waitForLokiQuery()
         cy.get("#swap-filters-button").should('exist').click()
         cy.get(filterSelectors.filterNames).eq(0).should('contain.text', 'Destination')
 
@@ -145,6 +146,7 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408) Netflow Table view tests'
         cy.get('#src_port-0-toggle').click().get('#dropdown-item-disable').click()
 
         // sort by port
+        netflowPage.waitForLokiQuery()
         cy.get('[data-test=th-SrcPort] button').click()
 
         // Verify SrcPort doesnt not have text loki for all rows
@@ -193,7 +195,8 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408) Netflow Table view tests'
         cy.get(".guided-tour-close-button").should("exist").click()
         cy.byTestID(genSelectors.refreshDrop).should('be.disabled')
         // get current refreshed time
-        let lastRefresh = Cypress.$("#lastRefresh").text()
+        let lastRefresh = ''
+        cy.get('#lastRefresh').invoke('text').then(text => { lastRefresh = text })
 
         cy.get("#chart-histogram").should('exist')
         // move histogram slider
@@ -201,62 +204,28 @@ describe('(OCP-50532, OCP-50531, OCP-50530, OCP-59408) Netflow Table view tests'
             const histWidth = cy.$$('#chart-histogram').prop("clientWidth")
             const clientX = histWidth / 2
             cy.wrap(hist).trigger('mousedown').trigger("mousemove", { clientX: clientX, clientY: 45 }).trigger("mouseup", { waitForAnimations: true })
-            cy.wait(5000)
-            let newRefresh = Cypress.$("#lastRefresh").text()
-            cy.wrap(lastRefresh).should("not.eq", newRefresh)
-            lastRefresh = newRefresh
+            cy.get('#lastRefresh', { timeout: 30000 }).invoke('text').should('not.eq', lastRefresh).then(text => { lastRefresh = text })
         })
-        // zoom out 
-        cy.get(histogramSelectors.zoomout).should('exist').then(zoomout => {
-            cy.wrap(zoomout).click()
-            cy.wait(5000)
-            let newRefresh = Cypress.$("#lastRefresh").text()
-            cy.wrap(lastRefresh).should("not.eq", newRefresh)
-            lastRefresh = newRefresh
-        })
+        // zoom out
+        cy.get(histogramSelectors.zoomout).should('exist').click()
+        cy.get('#lastRefresh', { timeout: 30000 }).invoke('text').should('not.eq', lastRefresh).then(text => { lastRefresh = text })
         // zoom in
-        cy.get(histogramSelectors.zoomin).should('exist').then(zoomin => {
-            cy.wrap(zoomin).click()
-            cy.wait(5000)
-            let newRefresh = Cypress.$("#lastRefresh").text()
-            cy.wrap(lastRefresh).should("not.eq", newRefresh)
-            lastRefresh = newRefresh
-            cy.wrap(zoomin).trigger('mouseleave')
-        })
+        cy.get(histogramSelectors.zoomin).should('exist').click()
+        cy.get('#lastRefresh', { timeout: 30000 }).invoke('text').should('not.eq', lastRefresh).then(text => { lastRefresh = text })
 
         // time shift single right arrow
-        cy.get(histogramSelectors.singleRightShift).should('exist').then(sRightShift => {
-            cy.wrap(sRightShift).click()
-            cy.wait(5000)
-            let newRefresh = Cypress.$("#lastRefresh").text()
-            cy.wrap(lastRefresh).should("not.eq", newRefresh)
-            lastRefresh = newRefresh
-        })
+        cy.get(histogramSelectors.singleRightShift).should('exist').click()
+        cy.get('#lastRefresh', { timeout: 30000 }).invoke('text').should('not.eq', lastRefresh).then(text => { lastRefresh = text })
         // time shift double right arrow
-        cy.get(histogramSelectors.doubleRightShift).should('exist').then(dblRightShift => {
-            cy.wrap(dblRightShift).click()
-            cy.wait(5000)
-            let newRefresh = Cypress.$("#lastRefresh").text()
-            cy.wrap(lastRefresh).should("not.eq", newRefresh)
-            lastRefresh = newRefresh
-        })
+        cy.get(histogramSelectors.doubleRightShift).should('exist').click()
+        cy.get('#lastRefresh', { timeout: 30000 }).invoke('text').should('not.eq', lastRefresh).then(text => { lastRefresh = text })
 
-        // time shift single left right arrow
-        cy.get(histogramSelectors.singleLeftShift).should('exist').then(sLeftShift => {
-            cy.wrap(sLeftShift).click()
-            cy.wait(5000)
-            let newRefresh = Cypress.$("#lastRefresh").text()
-            cy.wrap(lastRefresh).should("not.eq", newRefresh)
-            lastRefresh = newRefresh
-        })
+        // time shift single left arrow
+        cy.get(histogramSelectors.singleLeftShift).should('exist').click()
+        cy.get('#lastRefresh', { timeout: 30000 }).invoke('text').should('not.eq', lastRefresh).then(text => { lastRefresh = text })
         // time shift double left arrow
-        cy.get(histogramSelectors.doubleLeftShift).should('exist').then(dblLeftShift => {
-            cy.wrap(dblLeftShift).click()
-            cy.wait(5000)
-            let newRefresh = Cypress.$("#lastRefresh").text()
-            cy.wrap(lastRefresh).should("not.eq", newRefresh)
-            lastRefresh = newRefresh
-        })
+        cy.get(histogramSelectors.doubleLeftShift).should('exist').click()
+        cy.get('#lastRefresh', { timeout: 30000 }).invoke('text').should('not.eq', lastRefresh).then(text => { lastRefresh = text })
         // hide histogram
         cy.byTestID("show-histogram-button").should('exist').click().then(() => {
             cy.get('#time-range-dropdown-dropdown').should('exist').click()
