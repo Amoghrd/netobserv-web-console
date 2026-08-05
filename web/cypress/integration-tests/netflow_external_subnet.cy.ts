@@ -11,8 +11,9 @@ describe('(OCP-67615, OCP-72874) Return external traffic and custom subnet label
         cy.checkStorageClass(this)
         Operator.createFlowcollector("SubnetLabels")
 
-        // deploy test pod
+        // deploy test pod and wait for it to complete (generates traffic to external IP)
         cy.adminCLI('oc create -f cypress/fixtures/test-pod.yaml')
+        cy.adminCLI('oc wait --for=jsonpath=\'{.status.phase}\'=Succeeded pod/test -n netobserv-test-67615 --timeout=120s')
     })
 
     it("(OCP-67615, aramesha) External traffic and custom subnet label", function () {

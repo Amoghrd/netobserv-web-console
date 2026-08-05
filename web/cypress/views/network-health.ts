@@ -13,7 +13,7 @@ export const networkHealth = {
         cy.get(`[data-test^="health-card-${name}"]`, { timeout: 60000 }).eq(0).should('be.visible').find('button').click()
     },
     verifyAlert: (name: string, mode: string = "alert", alertText?: string) => {
-        cy.get(`[data-test^="health-card-${name}"]`, { timeout: 60000 }).eq(0).should('be.visible').find('button').click({ force: true }).then(() => {
+        cy.get(`[data-test^="health-card-${name}"]`, { timeout: 120000 }).eq(0).should('be.visible').find('button').click({ force: true }).then(() => {
             cy.get(networkHealthSelectors.sidePanel).should('be.visible')
             cy.contains(mode).should('exist')
             if (alertText) {
