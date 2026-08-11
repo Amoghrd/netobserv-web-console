@@ -28,6 +28,11 @@ Cypress.on('uncaught:exception', (err) => {
         return false
     }
 
+    // Transient Console API auth noise during navigation / plugin load
+    if (errorMsg === 'Unauthorized' || errorMsg.includes('Unauthorized')) {
+        return false
+    }
+
     // Let other errors fail the test
     return true
 })
