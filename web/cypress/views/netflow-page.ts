@@ -45,6 +45,9 @@ export const netflowPage = {
 
         // Wait for the plugin page before touching filters
         cy.get('#overview-container', { timeout: 60000 }).should('exist')
+        // Default filters apply async after frontend-config load; wait until filter
+        // UI has settled (either active chips → clear-all, or none → set-default).
+        netflowPage.waitForFilterToolbar()
 
         cy.wrap(clearfilters).then(shouldClearFilters => {
             if (shouldClearFilters) {
@@ -57,6 +60,12 @@ export const netflowPage = {
         netflowPage.waitForLokiQuery()
 
         cy.byTestID('no-results-found', { timeout: 30000 }).should('not.exist')
+    },
+    waitForFilterToolbar: () => {
+        cy.get(
+            '[data-test="clear-all-filters-button"], [data-test="set-default-filters-button"]',
+            { timeout: 30000 }
+        ).should('exist')
     },
     setAutoRefresh: () => {
         cy.byTestID(genSelectors.refreshDrop).should('exist').invoke('text').then((text) => {
@@ -88,6 +97,7 @@ export const netflowPage = {
         tryReset()
     },
     clearAllFilters: () => {
+        // Wait for toolbar to settle so async default filters can appear before we clear
         cy.byTestID(genSelectors.refreshDrop).should('exist')
         const tryClick = (retries = 5): void => {
             cy.get('body').then($body => {
