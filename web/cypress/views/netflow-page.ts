@@ -35,9 +35,8 @@ export function getMemoryUsageMB(): number {
 }
 
 export const netflowPage = {
-    visit: () => {
-        cy.clearLocalStorage()
-        cy.intercept('**/backend/api/flow/metrics*').as('call1')
+    visit: (clearfilters = true) => {
+        cy.clearNetobservLocalStorage()
         cy.visit('/netflow-traffic')
 
         // Retry with reload if console shows 404 (plugin route not registered yet)
@@ -54,19 +53,23 @@ export const netflowPage = {
         }
         waitForPlugin()
 
-        // wait for all calls to complete
-        cy.wait('@call1', { timeout: 60000 })
+        // Wait for the plugin page before touching filters
+        cy.get('#overview-container', { timeout: 60000 }).should('exist')
 
-        netflowPage.clearAllFilters()
-
+        cy.wrap(clearfilters).then(shouldClearFilters => {
+            if (shouldClearFilters) {
+                netflowPage.clearAllFilters()
+            }
+        })
         // set the page to auto refresh
         netflowPage.setAutoRefresh()
 
-        cy.byTestID('no-results-found').should('not.exist')
-        cy.get('#overview-container').should('exist')
+        netflowPage.waitForLokiQuery()
+
+        cy.byTestID('no-results-found', { timeout: 30000 }).should('not.exist')
     },
     visitDeveloper: (project: string) => {
-        cy.clearLocalStorage()
+        cy.clearNetobservLocalStorage()
         cy.switchPerspective('Developer');
         guidedTour.close()
         cy.visit(`/dev-monitoring/ns/${project}/netflow-traffic`)
@@ -176,7 +179,7 @@ export const topologyPage = {
  * @param namespace - Optional namespace to filter topology view by
  */
 export function setupTopologyViewWithNamespaceFilter(namespace?: string) {
-    cy.clearLocalStorage()
+    cy.clearNetobservLocalStorage()
     netflowPage.visit()
     cy.get('#tabs-container').contains('Topology').click()
 
