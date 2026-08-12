@@ -4,11 +4,20 @@ const SAMPLING_BANNER_DISMISSED_KEY = 'netobserv.sampling-banner-dismissed';
 
 export const useSamplingBannerDismiss = () => {
   const [isDismissed, setIsDismissed] = React.useState(() => {
-    return localStorage.getItem(SAMPLING_BANNER_DISMISSED_KEY) === 'true';
+    try {
+      return localStorage.getItem(SAMPLING_BANNER_DISMISSED_KEY) === 'true';
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
   });
 
   const handleDismiss = React.useCallback(() => {
-    localStorage.setItem(SAMPLING_BANNER_DISMISSED_KEY, 'true');
+    try {
+      localStorage.setItem(SAMPLING_BANNER_DISMISSED_KEY, 'true');
+    } catch (e) {
+      console.error(e);
+    }
     setIsDismissed(true);
   }, []);
 
