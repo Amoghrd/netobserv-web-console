@@ -333,6 +333,13 @@ Cypress.Commands.add('uiLogin', (provider: string, username: string, password: s
 
   // Wait for redirect back and verify login
   cy.byTestID("username", { timeout: 120000 }).should('be.visible');
+
+  // Dismiss console guided tour if it appears on fresh clusters
+  cy.get('body').then($body => {
+    if ($body.find('button').filter(':contains("Skip tour")').length > 0) {
+      cy.contains('button', 'Skip tour').click()
+    }
+  })
 });
 
 Cypress.Commands.add('uiLogout', () => {

@@ -49,7 +49,7 @@ export namespace dashboardSelectors {
 }
 
 export const graphSelector = {
-    graphBody: '.pf-v5-c-card__body'
+    graphBody: '.pf-v5-c-card__body, .pf-v6-c-card__body'
 }
 
 Cypress.Commands.add('checkDashboards', (names) => {
