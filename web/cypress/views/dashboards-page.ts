@@ -30,28 +30,22 @@ export namespace dashboardSelectors {
 }
 
 export const graphSelector = {
-    graphBody: '[role="region"]'
+    graphBody: '.pf-v6-c-card__body'
 }
 
 Cypress.Commands.add('checkDashboards', (names) => {
     for (let i = 0; i < names.length; i++) {
         // Wait for panel to exist
-        cy.byTestID(names[i], { timeout: 120000 }).should('exist').first().then($panel => {
-            // Scroll panel into view to ensure it loads
-            cy.wrap($panel).scrollIntoView()
-        })
+        cy.byTestID(names[i], { timeout: 120000 }).should('exist').first().scrollIntoView()
 
         // Add wait to allow metrics to populate
         cy.wait(2000)
 
         // Check that graph body doesn't have empty state - use a custom retry mechanism
-        cy.byTestID(names[i], { timeout: 120000 }).first().within(() => {
-            cy.get(graphSelector.graphBody, { timeout: 120000 }).should($body => {
-                const hasEmptyState = $body.find('[data-test="empty-state"]').length > 0
-                if (hasEmptyState) {
-                    throw new Error('Dashboard panel still showing empty state, retrying...')
-                }
-            })
+        cy.byTestID(names[i]).first({ timeout: 120000 }).should($panel => {
+            const $region = $panel.find(graphSelector.graphBody)
+            expect($region.length, `${names[i]} graph region should exist`).to.be.greaterThan(0)
+            expect($region.find('[data-test="empty-state"]').length, `${names[i]} should not be empty`).to.equal(0)
         })
     }
 })

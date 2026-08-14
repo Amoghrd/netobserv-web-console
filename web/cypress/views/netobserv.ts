@@ -204,10 +204,12 @@ export const Operator = {
                 // Bug: OCPBUGS-58468
                 // cy.byTestID('refresh-web-console', { timeout: 60000 }).should('exist')
                 // cy.reload(true)
-                cy.intercept('**/copy-login-commands*').as('reload')
-                // wait for all window refresh
-                cy.wait('@reload', { timeout: 100000 })
-                cy.log("Console refreshed successfully")
+                if (parameters !== "StaticPlugin") {
+                    cy.intercept('**/copy-login-commands*').as('reload')
+                    // wait for all window refresh
+                    cy.wait('@reload', { timeout: 100000 })
+                    cy.log("Console refreshed successfully")
+                }
                 if (parameters !== "LokiDisabled" && parameters !== "WithLokiStack") {
                     cy.adminCLI(`oc wait --for=condition=Ready pod -l app=loki -n ${project} --timeout=180s`)
                 }
@@ -219,6 +221,9 @@ export const Operator = {
                         cy.byTestID('status-text', { timeout: 60000 }).should('contain.text', 'Ready')
                     })
                     cy.adminCLI(`oc wait --for=condition=Ready pod -l app=netobserv-plugin -n ${project} --timeout=180s`)
+                    // Force reload to ensure console picks up the new ConsolePlugin
+                    // (the copy-login-commands intercept may have caught a delete-triggered reload)
+                    cy.reload(true)
                 }
             }
         })
