@@ -16,13 +16,15 @@ import { ErrorComponent } from '../messages/error';
 import { prune } from './dynamic-form/utils';
 import './forms.css';
 import { ClusterServiceVersionKind, CustomResourceDefinitionKind } from './types';
-import { exampleForModel, isK8sNotFoundError } from './utils';
+import { exampleForModel, isK8sNotFoundError, k8sErrorMessage } from './utils';
 
 export type SupportedKind = 'FlowCollector' | 'FlowCollectorSlice' | 'FlowMetric';
 type DefaultFrom = 'CSVExample' | 'CRD' | 'None';
 const MISSING_RESOURCE_WATCH_CONFIRMATION_DELAY_MS = 1000;
 /** Poll interval after delete: Console watch cache can miss DELETED and stay stale until remount. */
 const DELETE_ABSENCE_POLL_MS = 1500;
+/** Cap delete-absence polling (~30s) so a stuck CR or non-404 GET cannot loop forever. */
+const DELETE_ABSENCE_MAX_ATTEMPTS = 20;
 
 export type ResourceWatcherProps = {
   group: string;
@@ -172,18 +174,41 @@ export const ResourceWatcher: FC<ResourceWatcherProps> = ({
     }
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let attempts = 0;
+
+    const failDeletePoll = (err: unknown) => {
+      setErrors([k8sErrorMessage(err) || t('Timed out waiting for resource deletion')]);
+      // Fall back to watch data so the UI is not stuck in a deleting state.
+      setDeletingSnapshot(null);
+      setDeletedUid(undefined);
+    };
 
     const pollUntilGone = () => {
+      attempts += 1;
+      if (attempts > DELETE_ABSENCE_MAX_ATTEMPTS) {
+        failDeletePoll(t('Timed out waiting for resource deletion'));
+        return;
+      }
       k8sGet({ model, name, ns: namespace })
         .then(() => {
-          if (!cancelled) {
+          if (cancelled) {
+            return;
+          }
+          if (attempts >= DELETE_ABSENCE_MAX_ATTEMPTS) {
+            failDeletePoll(t('Timed out waiting for resource deletion'));
+          } else {
             timer = setTimeout(pollUntilGone, DELETE_ABSENCE_POLL_MS);
           }
         })
         .catch(err => {
-          if (!cancelled && isK8sNotFoundError(err)) {
+          if (cancelled) {
+            return;
+          }
+          if (isK8sNotFoundError(err)) {
             setDeletingSnapshot(null);
-          } else if (!cancelled) {
+          } else if (attempts >= DELETE_ABSENCE_MAX_ATTEMPTS) {
+            failDeletePoll(err);
+          } else {
             timer = setTimeout(pollUntilGone, DELETE_ABSENCE_POLL_MS);
           }
         });
@@ -196,7 +221,7 @@ export const ResourceWatcher: FC<ResourceWatcherProps> = ({
         clearTimeout(timer);
       }
     };
-  }, [deletingSnapshot, model, name, namespace]);
+  }, [deletingSnapshot, model, name, namespace, t]);
 
   React.useEffect(() => {
     if (!skipCRLoading || !name) {
@@ -303,6 +328,7 @@ export const ResourceWatcher: FC<ResourceWatcherProps> = ({
               }
             })
               .then(() => {
+                setErrors([]);
                 setDeletedUid(data.metadata?.uid);
                 setDeletingSnapshot({
                   ...data,
@@ -318,7 +344,7 @@ export const ResourceWatcher: FC<ResourceWatcherProps> = ({
                 }
               })
               .catch(e => {
-                setErrors([e.message]);
+                setErrors([k8sErrorMessage(e)]);
                 throw e;
               });
           }
@@ -334,7 +360,7 @@ export const ResourceWatcher: FC<ResourceWatcherProps> = ({
               }
             })
             .catch(e => {
-              setErrors([e.message]);
+              setErrors([k8sErrorMessage(e)]);
               throw e;
             });
         }

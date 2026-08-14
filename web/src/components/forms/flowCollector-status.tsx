@@ -22,7 +22,7 @@ import { Pipeline } from './pipeline';
 import { ResourceDeleteModal } from './resource-delete-modal';
 import { ResourceStatus } from './resource-status';
 import { Consumer, ResourceWatcher } from './resource-watcher';
-import { getFlowCollectorOverallStatus, isK8sNotFoundError } from './utils';
+import { getFlowCollectorOverallStatus, isK8sNotFoundError, k8sErrorMessage } from './utils';
 
 export type FlowCollectorStatusProps = {};
 
@@ -92,6 +92,13 @@ export const FlowCollectorStatus: FC<FlowCollectorStatusProps> = () => {
               )}
               {flowCollectorExists && (
                 <Flex className="status-container" direction={{ default: 'column' }}>
+                  {ctx.errors.length > 0 && (
+                    <FlexItem>
+                      <Alert variant={AlertVariant.danger} isInline title={t('Error')}>
+                        {ctx.errors.join('; ')}
+                      </Alert>
+                    </FlexItem>
+                  )}
                   {isDeleting && (
                     <FlexItem>
                       <Alert variant={AlertVariant.info} isInline title={t('FlowCollector is being deleted')}>
@@ -200,7 +207,9 @@ export const FlowCollectorStatus: FC<FlowCollectorStatusProps> = () => {
                     <TextContent>
                       <Text component="p">
                         {hasLoadError
-                          ? t('An error occurred while retrieving FlowCollector: {{error}}', { error: ctx.loadError })
+                          ? t('An error occurred while retrieving FlowCollector: {{error}}', {
+                              error: k8sErrorMessage(ctx.loadError)
+                            })
                           : t('No FlowCollector resource was found. Create one to enable network flow collection.')}
                       </Text>
                     </TextContent>

@@ -73,9 +73,11 @@ const flowCollectorPathSegment = (pathname: string = window.location.pathname): 
   return pathname.slice(prefix.length).split('/')[0] || undefined;
 };
 
-/** True on Console "Create" routes (wizard bypass uses the full form at `~new`). */
-export const isFlowCollectorCreatePath = (pathname: string = window.location.pathname): boolean =>
-  flowCollectorPathSegment(pathname) === '~new';
+/** True on Console "Create" routes (`~new` form bypass and wizard `setup`). */
+export const isFlowCollectorCreatePath = (pathname: string = window.location.pathname): boolean => {
+  const segment = flowCollectorPathSegment(pathname);
+  return segment === '~new' || segment === 'setup';
+};
 
 /**
  * Resolves the FlowCollector instance name from the URL on edit/yaml routes.

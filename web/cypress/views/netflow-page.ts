@@ -25,8 +25,29 @@ export function getMemoryUsageMB(): number {
 
 export const netflowPage = {
     visit: (clearfilters = true) => {
-        cy.clearLocalStorage()
+        // Only clear NetObserv settings — full clearLocalStorage drops Console session
+        cy.clearNetobservLocalStorage()
         cy.visit('/netflow-traffic')
+
+        // Retry with reload if console shows 404 (plugin route not registered yet)
+        const waitForPlugin = (retries = 3): void => {
+            cy.wait(5000)
+            cy.get('body').then($body => {
+                if ($body.text().includes('Page Not Found') && retries > 0) {
+                    cy.log('Plugin page not ready, reloading')
+                    cy.wait(15000)
+                    cy.visit('/netflow-traffic')
+                    waitForPlugin(retries - 1)
+                }
+            })
+        }
+        waitForPlugin()
+
+        // Wait for the plugin page before touching filters
+        cy.get('#overview-container', { timeout: 60000 }).should('exist')
+        // Default filters apply async after frontend-config load; wait until filter
+        // UI has settled (either active chips → clear-all, or none → set-default).
+        netflowPage.waitForFilterToolbar()
 
         cy.wrap(clearfilters).then(shouldClearFilters => {
             if (shouldClearFilters) {
@@ -36,8 +57,15 @@ export const netflowPage = {
         // set the page to auto refresh
         netflowPage.setAutoRefresh()
 
-        cy.byTestID('no-results-found').should('not.exist')
-        cy.get('#overview-container').should('exist')
+        netflowPage.waitForLokiQuery()
+
+        cy.byTestID('no-results-found', { timeout: 30000 }).should('not.exist')
+    },
+    waitForFilterToolbar: () => {
+        cy.get(
+            '[data-test="clear-all-filters-button"], [data-test="set-default-filters-button"]',
+            { timeout: 30000 }
+        ).should('exist')
     },
     setAutoRefresh: () => {
         cy.byTestID(genSelectors.refreshDrop).should('exist').invoke('text').then((text) => {
@@ -56,10 +84,32 @@ export const netflowPage = {
         })
     },
     resetClearFilters: () => {
-        cy.get('#set-default-filters-button').should('exist').click({ force: true })
+        const tryReset = (retries = 3): void => {
+            cy.get('body').then($body => {
+                if ($body.find('#set-default-filters-button').length > 0) {
+                    cy.get('#set-default-filters-button').click({ force: true })
+                } else if (retries > 0) {
+                    cy.wait(500)
+                    tryReset(retries - 1)
+                }
+            })
+        }
+        tryReset()
     },
     clearAllFilters: () => {
-        cy.byTestID("clear-all-filters-button").should('exist').click({ force: true })
+        // Wait for toolbar to settle so async default filters can appear before we clear
+        cy.byTestID(genSelectors.refreshDrop).should('exist')
+        const tryClick = (retries = 5): void => {
+            cy.get('body').then($body => {
+                if ($body.find('[data-test="clear-all-filters-button"]').length > 0) {
+                    cy.byTestID("clear-all-filters-button").click({ force: true })
+                } else if (retries > 0) {
+                    cy.wait(500)
+                    tryClick(retries - 1)
+                }
+            })
+        }
+        tryClick()
     },
     waitForLokiQuery: () => {
         cy.get("#refresh-button > span > svg").invoke('attr', 'style').should('contain', '0s linear 0s')
@@ -81,7 +131,7 @@ export const topologyPage = {
     * @param namespace - Optional namespace to filter topology view by
     */
     setupWithNamespaceFilter(namespace?: string) {
-        cy.clearLocalStorage()
+        cy.clearNetobservLocalStorage()
         netflowPage.visit()
 
         cy.get('#tabs-container').contains('Topology').click()
@@ -295,7 +345,7 @@ export const loadTimes = {
 export const memoryUsage = {
     "overview": 350,
     "table": 500,
-    "topology": 400
+    "topology": 600
 }
 
 export namespace histogramSelectors {

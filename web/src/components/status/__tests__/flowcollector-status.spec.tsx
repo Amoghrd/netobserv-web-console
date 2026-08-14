@@ -105,6 +105,14 @@ describe('isK8sNotFoundError', () => {
     expect(isK8sNotFoundError(null)).toBe(false);
     expect(isK8sNotFoundError('permission denied')).toBe(false);
   });
+
+  it('should detect Console/K8s rejection objects', () => {
+    expect(isK8sNotFoundError({ json: { code: 404, reason: 'NotFound', message: 'not found' } })).toBe(true);
+    expect(isK8sNotFoundError({ code: 404, message: 'Not Found' })).toBe(true);
+    expect(isK8sNotFoundError({ response: { status: 404 } })).toBe(true);
+    expect(isK8sNotFoundError({ json: { reason: 'NotFound' } })).toBe(true);
+    expect(isK8sNotFoundError({ json: { code: 403, reason: 'Forbidden', message: 'forbidden' } })).toBe(false);
+  });
 });
 
 const useK8sWatchResourceMock = useK8sWatchResource as jest.Mock;

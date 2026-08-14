@@ -17,7 +17,7 @@ describe('(OCP-84821) Network Health test', { tags: ['Network_Observability'] },
     })
 
     beforeEach('test', function () {
-        cy.clearLocalStorage()
+        cy.clearNetobservLocalStorage()
 
     })
 

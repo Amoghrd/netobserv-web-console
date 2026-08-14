@@ -15,7 +15,7 @@ export const networkHealth = {
     },
     verifyAlert: (name: string, mode: string = "alert", alertText?: string) => {
         // click force since node cards are covered
-        cy.get(`label[for^="health-card-selectable-${name}"]`).eq(0).should('be.visible').click({ force: true }).then(() => {
+        cy.get(`label[for^="health-card-selectable-${name}"]`, { timeout: 120000 }).eq(0).should('be.visible').click({ force: true }).then(() => {
             cy.get(networkHealthSelectors.sidePanel).should('be.visible')
             cy.contains(mode).should('exist')
             if (alertText) {
