@@ -53,10 +53,21 @@ function escapeShellArg(arg: string): string {
 
 import * as c from './const';
 
+/**
+ * Clears only NetObserv plugin settings. Do not use cy.clearLocalStorage() —
+ * wiping all keys drops Console auth/session state and causes /netflow-traffic 404s
+ * and OAuth redirects in integration tests.
+ */
+Cypress.Commands.add('clearNetobservLocalStorage', () => {
+  cy.window().then(win => {
+    win.localStorage.removeItem('netobserv-plugin-settings');
+  });
+});
+
 Cypress.Commands.add('openNetflowTrafficPage', (clearCache = true) => {
   if (clearCache) {
-    //clear local storage to ensure to be in default view = overview
-    cy.clearLocalStorage();
+    // Reset plugin view prefs to defaults without clearing Console session
+    cy.clearNetobservLocalStorage();
   }
   cy.visit(c.url);
   cy.get("#netflow-traffic-nav-item-link").click();
@@ -413,6 +424,7 @@ declare global {
       checkRecordField(field: string, name: string, values: string[]): Chainable<void>
       clickShowDuplicates(): Chainable<void>
       adminCLI(command: string, options?: Partial<Cypress.ExecOptions>): Chainable<void>
+      clearNetobservLocalStorage(): Chainable<void>
       uiLogin(provider: string, username: string, password: string): Chainable<void>
       uiLogout(): Chainable<void>
       cliLogin(username?: string, password?: string): Chainable<void>
