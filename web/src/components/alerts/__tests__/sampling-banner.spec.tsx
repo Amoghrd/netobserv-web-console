@@ -27,7 +27,8 @@ jest.mock('react-i18next', () => ({
   })
 }));
 
-const SAMPLING_BANNER_DISMISSED_KEY = 'netobserv.sampling-banner-dismissed';
+import { localStoragePluginKey } from '../../../utils/local-storage-hook';
+import { localStorageSamplingBannerDismissedKey } from '../../../utils/sampling-banner-hook';
 
 describe('<SamplingBanner />', () => {
   beforeEach(() => {
@@ -68,11 +69,12 @@ describe('<SamplingBanner />', () => {
       expect(container.querySelector('[data-test="sampling-banner"]')).toBeFalsy();
     });
 
-    expect(localStorage.getItem(SAMPLING_BANNER_DISMISSED_KEY)).toBe('true');
+    const stored = JSON.parse(localStorage.getItem(localStoragePluginKey)!);
+    expect(stored[localStorageSamplingBannerDismissedKey]).toBe(true);
   });
 
   it('should not render if dismissed', () => {
-    localStorage.setItem(SAMPLING_BANNER_DISMISSED_KEY, 'true');
+    localStorage.setItem(localStoragePluginKey, JSON.stringify({ [localStorageSamplingBannerDismissedKey]: true }));
 
     const { container } = render(<SamplingBanner samplingValue={50} />);
     expect(container.querySelector('[data-test="sampling-banner"]')).toBeFalsy();
