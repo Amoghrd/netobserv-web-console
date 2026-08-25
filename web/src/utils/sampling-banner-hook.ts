@@ -1,16 +1,13 @@
-import * as React from 'react';
+import { useLocalStorage } from './local-storage-hook';
 
-const SAMPLING_BANNER_DISMISSED_KEY = 'netobserv.sampling-banner-dismissed';
+export const localStorageSamplingBannerDismissedKey = 'sampling-banner-dismissed';
 
 export const useSamplingBannerDismiss = () => {
-  const [isDismissed, setIsDismissed] = React.useState(() => {
-    return localStorage.getItem(SAMPLING_BANNER_DISMISSED_KEY) === 'true';
-  });
+  const [isDismissed, setIsDismissed] = useLocalStorage<boolean>(localStorageSamplingBannerDismissedKey, false);
 
-  const handleDismiss = React.useCallback(() => {
-    localStorage.setItem(SAMPLING_BANNER_DISMISSED_KEY, 'true');
+  const handleDismiss = () => {
     setIsDismissed(true);
-  }, []);
+  };
 
   return { isDismissed, handleDismiss };
 };

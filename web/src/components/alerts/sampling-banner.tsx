@@ -23,7 +23,7 @@ export const SamplingBanner: React.FC<SamplingBannerProps> = ({ samplingValue })
   const configLink = flowCollectorSetupPath + '?tab=consumption';
 
   return (
-    <div className="netobserv-sampling-alert" data-test="sampling-banner">
+    <div className="netobserv-alert" data-test="sampling-banner">
       <Alert
         title={t('Sampling is enabled')}
         isInline={true}
