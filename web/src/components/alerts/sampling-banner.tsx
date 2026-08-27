@@ -1,7 +1,7 @@
 import { Alert, AlertActionCloseButton, AlertActionLink } from '@patternfly/react-core';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSamplingBannerDismiss } from '../../utils/sampling-banner-hook';
+import { localStorageSamplingBannerDismissedKey, useLocalStorage } from '../../utils/local-storage-hook';
 import { flowCollectorSetupPath, useNavigate } from '../../utils/url';
 import './banner.css';
 
@@ -12,7 +12,7 @@ export interface SamplingBannerProps {
 export const SamplingBanner: React.FC<SamplingBannerProps> = ({ samplingValue }) => {
   const { t } = useTranslation('plugin__netobserv-plugin');
   const navigate = useNavigate();
-  const { isDismissed, handleDismiss } = useSamplingBannerDismiss();
+  const [isDismissed, setDisMissed] = useLocalStorage<boolean>(localStorageSamplingBannerDismissedKey, false);
 
   // Don't show if sampling <= 1 (all flows captured) or already dismissed
   if (samplingValue <= 1 || isDismissed) {
@@ -28,7 +28,7 @@ export const SamplingBanner: React.FC<SamplingBannerProps> = ({ samplingValue })
         title={t('Sampling is enabled')}
         isInline={true}
         variant="info"
-        actionClose={<AlertActionCloseButton data-test-id="sampling-banner-close" onClose={handleDismiss} />}
+        actionClose={<AlertActionCloseButton data-test-id="sampling-banner-close" onClose={() => setDisMissed(true)} />}
         actionLinks={
           <React.Fragment>
             <AlertActionLink data-test-id="sampling-action-link" onClick={() => navigate(configLink)}>

@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import * as React from 'react';
 
+import { localStoragePluginKey, localStorageSamplingBannerDismissedKey } from '../../../utils/local-storage-hook';
 import { SamplingBanner } from '../sampling-banner';
 
 // Mock the url module
@@ -26,9 +27,6 @@ jest.mock('react-i18next', () => ({
     }
   })
 }));
-
-import { localStoragePluginKey } from '../../../utils/local-storage-hook';
-import { localStorageSamplingBannerDismissedKey } from '../../../utils/sampling-banner-hook';
 
 describe('<SamplingBanner />', () => {
   beforeEach(() => {
