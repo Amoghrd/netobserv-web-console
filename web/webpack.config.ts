@@ -487,8 +487,8 @@ module.exports = {
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: path.resolve(__dirname, 'locales'), to: 'locales' },
-        { from: path.resolve(__dirname, 'assets'), to: 'assets' },
+        { from: 'locales', to: 'locales', context: __dirname },
+        { from: 'assets', to: 'assets', context: __dirname },
       ],
     }),
   ],
@@ -607,8 +607,8 @@ if (process.env.FLAVOR === 'static') {
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: path.resolve(__dirname, 'locales'), to: 'locales' },
-        { from: path.resolve(__dirname, 'assets'), to: 'assets' },
+        { from: 'locales', to: 'locales', context: __dirname },
+        { from: 'assets', to: 'assets', context: __dirname },
       ],
     }),
   ];
