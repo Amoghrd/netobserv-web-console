@@ -29,6 +29,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "library/golang"
     groups:
       cypress-docker:
         applies-to: version-updates
@@ -36,7 +38,7 @@ updates:
           - "cypress/*"
 
   - package-ecosystem: "github-actions"
-    directory: "/.github"
+    directory: "/"
     schedule:
       interval: "monthly"
 
@@ -56,6 +58,8 @@ updates:
     target-branch: "main-pf5"
     schedule:
       interval: "monthly"
+    ignore:
+      - dependency-name: "library/golang"
     groups:
       cypress-docker:
         applies-to: version-updates
