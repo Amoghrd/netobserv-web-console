@@ -7,6 +7,7 @@ declare global {
         interface Chainable {
             enableFLPMetrics(tag: string[]): Chainable<Element>
             checkStorageClass(context: Mocha.Context): Chainable<Element>
+            checkArchitecture(context: Mocha.Context, supportedArches: string[]): Chainable<Element>
             deployFlowcollectorFromFixture(fixtureFile: string): Chainable<Element>
         }
     }
@@ -572,6 +573,19 @@ Cypress.Commands.add('checkStorageClass', (context: Mocha.Context) => {
         }
         cy.wrap(storageClassCheck).then(scCheck => {
             if (scCheck) {
+                context.skip()
+            }
+        })
+    })
+});
+
+Cypress.Commands.add('checkArchitecture', (context: Mocha.Context, supportedArches: string[]) => {
+    cy.adminCLI(`oc get nodes -o jsonpath='{.items[*].status.nodeInfo.architecture}'`).then(result => {
+        const arches = Array.from(new Set(result.stdout.trim().split(/\s+/).filter(a => a.length > 0)))
+        const unsupported = arches.filter(a => !supportedArches.includes(a))
+        cy.wrap(unsupported.length > 0).then(skip => {
+            if (skip) {
+                cy.log(`checkArchitecture: node architecture(s) [${arches.join(', ')}] not in supported list [${supportedArches.join(', ')}], skipping`)
                 context.skip()
             }
         })

@@ -125,9 +125,27 @@ describe('(OCP-84821) Network Health test', { tags: ['Network_Observability'] },
                 { failOnNonZeroExit: false, timeout: 120000 }
             ).then((result: Cypress.Exec) => {
                 const output = result.stdout || ''
-                const count = (output.match(/DNSNxDomain/g) || []).length
-                cy.log(`Prometheus DNSNxDomain alert count: ${count} (attempt ${attempt + 1}/${maxAttempts})`)
-                if (count > 0) {
+                // Alertname alone shows up while still `pending`, before `firing` - and other
+                // namespaces' unrelated DNS noise (e.g. openshift-kube-apiserver-operator) can
+                // fire independently of our flood. Require state=="firing" scoped to dns-traffic.
+                let dnsAlerts: Array<{ labels?: { alertname?: string; namespace?: string }; state?: string }> = []
+                try {
+                    dnsAlerts = (JSON.parse(output)?.data?.alerts || []).filter((a: { labels?: { alertname?: string } }) =>
+                        a.labels?.alertname?.includes('DNSNxDomain')
+                    )
+                } catch (e) {
+                    cy.log(`waitForAlerts: failed to parse /api/v1/alerts response: ${(e as Error).message}`)
+                }
+                const dnsTrafficAlerts = dnsAlerts.filter(a => a.labels?.namespace === 'dns-traffic')
+                const firingCount = dnsTrafficAlerts.filter(a => a.state === 'firing').length
+                const stateSummary = dnsAlerts.length > 0
+                    ? dnsAlerts.map(a => `${a.labels?.alertname}[namespace=${a.labels?.namespace}]=${a.state}`).join(', ')
+                    : '(no DNSNxDomain alerts present yet)'
+                cy.log(
+                    `waitForAlerts: ${dnsAlerts.length} DNSNxDomain alert(s) total, ${dnsTrafficAlerts.length} for namespace=dns-traffic, ` +
+                    `${firingCount} of those firing. States: ${stateSummary} (attempt ${attempt + 1}/${maxAttempts})`
+                )
+                if (firingCount > 0) {
                     return
                 }
                 if (attempt < maxAttempts) {
@@ -154,6 +172,7 @@ describe('(OCP-84821) Network Health test', { tags: ['Network_Observability'] },
                         ).then((labelDump: Cypress.Exec) => {
                             throw new Error(
                                 'DNSNxDomain alerts not firing after 10 minutes of polling. ' +
+                                `Last observed states: ${stateSummary}. ` +
                                 `PrometheusRule PromQL for DNSNxDomain: [${dnsRules || '(none)'}]. ` +
                                 `dns_flows_total labels: ${(labelDump.stdout || '').substring(0, 500)}. ` +
                                 'Check gather-extra artifacts for operator/FLP logs and Prometheus state.'
