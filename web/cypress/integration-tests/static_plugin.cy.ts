@@ -1,5 +1,5 @@
 import { netflowPage, overviewSelectors, pluginSelectors } from "@views/netflow-page"
-import { Operator } from "@views/netobserv"
+import { Operator, project } from "@views/netobserv"
 import {flowcollectorStatusPage, flowcollectorStatusSelectors} from "@views/flowcollector-status";
 import {searchPage} from "@views/search";
 
@@ -70,6 +70,13 @@ describe('(OCP-84156 OCP-88744) StaticPlugin test with Status Check', { tags: ['
         cy.adminCLI(`oc wait --for=condition=Ready=false flowcollector/cluster --timeout=30s`, {
             failOnNonZeroExit: false
         })
+
+        // Changing ebpf sampling triggers a netobserv-ebpf-agent DaemonSet rollout; wait for it
+        // to settle before trusting the next Ready check below.
+        cy.adminCLI(
+            `oc rollout status daemonset/netobserv-ebpf-agent -n ${project}-privileged --timeout=120s`,
+            { timeout: 140000 }
+        )
         cy.adminCLI(`oc wait --for=condition=Ready flowcollector/cluster --timeout=180s`, { timeout: 200000 })
         cy.reload(true)
         cy.get(flowcollectorStatusSelectors.readyRow, { timeout: 60000 }).should('exist')
