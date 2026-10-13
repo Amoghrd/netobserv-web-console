@@ -69,8 +69,14 @@ describe('(OCP-84156 OCP-88744) StaticPlugin test with Status Check', { tags: ['
             failOnNonZeroExit: false
         })
 
-        // Changing ebpf sampling triggers a netobserv-ebpf-agent DaemonSet rollout; wait for it
-        // to settle before trusting the next Ready check below.
+        // Changing ebpf sampling triggers a netobserv-ebpf-agent DaemonSet rollout; wait for the
+        // DaemonSet to pick up the new value, then for the rollout to settle, before trusting
+        // the next Ready check below.
+        cy.adminCLI(
+            `oc wait --for=jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="SAMPLING")].value}'=1 ` +
+            `daemonset/netobserv-ebpf-agent -n ${project}-privileged --timeout=120s`,
+            { timeout: 140000 }
+        )
         cy.adminCLI(
             `oc rollout status daemonset/netobserv-ebpf-agent -n ${project}-privileged --timeout=120s`,
             { timeout: 140000 }
