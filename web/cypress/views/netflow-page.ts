@@ -175,7 +175,15 @@ export const netflowPage = {
         attempt(maxAttempts)
     },
     dismissPoppers: () => {
-        // Blur the active element (if any) and press Escape to close any open popper/dropdown.
+        // The filter popper owns its Escape handler on the search input. Send Escape
+        // there before blurring, otherwise its autocomplete suggestions can stay open.
+        cy.get('body').then($body => {
+            if ($body.find('#filter-popper').length > 0) {
+                cy.get(filterSelectors.filterInput).type('{esc}', { force: true })
+            }
+        })
+
+        // Blur any remaining focused control, then close other poppers/dropdowns.
         cy.get('body').then($body => {
             const focused = $body.find(':focus')
             if (focused.length) {
